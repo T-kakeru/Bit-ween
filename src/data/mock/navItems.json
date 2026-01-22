@@ -2,5 +2,6 @@
   { "label": "ホーム", "icon": "🏠" },
   { "label": "記事", "icon": "📰" },
   { "label": "通知", "icon": "🔔", "badge": 3 },
-  { "label": "マイページ", "icon": "👤" }
+  { "label": "マイページ", "icon": "👤" },
+  { "label": "設定", "icon": "⚙️" }
 ]

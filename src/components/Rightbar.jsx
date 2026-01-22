@@ -48,7 +48,7 @@ const Rightbar = ({ categories, tags, onAddTag, departments }) => {
         </div>
       </section>
       <section className="panel">
-        <h3>★ 部門</h3>
+        <h3>部署</h3>
         <ul>
           {/* 部門一覧 */}
           {departments.map((department) => (

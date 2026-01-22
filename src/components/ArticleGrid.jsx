@@ -1,3 +1,17 @@
+import TagPills from "./TagPills";
+
+const resolveArticleTags = (article) => {
+  if (Array.isArray(article.tags)) {
+    return article.tags;
+  }
+
+  if (article.tag) {
+    return article.tag.split("・");
+  }
+
+  return [];
+};
+
 // 記事カード一覧
 const ArticleGrid = ({ articles, onSelect }) => {
   const handleKeyDown = (event, article) => {
@@ -11,11 +25,7 @@ const ArticleGrid = ({ articles, onSelect }) => {
     <section className="cards">
       {/* 記事カードを並べる */}
       {articles.map((article) => {
-        const tagList = Array.isArray(article.tags)
-          ? article.tags
-          : article.tag
-          ? article.tag.split("・")
-          : [];
+        const tagList = resolveArticleTags(article);
         const coverage = article.coverage ?? 0;
 
         return (
@@ -30,13 +40,7 @@ const ArticleGrid = ({ articles, onSelect }) => {
           >
             <div className="card-media" />
             <div className="card-body">
-              <div className="card-tags">
-                {tagList.map((tag) => (
-                  <span key={`${article.id}-${tag}`} className="tag-pill">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <TagPills tags={tagList} articleId={article.id} />
               <div className="card-title-row">
                 <h2 className="card-title">{article.title}</h2>
                 <span

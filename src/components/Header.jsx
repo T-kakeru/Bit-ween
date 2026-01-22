@@ -19,8 +19,8 @@ const Header = ({ user, onMenuToggle, isMenuOpen }) => {
         <input type="text" placeholder="検索" />
       </div>
       <div className="header-status">
-        <span className="status-icon">🔔</span>
-        <span className="avatar">{user?.icon ?? "👤"}</span>
+        {/*<span className="status-icon">🔔</span>
+        <span className="avatar">{user?.icon ?? "👤"}</span>*/}
         <span className="status-company">Reach</span>
       </div>
     </header>

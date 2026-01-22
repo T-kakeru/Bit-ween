@@ -1,3 +1,5 @@
+import Breadcrumb from "./Breadcrumb";
+
 const ArticleDetail = ({ article, onBack }) => {
   if (!article) return null;
 
@@ -8,11 +10,14 @@ const ArticleDetail = ({ article, onBack }) => {
     : [];
   const coverage = article.coverage ?? 0;
 
+  const breadcrumbItems = [
+    { label: "記事", onClick: onBack },
+    { label: "記事の詳細" },
+  ];
+
   return (
     <section className="article-detail">
-      <button type="button" className="ghost-button" onClick={onBack}>
-        一覧に戻る
-      </button>
+      <Breadcrumb items={breadcrumbItems} />
 
       <div className={`detail-hero ${article.image}`} />
 
