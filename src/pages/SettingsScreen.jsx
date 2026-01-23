@@ -58,8 +58,7 @@ const SettingsScreen = () => {
     <section className="screen settings-screen">
       <div className="content-header">
         <div>
-          <h1>設定</h1>
-          <p className="muted">通知・連携・受信など、変更する項目だけをまとめています</p>
+          <h1 className="title">設定</h1>
         </div>
       </div>
 
@@ -77,7 +76,7 @@ const SettingsScreen = () => {
       </section>
 
       <div className="settings-section-head">
-        <h2 className="settings-section-title">オファーに関する設定</h2>
+        <h2 className="title">オファーに関する設定</h2>
         <a className="settings-link" href="#" onClick={(e) => e.preventDefault()}>
           詳細はこちら
         </a>
@@ -97,7 +96,6 @@ const SettingsScreen = () => {
         <div className="settings-row">
           <div className="settings-row-text">
             <p className="settings-row-title">ダイレクトオファーの受信</p>
-            <p className="muted small">匿名でプロフィールを共有する想定（モック）</p>
           </div>
           <label className="switch" aria-label="ダイレクトオファーの受信">
             <input
@@ -112,7 +110,6 @@ const SettingsScreen = () => {
         <button type="button" className="settings-row settings-row-button" onClick={() => {}}>
           <div className="settings-row-text">
             <p className="settings-row-title">企業ブロック設定</p>
-            <p className="muted small">設定対象: {settings.offer.blockedCompanies?.length ?? 0}社</p>
           </div>
           <span className="settings-row-meta">設定済</span>
           <span className="settings-chevron" aria-hidden="true">›</span>
@@ -120,7 +117,7 @@ const SettingsScreen = () => {
       </section>
 
       <div className="settings-section-head">
-        <h2 className="settings-section-title">配信設定</h2>
+        <h2 className="title">配信設定</h2>
         <a className="settings-link" href="#" onClick={(e) => e.preventDefault()}>
           配信メールの詳細はこちら
         </a>

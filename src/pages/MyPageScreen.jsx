@@ -37,10 +37,7 @@ const MyPageScreen = ({ onOpenSettings }) => {
     <section className="screen mypage-screen">
       <div className="content-header mypage-header">
         <div>
-          <h1>マイページ</h1>
-          <p className="muted">
-            自分の傾向（熱狂度 / 反応）をふりかえる
-          </p>
+          <h1 className="title">マイページ</h1>
         </div>
       </div>
 

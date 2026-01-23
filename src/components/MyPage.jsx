@@ -22,7 +22,7 @@ const MyPage = ({ user, tags, onAddTag, isLoggedIn, onToggleLogin, savedArticles
       <header className="mypage-header">
         <div>
           <p className="eyebrow">マイページ</p>
-          <h1 className="mypage-title">{user.name}</h1>
+          <h1 className="title">{user.name}</h1>
           <p className="muted">
             {user.role} · {user.team}
           </p>

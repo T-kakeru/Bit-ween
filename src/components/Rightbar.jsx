@@ -1,8 +1,27 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 // 右カラム：カテゴリ/タグ/部門の一覧
-const Rightbar = ({ categories, tags, onAddTag, departments }) => {
+// 記事画面専用。必要十分に「選択→親へ通知」だけを持つ。
+const Rightbar = ({
+  categories,
+  tags,
+  onAddTag,
+  departments,
+  selectedCategories = [],
+  selectedTags = [],
+  selectedDepartments = [],
+  onToggleCategory,
+  onToggleTag,
+  onToggleDepartment,
+}) => {
   const [tagInput, setTagInput] = useState("");
+
+  const selectedCategorySet = useMemo(() => new Set(selectedCategories), [selectedCategories]);
+  const selectedTagSet = useMemo(() => new Set(selectedTags), [selectedTags]);
+  const selectedDepartmentSet = useMemo(
+    () => new Set(selectedDepartments),
+    [selectedDepartments]
+  );
 
   const handleAddTag = () => {
     const value = tagInput.trim();
@@ -23,17 +42,46 @@ const Rightbar = ({ categories, tags, onAddTag, departments }) => {
       <section className="panel">
         <h3>☰ カテゴリ</h3>
         <ul>
-          {categories.map((category) => (
-            <li key={category}>{category}</li>
-          ))}
+          {categories.map((category) => {
+            const isActive = selectedCategorySet.has(category);
+
+            return (
+              <li key={category}>
+                <button
+                  type="button"
+                  className={isActive ? "rightbar-pill is-active" : "rightbar-pill"}
+                  onClick={
+                    typeof onToggleCategory === "function"
+                      ? () => onToggleCategory(category)
+                      : undefined
+                  }
+                  aria-pressed={isActive}
+                >
+                  {category}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </section>
       <section className="panel">
         <h3># タグ</h3>
         <div className="tag-list vertical">
-          {tags.map((tag) => (
-            <span key={tag} className="tag-chip">#{tag}</span>
-          ))}
+          {tags.map((tag) => {
+            const isActive = selectedTagSet.has(tag);
+
+            return (
+              <button
+                key={tag}
+                type="button"
+                className={isActive ? "tag-chip is-active" : "tag-chip"}
+                onClick={typeof onToggleTag === "function" ? () => onToggleTag(tag) : undefined}
+                aria-pressed={isActive}
+              >
+                #{tag}
+              </button>
+            );
+          })}
         </div>
         <div className="tag-add modern">
           <input
@@ -51,9 +99,26 @@ const Rightbar = ({ categories, tags, onAddTag, departments }) => {
         <h3>部署</h3>
         <ul>
           {/* 部門一覧 */}
-          {departments.map((department) => (
-            <li key={department}>{department}</li>
-          ))}
+          {departments.map((department) => {
+            const isActive = selectedDepartmentSet.has(department);
+
+            return (
+              <li key={department}>
+                <button
+                  type="button"
+                  className={isActive ? "rightbar-pill is-active" : "rightbar-pill"}
+                  onClick={
+                    typeof onToggleDepartment === "function"
+                      ? () => onToggleDepartment(department)
+                      : undefined
+                  }
+                  aria-pressed={isActive}
+                >
+                  {department}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </section>
     </aside>

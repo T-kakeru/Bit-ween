@@ -77,8 +77,7 @@ const ProfileEditScreen = ({ profile, onSave, onCancel, onBack }) => {
     <section className="screen profile-edit-screen">
       <header className="content-header profile-edit-header">
         <div>
-          <h1>プロフィール編集</h1>
-          <p className="muted">社内で見られるプロフィール情報を更新します</p>
+          <h1 className="title">プロフィール編集</h1>
         </div>
       </header>
 

@@ -1,21 +1,23 @@
 import { useState } from "react";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
-import ArticleSection from "./components/ArticleSection";
+import ArticleScreen from "./pages/ArticleScreen";
 import HomeScreen from "./pages/HomeScreen";
 import MyPageScreen from "./pages/MyPageScreen";
 import NotificationsScreen from "./pages/NotificationsScreen";
 import SettingsScreen from "./pages/SettingsScreen";
+import { useArticleEntryParentInfo } from "./hooks/useArticleEntryParentInfo";
 // 画面に必要なテストデータ（API未接続時の表示用）
 import navItems from "./data/mock/navItems.json";
-import tabs from "./data/mock/tabs.json";
-// App はスクロールや右カラムを持たず、ArticleSection 内で完結させる
+// App はスクロールや右カラムを持たず、ArticleScreen 内で完結させる
 
 function App() {
   // 現在選択されているタブ
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeNav, setActiveNav] = useState("記事");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { articleEntry, articleScreenKey, resetArticleEntry, openArticles, openArticlesWithFilter } =
+    useArticleEntryParentInfo({ setActiveNav, setIsSidebarOpen });
   const user = {
     name: "山田 一郎",
     role: "マネージャー",
@@ -37,6 +39,10 @@ function App() {
   const handleNavChange = (nav) => {
     setActiveNav(nav);
     setIsSidebarOpen(false);
+
+    if (nav === "記事") {
+      resetArticleEntry();
+    }
   };
 
   const handleOpenSettings = () => {
@@ -44,15 +50,18 @@ function App() {
     setIsSidebarOpen(false);
   };
 
-  const handleOpenArticles = () => {
-    setActiveNav("記事");
+  const handleOpenHome = () => {
+    setActiveNav("ホーム");
     setIsSidebarOpen(false);
   };
 
+  const handleOpenArticles = () => {
+    openArticles();
+  };
 
   const renderNavContent = () => {
     if (activeNav === "ホーム") {
-      return <HomeScreen onOpenArticles={handleOpenArticles} />;
+      return <HomeScreen onOpenArticles={openArticlesWithFilter} />;
     }
 
     if (activeNav === "通知") {
@@ -68,9 +77,12 @@ function App() {
     }
 
     return (
-      <ArticleSection
-        key="articles"
-        tabs={tabs}
+      <ArticleScreen
+        key={articleScreenKey}
+        initialFilterId={articleEntry.filterId}
+			  hideFilterUI={articleEntry.hideFilterUI}
+			  breadcrumbLabel={articleEntry.breadcrumbLabel}
+			  onNavigateHome={handleOpenHome}
       />
     );
   };
@@ -92,16 +104,16 @@ function App() {
         />
       ) : null}
 
-      <div className="layout">
-        <div className={isSidebarOpen ? "sidebar-drawer is-open" : "sidebar-drawer"}>
-          <Sidebar
-            navItems={navItems}
-            activeNav={activeNav}
-            onNavChange={handleNavChange}
-            user={user}
-          />
-        </div>
+      <div className={isSidebarOpen ? "sidebar-drawer is-open" : "sidebar-drawer"}>
+        <Sidebar
+          navItems={navItems}
+          activeNav={activeNav}
+          onNavChange={handleNavChange}
+          user={user}
+        />
+      </div>
 
+      <div className="layout">
         <main className="content">{renderNavContent()}</main>
       </div>
     </div>
