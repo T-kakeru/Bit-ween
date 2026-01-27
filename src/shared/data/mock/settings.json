@@ -1,0 +1,28 @@
+{
+  "account": {
+    "name": "山田 一郎",
+    "subtitle": "OPEN PARK / プロダクト推進部"
+  },
+  "profile": {
+    "name": "山田 一郎",
+    "department": "プロダクト推進部",
+    "role": "マネージャー",
+    "team": "OPEN PARK",
+    "status": "オンライン",
+    "avatar": "",
+    "bio": "社内の知見を集めて循環させたいです"
+  },
+  "offer": {
+    "receiveOffers": true,
+    "receiveDirectOffers": true,
+    "blockedCompanies": [
+      "架空株式会社A",
+      "有限会社B"
+    ]
+  },
+  "delivery": {
+    "newPosts": true,
+    "recommendedPosts": false,
+    "weeklyDigest": true
+  }
+}

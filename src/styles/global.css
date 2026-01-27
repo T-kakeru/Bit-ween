@@ -120,6 +120,372 @@ button {
   margin: 14px auto 0;
 }
 
+/* Admin/Manager: gray-based theme (ページ内だけ雰囲気を切り替える) */
+.admin-screen,
+.manager-screen {
+  width: 100%;
+  max-width: 1520px;
+  margin: 14px auto 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: #f6f7f9;
+  border: 1px solid #e5e7eb;
+}
+
+.admin-title,
+.manager-title {
+  color: #111827;
+}
+
+.admin-header,
+.manager-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.admin-metrics,
+.manager-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-card,
+.manager-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px 14px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.admin-card-label,
+.manager-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+}
+
+.admin-card-value,
+.manager-card-value {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.admin-table-wrap,
+.manager-table-wrap {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: auto;
+  max-height: calc(100vh - 260px);
+}
+
+.admin-table,
+.manager-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  min-width: 1180px;
+}
+
+.admin-table th,
+.admin-table td,
+.manager-table th,
+.manager-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+}
+
+.admin-table th,
+.manager-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f3f4f6;
+  color: #374151;
+  text-align: left;
+  font-weight: 800;
+}
+
+.manager-table th {
+  padding: 0;
+}
+
+.manager-th {
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.manager-th.is-sorted-asc {
+  background: #fff5f5;
+  border-bottom: 1px solid #f3b1b1;
+  color: #7f1d1d;
+}
+
+.manager-th.is-sorted-desc {
+  background: #f2f7ff;
+  border-bottom: 1px solid #b6d0ff;
+  color: #1d4ed8;
+}
+
+.manager-sort-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 10px;
+  cursor: pointer;
+}
+
+.manager-sort-button:hover {
+  color: #111827;
+}
+
+.manager-sort-button.is-sorted {
+  font-weight: 900;
+}
+
+.manager-sort-icon {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.manager-table-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin: 10px 0 10px;
+}
+
+.manager-filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.manager-filter-button.is-open {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.manager-filter-icon {
+  font-size: 14px;
+}
+
+.manager-float-panel {
+  position: fixed;
+  top: 154px;
+  left: 16px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.12);
+  z-index: 1200;
+}
+
+.manager-filter-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.manager-filter-tab {
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.manager-filter-tab.is-active {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.manager-filter-field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #374151;
+}
+
+.manager-filter-inline {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.manager-filter-field input,
+.manager-filter-field select {
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.manager-float-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f7;
+  cursor: grab;
+  user-select: none;
+}
+
+.manager-float-title {
+  font-weight: 900;
+  color: #111827;
+}
+
+.manager-float-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.manager-float-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.manager-float-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.manager-float-body {
+  padding: 12px;
+}
+
+.manager-filter-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.manager-filter-section {
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.manager-filter-section-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.manager-filter-options {
+  display: grid;
+  gap: 8px;
+}
+
+.manager-filter-option {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid #eef2f7;
+  background: #f9fafb;
+}
+
+.manager-filter-option input {
+  margin-top: 3px;
+}
+
+.manager-filter-option-text {
+  display: grid;
+  gap: 2px;
+}
+
+.manager-filter-option-label {
+  font-size: 13px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.manager-filter-option-desc {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.manager-filter-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.manager-filter-reset {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-table tbody tr:nth-child(even) td,
+.manager-table tbody tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+.admin-footnote,
+.manager-footnote {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .admin-metrics,
+  .manager-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
 .articles-section {
   display: grid;
   gap: 12px;
@@ -298,7 +664,17 @@ button {
 
 .nav-icon {
   width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
   text-align: center;
+}
+
+img.nav-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .badge {
@@ -788,6 +1164,12 @@ button {
   display: grid;
   place-items: center;
   font-size: 12px;
+  overflow: hidden;
+}
+
+img.avatar {
+  display: block;
+  object-fit: cover;
 }
 
 .avatar-sm {
@@ -2208,6 +2590,82 @@ button {
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+}
+
+.detail-title-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bookmark-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #e6e8ec;
+  background: #ffffff;
+  color: #475569;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+
+.bookmark-button:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.bookmark-button:focus-visible {
+  outline: 2px solid #2b74ff;
+  outline-offset: 2px;
+}
+
+.bookmark-icon {
+  display: block;
+}
+
+.bookmark-shape {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+
+.bookmark-button.is-saved {
+  color: #2b74ff;
+  border-color: #b7cdfc;
+  background: #f4f8ff;
+}
+
+.bookmark-button.is-saved .bookmark-shape {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.bookmark-button.is-animating {
+  animation: bookmark-pop 520ms ease;
+}
+
+@keyframes bookmark-pop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    transform: translateY(-2px) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bookmark-button {
+    transition: none;
+  }
+  .bookmark-button.is-animating {
+    animation: none;
+  }
 }
 
 .detail-title {

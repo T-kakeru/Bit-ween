@@ -1,25 +1,23 @@
 import { useMemo, useState } from "react";
 import mockArticles from "../data/mock/articles.json";
 // ホーム画面の記事コンポーネント
-import { ArticleCarouselSection, FilteredArticleCarouselSection } from "../components/ArticleCarousel";
-import { applyArticleFilter } from "../components/ArticleFilter";
+import {
+  ArticleCarouselSection,
+  FilteredArticleCarouselSection,
+} from "../features/articles/components/Article/ArticleCarousel";
+import { applyArticleFilter } from "../features/articles/domain/articleFilters";
 
 const HomeScreen = ({ onOpenArticles }) => {
   const [rating, setRating] = useState(0);
   const [selectedRecommendation, setSelectedRecommendation] = useState(null);
-  const { unreadCount, importantCount, readingCount } = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const unread = mockArticles.filter((article) => !article.isRead);
-    const todayUnread = unread.filter((article) => article.date.replace(/\//g, "-") === today);
+  const { importantCount, readingCount } = useMemo(() => {
     const important = mockArticles.filter((article) => article.tags?.includes("周知事項") || article.tags?.includes("重要") || article.tags?.includes("お知らせ"));
-    const reading = mockArticles.filter((article) => article.isRead === false && article.coverage >= 30);
-    const recommended = mockArticles.filter((article) => article.isPopular);
+    const saved = mockArticles.filter((article) => article.isSaved);
 
     return {
       // ホーム画面用の記事の絞り込み件数
-      unreadCount: unread.length,
       importantCount: important.length,
-      readingCount: reading.length,
+      readingCount: saved.length,
     };
   }, []);
   // 今週の記事数
@@ -28,22 +26,18 @@ const HomeScreen = ({ onOpenArticles }) => {
   const metrics = useMemo(() => {
     const total = mockArticles.length || 1;
     const readCount = mockArticles.filter((article) => article.isRead).length;
-    const averageCoverage = Math.round(
-      mockArticles.reduce((sum, article) => sum + (article.coverage ?? 0), 0) / total
-    );
+    const unread = mockArticles.filter((article) => !article.isRead).length;
 
     return {
       readRate: Math.round((readCount / total) * 100),
-      averageCoverage,
+      unreadCount: unread,
       streakDays: 6,
     };
   }, []);
 
   const carouselArticles = useMemo(() => mockArticles.slice(0, 10), []);
-  const topCoverage = useMemo(() => {
-    return [...mockArticles]
-      .sort((a, b) => (b.coverage ?? 0) - (a.coverage ?? 0))
-      .slice(0, 3);
+  const topRecommendations = useMemo(() => {
+    return [...mockArticles].filter((a) => a?.isPopular).slice(0, 3);
   }, []);
 
   const surveyCompleted = rating > 0 && selectedRecommendation !== null;
@@ -103,14 +97,14 @@ const HomeScreen = ({ onOpenArticles }) => {
                 className="home-shortcut-item"
                 onClick={() =>
                   onOpenArticles?.({
-                    filterId: "reading",
+                    filterId: "saved",
                     hideFilterUI: true,
-                    breadcrumbLabel: "続きから読む",
+                    breadcrumbLabel: "保存した記事",
                   })
                 }
               >
-                <span className="home-shortcut-icon" aria-hidden="true">↩</span>
-                <span className="home-shortcut-title">続きから読む</span>
+                <span className="home-shortcut-icon" aria-hidden="true">🔖</span>
+                <span className="home-shortcut-title">保存した記事</span>
                 <span className="home-shortcut-meta">
                   <span className="home-shortcut-count">{readingCount}</span>
                   <span className="home-shortcut-arrow" aria-hidden="true">→</span>
@@ -130,8 +124,8 @@ const HomeScreen = ({ onOpenArticles }) => {
                   <p className="muted">既読率</p>
                 </div>
                 <div>
-                  <p className="home-metrics-number">{metrics.averageCoverage}%</p>
-                  <p className="muted">平均網羅率</p>
+                  <p className="home-metrics-number">{metrics.unreadCount}</p>
+                  <p className="muted">未読</p>
                 </div>
                 <div>
                   <p className="home-metrics-number">{metrics.streakDays}日</p>
@@ -164,8 +158,8 @@ const HomeScreen = ({ onOpenArticles }) => {
                 ))}
               </div>
 
-              <div className="home-survey-list" aria-label="網羅率の高い記事">
-                {topCoverage.map((article, index) => (
+              <div className="home-survey-list" aria-label="おすすめの記事">
+                {topRecommendations.map((article, index) => (
                   <button
                     key={article.id}
                     type="button"
@@ -179,7 +173,7 @@ const HomeScreen = ({ onOpenArticles }) => {
                     <span className="home-survey-rank">{index + 1}</span>
                     <div className="home-survey-info">
                       <p className="home-survey-title">{article.title}</p>
-                      <span className="muted small">網羅率 {article.coverage}%</span>
+                      <span className="muted small">{article.author} ・ {article.date}</span>
                     </div>
                   </button>
                 ))}
@@ -218,7 +212,7 @@ const HomeScreen = ({ onOpenArticles }) => {
           onOpenArticles={onOpenArticles}
         />
         <FilteredArticleCarouselSection
-          filterId="reading"
+          filterId="saved"
           allArticles={mockArticles}
           onOpenArticles={onOpenArticles}
         />

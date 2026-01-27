@@ -1,19 +1,22 @@
 import { useState } from "react";
-import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
-import ArticleScreen from "./pages/ArticleScreen";
-import HomeScreen from "./pages/HomeScreen";
-import MyPageScreen from "./pages/MyPageScreen";
-import NotificationsScreen from "./pages/NotificationsScreen";
-import SettingsScreen from "./pages/SettingsScreen";
-import { useArticleEntryParentInfo } from "./hooks/useArticleEntryParentInfo";
+import AppShell from "./templates/AppShell";
+import AppHeader from "./templates/Header/AppHeader";
+import AppSidebar from "./templates/Sidebar/AppSidebar";
+import ArticlesPage from "./pages/ArticlesPage";
+import HomePage from "./pages/HomePage";
+import MyPage from "./pages/MyPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import SettingsPage from "./pages/SettingsPage";
+import ManagerPage from "./pages/ManagerPage";
+import useArticleEntryParentInfo from "./features/articles/hooks/useArticleEntryParentInfo";
+import useSavedArticlesState from "@/features/articles/hooks/useSavedArticlesState";
 // 画面に必要なテストデータ（API未接続時の表示用）
-import navItems from "./data/mock/navItems.json";
-// App はスクロールや右カラムを持たず、ArticleScreen 内で完結させる
+import navItems from "@/shared/data/mock/navItems.json";
 
 function App() {
+  const savedArticles = useSavedArticlesState();
+
   // 現在選択されているタブ
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeNav, setActiveNav] = useState("記事");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { articleEntry, articleScreenKey, resetArticleEntry, openArticles, openArticlesWithFilter } =
@@ -24,16 +27,12 @@ function App() {
     team: "OPEN PARK",
     department: "プロダクト推進部",
     status: "オンライン",
-    icon: "👤",
+    icon: "/img/sampleimg.png",
     stats: {
       posts: 12,
       saved: 4,
       reactions: 28,
     },
-  };
-
-  const handleToggleLogin = () => {
-    setIsLoggedIn((prev) => !prev);
   };
 
   const handleNavChange = (nav) => {
@@ -55,68 +54,54 @@ function App() {
     setIsSidebarOpen(false);
   };
 
-  const handleOpenArticles = () => {
-    openArticles();
-  };
-
   const renderNavContent = () => {
     if (activeNav === "ホーム") {
-      return <HomeScreen onOpenArticles={openArticlesWithFilter} />;
+      return <HomePage onOpenArticles={openArticlesWithFilter} savedArticles={savedArticles} />;
     }
 
     if (activeNav === "通知") {
-      return <NotificationsScreen />;
+      return <NotificationsPage />;
+    }
+
+    if (activeNav === "管理画面") {
+      return <ManagerPage />;
     }
 
     if (activeNav === "マイページ") {
-      return <MyPageScreen onOpenSettings={handleOpenSettings} />;
+      return <MyPage onOpenSettings={handleOpenSettings} />;
     }
 
     if (activeNav === "設定") {
-      return <SettingsScreen />;
+      return <SettingsPage />;
     }
 
     return (
-      <ArticleScreen
+      <ArticlesPage
         key={articleScreenKey}
         initialFilterId={articleEntry.filterId}
-			  hideFilterUI={articleEntry.hideFilterUI}
-			  breadcrumbLabel={articleEntry.breadcrumbLabel}
-			  onNavigateHome={handleOpenHome}
+        hideFilterUI={articleEntry.hideFilterUI}
+        breadcrumbLabel={articleEntry.breadcrumbLabel}
+        onNavigateHome={handleOpenHome}
+        savedArticles={savedArticles}
       />
     );
   };
 
   return (
-    <div className="app">
-      <Header
-        user={user}
-        onMenuToggle={() => setIsSidebarOpen((prev) => !prev)}
-        isMenuOpen={isSidebarOpen}
-      />
-
-      {isSidebarOpen ? (
-        <button
-          type="button"
-          className="sidebar-overlay"
-          aria-label="メニューを閉じる"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      ) : null}
-
-      <div className={isSidebarOpen ? "sidebar-drawer is-open" : "sidebar-drawer"}>
-        <Sidebar
-          navItems={navItems}
-          activeNav={activeNav}
-          onNavChange={handleNavChange}
+    <AppShell
+      header={
+        <AppHeader
           user={user}
+          onMenuToggle={() => setIsSidebarOpen((prev) => !prev)}
+          isMenuOpen={isSidebarOpen}
         />
-      </div>
-
-      <div className="layout">
-        <main className="content">{renderNavContent()}</main>
-      </div>
-    </div>
+      }
+      sidebar={<AppSidebar navItems={navItems} activeNav={activeNav} onNavChange={handleNavChange} user={user} />}
+      isSidebarOpen={isSidebarOpen}
+      onOverlayClick={() => setIsSidebarOpen(false)}
+    >
+      {renderNavContent()}
+    </AppShell>
   );
 }
 

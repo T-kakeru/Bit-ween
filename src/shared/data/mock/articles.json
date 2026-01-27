@@ -1,0 +1,629 @@
+[
+  {
+    "id": 1,
+    "icon": "/img/sampleimg.png",
+    "title": "クロスメンター制度一区切り",
+    "tags": [
+      "経営",
+      "人事",
+      "組織"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/20",
+    "image": "city",
+    "summary": "クロスメンター制度の成果と学びを振り返り、次の制度改善に向けたポイントを整理します。",
+    "coverage": 72,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 2,
+    "icon": "/img/sampleimg.png",
+    "title": "coenが関わるクラファンは必ず成功させる",
+    "tags": [
+      "公園"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/20",
+    "image": "logo",
+    "summary": "支援が集まる設計を分解し、成功事例の共通点をチームで共有します。",
+    "coverage": 88,
+    "isRead": true,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 3,
+    "icon": "/img/sampleimg.png",
+    "title": "下北沢ワクワク企画「駅前広場の使い方」",
+    "tags": [
+      "公園"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/19",
+    "image": "street",
+    "summary": "駅前広場の活用アイデアを可視化し、検討プロセスを共有します。",
+    "coverage": 69,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 4,
+    "icon": "/img/sampleimg.png",
+    "title": "物事への執着心",
+    "tags": [
+      "経営",
+      "人事",
+      "組織"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/19",
+    "image": "mountain",
+    "summary": "意思決定の背景にある執着と学びを整理し、チーム文化に生かします。",
+    "coverage": 81,
+    "isRead": true,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 5,
+    "icon": "/img/sampleimg.png",
+    "title": "新規事業チームの立ち上げと小さな勝ち",
+    "tags": [
+      "Company"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/18",
+    "image": "work",
+    "summary": "立ち上げ初期のスモールウィンを積み上げるための型を整理します。",
+    "coverage": 76,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": true
+  },
+  {
+    "id": 6,
+    "icon": "/img/sampleimg.png",
+    "title": "OPEN PARKでの学びを共有する",
+    "tags": [
+      "MVV"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/18",
+    "image": "logo",
+    "summary": "学びを再現可能にするための共有フォーマットを提案します。",
+    "coverage": 90,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 7,
+    "icon": "/img/sampleimg.png",
+    "title": "週次レビューで見えたチーム改善点",
+    "tags": [
+      "経営",
+      "人事",
+      "組織"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/17",
+    "image": "city",
+    "summary": "週次レビューの振り返りから見えた改善アクションを整理します。",
+    "coverage": 67,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 8,
+    "icon": "/img/sampleimg.png",
+    "title": "小さな成功を積み上げるプロジェクト運営",
+    "tags": [
+      "プロジェクト"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/16",
+    "image": "street",
+    "summary": "プロジェクト運営における成功体験の再現性を高める工夫を共有します。",
+    "coverage": 84,
+    "isRead": true,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 9,
+    "icon": "/img/sampleimg.png",
+    "title": "意思決定のスピードを上げるための工夫",
+    "tags": [
+      "Company"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/15",
+    "image": "mountain",
+    "summary": "意思決定を加速するための情報整理と合意形成のポイントをまとめます。",
+    "coverage": 73,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": true
+  },
+  {
+    "id": 10,
+    "icon": "/img/sampleimg.png",
+    "title": "地域拠点と連携するための会議体設計",
+    "tags": [
+      "組織",
+      "コミュニケーション"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/14",
+    "image": "city",
+    "summary": "多拠点が自律的に動ける会議のフォーマットと、実地での振り返りルールを整理しました。",
+    "coverage": 66,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 11,
+    "icon": "/img/sampleimg.png",
+    "title": "ピアフィードバック文化を根づかせる仕掛け",
+    "tags": [
+      "人事",
+      "文化"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/14",
+    "image": "street",
+    "summary": "心理的安全性を高めるフィードバックデザインと、トレーニングプランを共有します。",
+    "coverage": 80,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 12,
+    "icon": "/img/sampleimg.png",
+    "title": "OPEN PARKのプロジェクトレビュー手順",
+    "tags": [
+      "プロジェクト",
+      "MVV"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/13",
+    "image": "logo",
+    "summary": "レビュー時に使うKPIと質疑リストをセットで整備し、チーム全体で公開しました。",
+    "coverage": 77,
+    "isRead": false,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 13,
+    "icon": "/img/sampleimg.png",
+    "title": "対話型チュートリアルの導入と効果測定",
+    "tags": [
+      "教育",
+      "プロジェクト"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/13",
+    "image": "work",
+    "summary": "プロジェクトにおける社内学習を、実務と繋げる双方向型チュートリアルで再設計しました。",
+    "coverage": 69,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 14,
+    "icon": "/img/sampleimg.png",
+    "title": "リーダーランチで聴いたチームの生声",
+    "tags": [
+      "組織",
+      "ワークショップ"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/12",
+    "image": "city",
+    "summary": "現場の要望を聞く場を定例化したところ、気づいた改善点と即行動した企画をまとめました。",
+    "coverage": 62,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": true
+  },
+  {
+    "id": 15,
+    "icon": "/img/sampleimg.png",
+    "title": "MVVを言語化するファシリテーション",
+    "tags": [
+      "MVV",
+      "経営"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/12",
+    "image": "mountain",
+    "summary": "組織全体で共有するMVVの言い回しを、簡潔な問いと事例で立ち上げました。",
+    "coverage": 88,
+    "isRead": true,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 16,
+    "icon": "/img/sampleimg.png",
+    "title": "ユーザーインサイトを取り入れた企画書テンプレ",
+    "tags": [
+      "プロダクト",
+      "調査"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/11",
+    "image": "street",
+    "summary": "ユーザーインタビューの発見をアウトプットしやすくするテンプレートと事後レビューをまとめました。",
+    "coverage": 70,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": true
+  },
+  {
+    "id": 17,
+    "icon": "/img/sampleimg.png",
+    "title": "チームの温度を可視化するサーベイ設計",
+    "tags": [
+      "組織",
+      "文化"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/10",
+    "image": "city",
+    "summary": "サーベイと即時フィードバックループを組み合わせて、チームの状態をリアルタイムに把握しています。",
+    "coverage": 65,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 18,
+    "icon": "/img/sampleimg.png",
+    "title": "OPEN PARKでの小さな勝ちを共有する文化",
+    "tags": [
+      "文化",
+      "MVV"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/10",
+    "image": "logo",
+    "summary": "成功事例をチーム間でマイクロストーリー化し、日次で共有する新しい習慣を定着させました。",
+    "coverage": 83,
+    "isRead": false,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 19,
+    "icon": "/img/sampleimg.png",
+    "title": "ナレッジ共有をサポートするグラフィックテンプレ",
+    "tags": [
+      "教育",
+      "組織"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/09",
+    "image": "work",
+    "summary": "学びを図解化するテンプレートと、投稿の仕方を社内に展開するためのガイドを作成しました。",
+    "coverage": 78,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 20,
+    "icon": "/img/sampleimg.png",
+    "title": "タスクの優先順位を共通化するワークシート",
+    "tags": [
+      "プロジェクト",
+      "経営"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/08",
+    "image": "street",
+    "summary": "成果の見える化と優先順位整理を一緒に行えるワークシートを共有し、日次確認の時間を短縮しました。",
+    "coverage": 71,
+    "isRead": false,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 21,
+    "icon": "/img/sampleimg.png",
+    "title": "README風のプロジェクトドキュメントガイド",
+    "tags": [
+      "ドキュメント",
+      "文化"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/08",
+    "image": "mountain",
+    "summary": "プロジェクトの履歴と重要な決定の理由を README 形式でまとめ、誰でも参照できる構造にしました。",
+    "coverage": 79,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": true
+  },
+  {
+    "id": 22,
+    "icon": "/img/sampleimg.png",
+    "title": "デザインレビューを価値観で繋ぐテンプレート",
+    "tags": [
+      "プロダクト",
+      "経営"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/07",
+    "image": "logo",
+    "summary": "デザインレビューの観点をMVVに結びつけるテンプレートを作り、レビュー参加者へ配布しました。",
+    "coverage": 72,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 23,
+    "icon": "/img/sampleimg.png",
+    "title": "ストーリーで伝えるプロジェクトの進捗",
+    "tags": [
+      "コミュニケーション",
+      "文化"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/06",
+    "image": "city",
+    "summary": "プロジェクト共有会で、データではなくストーリーで進捗を伝える試みの成果と改善点を記録。",
+    "coverage": 67,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 24,
+    "icon": "/img/sampleimg.png",
+    "title": "リモートチームへの参加ハンドブック",
+    "tags": [
+      "組織",
+      "プロジェクト"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/05",
+    "image": "street",
+    "summary": "遠隔メンバーのオンボーディングを円滑にするためのチェックリストを整備しました。",
+    "coverage": 74,
+    "isRead": false,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 25,
+    "icon": "/img/sampleimg.png",
+    "title": "データ駆動で会議を再設計する試み",
+    "tags": [
+      "プロジェクト",
+      "経営"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/05",
+    "image": "city",
+    "summary": "会議ログを分析して時間配分とアジェンダ構造を改善。テンプレートを全社に提供しました。",
+    "coverage": 84,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 26,
+    "icon": "/img/sampleimg.png",
+    "title": "部門間の共通語を揃えるカンバン設計",
+    "tags": [
+      "組織",
+      "プロジェクト"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/04",
+    "image": "mountain",
+    "summary": "部門によって意味がズレていたカンバン用語を定義し、実務サンプルを共有。",
+    "coverage": 68,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": true
+  },
+  {
+    "id": 27,
+    "icon": "/img/sampleimg.png",
+    "title": "OKRの振り返りを週次でやるテンプレ",
+    "tags": [
+      "経営",
+      "文化"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/04",
+    "image": "work",
+    "summary": "OKRの進捗と課題を週次で書き残すフォーマットとテンプレートを公開。",
+    "coverage": 82,
+    "isRead": true,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 28,
+    "icon": "/img/sampleimg.png",
+    "title": "ミーティングのログを公開する仕組み",
+    "tags": [
+      "コミュニケーション",
+      "組織"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/03",
+    "image": "street",
+    "summary": "オープンな会議ログを残し、出席者の発言と決定を誰でも参照できるようにしました。",
+    "coverage": 75,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 29,
+    "icon": "/img/sampleimg.png",
+    "title": "部門横断チームで共通言語を作る",
+    "tags": [
+      "組織",
+      "人事"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/03",
+    "image": "city",
+    "summary": "横断的な価値観を言語化し、それを接点として小さなワークショップを実施しました。",
+    "coverage": 69,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 30,
+    "icon": "/img/sampleimg.png",
+    "title": "成果の定義を揃えるテンプレート",
+    "tags": [
+      "プロジェクト",
+      "経営"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2026/01/02",
+    "image": "logo",
+    "summary": "T型人材を意識した成果定義テンプレートを整備し、成果の共有をスムースにしました。",
+    "coverage": 91,
+    "isRead": false,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 31,
+    "icon": "/img/sampleimg.png",
+    "title": "事例に学ぶ横串レビューの進め方",
+    "tags": [
+      "人事",
+      "文化"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2026/01/02",
+    "image": "mountain",
+    "summary": "他部門のレビューを観察し、共通の雰囲気と質問リストを整理しました。",
+    "coverage": 68,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": true
+  },
+  {
+    "id": 32,
+    "icon": "/img/sampleimg.png",
+    "title": "振返りをチームで回すカルチャーの仕組み",
+    "tags": [
+      "文化",
+      "組織"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2026/01/01",
+    "image": "work",
+    "summary": "毎週の振返りを回すルールと役割を作り、記録を記事として蓄積するよう変更しました。",
+    "coverage": 73,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 33,
+    "icon": "/img/sampleimg.png",
+    "title": "人材育成の成功事例カタログ",
+    "tags": [
+      "人事",
+      "教育"
+    ],
+    "author": "佐藤 三郎",
+    "authorRoleId": 3,
+    "date": "2025/12/31",
+    "image": "city",
+    "summary": "育成施策の結果を、形式化したカタログとして共有しやすい形に変えました。",
+    "coverage": 86,
+    "isRead": true,
+    "isPopular": true,
+    "isSaved": false
+  },
+  {
+    "id": 34,
+    "icon": "/img/sampleimg.png",
+    "title": "エンゲージメントを高める連絡文テンプレ",
+    "tags": [
+      "文化",
+      "経営"
+    ],
+    "author": "山田 一郎",
+    "authorRoleId": 1,
+    "date": "2025/12/30",
+    "image": "mountain",
+    "summary": "チームに伝える連絡文をMVVに基づいたトーンで整え、全社表示に任せた例をまとめました。",
+    "coverage": 64,
+    "isRead": true,
+    "isPopular": false,
+    "isSaved": false
+  },
+  {
+    "id": 35,
+    "icon": "/img/sampleimg.png",
+    "title": "年末の振返りで見つけた習慣",
+    "tags": [
+      "文化",
+      "プロジェクト"
+    ],
+    "author": "佐藤 次郎",
+    "authorRoleId": 2,
+    "date": "2025/12/30",
+    "image": "logo",
+    "summary": "習慣化したい行動をリスト化し、次年度に持ち越したいKPIと一緒に共有しています。",
+    "coverage": 70,
+    "isRead": false,
+    "isPopular": false,
+    "isSaved": true
+  }
+]
