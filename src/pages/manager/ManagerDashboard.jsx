@@ -10,8 +10,8 @@ import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";
 import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
-
-import EditableEmployeeTable from "@/pages/manager/EditableEmployeeTable";
+import EditableEmployeeTable from "@/features/retirement/components/organisms/EditableEmployeeTable";
+import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
 
 const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
@@ -19,6 +19,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows });
+  const [visibleRowsForCsv, setVisibleRowsForCsv] = useState(sortedRows);
 
   return (
     <section className="screen manager-screen">
@@ -38,9 +39,12 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           </Heading>
         </div>
 
-        <Button type="button" variant="outline" onClick={onAddOpen}>
-          新規登録
-        </Button>
+        <div className="flex items-center gap-2">
+          <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns?.map((c) => c.key)} />
+          <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
+            新規登録
+          </Button>
+        </div>
       </div>
 
       <Divider />
@@ -61,6 +65,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         onToggleFilter={() => setIsFilterOpen((prev) => !prev)}
         onSaveRows={saveRows}
         leadingContent={<EmployeeSearchPanel query={query} onChange={setQuery} />}
+        onVisibleRowsChange={(visible) => setVisibleRowsForCsv(visible)}
       />
 
       <TextCaption className="manager-footnote">

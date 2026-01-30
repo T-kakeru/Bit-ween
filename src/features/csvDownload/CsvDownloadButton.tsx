@@ -76,13 +76,7 @@ const CsvDownloadButton = ({
   className = "",
 }: CsvDownloadButtonProps) => {
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      className={`flex items-center gap-2 rounded-full border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-emerald-700 hover:bg-emerald-700 ${className}`}
-      onClick={() => downloadCsv(rows ?? [], fileName, columns)}
-    >
+    <Button type="button" variant="outline" size="md" className={`manager-action-button ${className}`} onClick={() => downloadCsv(rows ?? [], fileName, columns)}>
       <span className="inline-flex h-4 w-4 items-center justify-center" aria-hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

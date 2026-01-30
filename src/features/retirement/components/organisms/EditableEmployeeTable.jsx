@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import useEditableEmployeeTableSession from "@/features/retirement/hooks/useEditableEmployeeTableSession";
 import EditableEmployeeTableView from "@/features/retirement/components/views/EditableEmployeeTableView";
 
@@ -14,6 +15,7 @@ const EditableEmployeeTable = ({
   onToggleFilter,
   onSaveRows,
   leadingContent,
+  onVisibleRowsChange,
 }) => {
   const {
     isEditing,
@@ -30,6 +32,11 @@ const EditableEmployeeTable = ({
   } = useEditableEmployeeTableSession({ rows, columns, normalizeCell, onSaveRows });
 
   const visibleRows = isEditing ? draftRows : rows;
+
+  // notify parent about currently visible rows (filters/sort/editing applied)
+  useEffect(() => {
+    if (typeof onVisibleRowsChange === "function") onVisibleRowsChange(visibleRows);
+  }, [onVisibleRowsChange, visibleRows]);
 
   return (
     <EditableEmployeeTableView

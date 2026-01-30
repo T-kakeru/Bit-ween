@@ -13,7 +13,7 @@ const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel }) =
       <Button
         type="button"
         variant="outline"
-        className={isEditing ? "manager-edit-button is-editing" : "manager-edit-button"}
+        className={(isEditing ? "manager-edit-button is-editing" : "manager-edit-button") + " manager-action-button"}
         onClick={handleToggleEditing}
       >
         <span className="manager-edit-icon" aria-hidden="true">

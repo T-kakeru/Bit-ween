@@ -18,6 +18,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows });
+  const [visibleRowsForCsv, setVisibleRowsForCsv] = useState(sortedRows);
 
   return (
     <section className="screen manager-screen">
@@ -34,12 +35,8 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           <Heading level={1} className="manager-title">管理画面</Heading>
         </div>
         <div className="flex items-center gap-2">
-          <CsvDownloadButton rows={sortedRows} columns={columns.map(c => c.key)} />
-          <button
-            type="button"
-            onClick={onAddOpen}
-            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-          >
+          <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns.map(c => c.key)} />
+          <button type="button" onClick={onAddOpen} className="manager-action-button">
             新規登録
           </button>
         </div>
@@ -63,6 +60,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         onToggleFilter={() => setIsFilterOpen((prev) => !prev)}
         onSaveRows={saveRows}
         leadingContent={<EmployeeSearchPanel query={query} onChange={setQuery} />}
+        onVisibleRowsChange={(visible) => setVisibleRowsForCsv(visible)}
       />
 
       <TextCaption className="manager-footnote">

@@ -39,6 +39,13 @@ function App() {
     setActiveNav(nav);
     setIsSidebarOpen(false);
 
+    // dispatch a global navigation event so feature pages can react (e.g. reset internal UI)
+    try {
+      window.dispatchEvent(new CustomEvent("app:navigate", { detail: nav }));
+    } catch (e) {
+      // ignore in non-browser environments
+    }
+
     if (nav === "記事") {
       resetArticleEntry();
     }

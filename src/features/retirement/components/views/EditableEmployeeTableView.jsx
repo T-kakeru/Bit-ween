@@ -5,7 +5,7 @@ import { isCellChanged } from "@/features/retirement/logic/employeeEdit.logic";
 import Button from "@/shared/ui/Button";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 
-// EditableEmployeeTable の表示責務！Eiew�E�E
+// EditableEmployeeTable の表示責務！Eiew�E�E
 // - toolbar + table + confirm modal
 const EditableEmployeeTableView = ({
   // shared
@@ -61,7 +61,7 @@ const EditableEmployeeTableView = ({
           className={isFilterOpen ? "manager-filter-button is-open" : "manager-filter-button"}
           onClick={onToggleFilter}
         >
-          <span className="manager-filter-icon">⛁E/span>
+          <span className="manager-filter-icon">⛁</span>
           絞り込み
         </Button>
 

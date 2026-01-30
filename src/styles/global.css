@@ -238,15 +238,17 @@
 }
 
 .manager-th.is-sorted-asc {
-  background: #fff5f5;
-  border-bottom: 1px solid #f3b1b1;
-  color: #7f1d1d;
+  background: #ffe6e6; /* stronger pink */
+  border-bottom: 2px solid #ff8a8a;
+  color: #9b1c1c;
+  box-shadow: inset 0 -4px 0 rgba(255, 138, 138, 0.06);
 }
 
 .manager-th.is-sorted-desc {
-  background: #f2f7ff;
-  border-bottom: 1px solid #b6d0ff;
-  color: #1d4ed8;
+  background: #e6f0ff; /* stronger blue */
+  border-bottom: 2px solid #3b82f6;
+  color: #1e40af;
+  box-shadow: inset 0 -4px 0 rgba(59, 130, 246, 0.06);
 }
 
 .manager-sort-button {
@@ -275,6 +277,15 @@
 
 .manager-sort-button.is-sorted {
   font-weight: 900;
+  background: rgba(0,0,0,0.02);
+}
+
+/* Active sort indicator - make the sorted column's button more prominent */
+.manager-th.is-sorted-asc .manager-sort-button.is-sorted {
+  background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,230,230,0.6));
+}
+.manager-th.is-sorted-desc .manager-sort-button.is-sorted {
+  background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(230,240,255,0.6));
 }
 
 .manager-sort-icon {
@@ -386,6 +397,43 @@
 .manager-edit-button {
   min-width: 120px;
   justify-content: center;
+}
+/* Unified action button used for CSV / 新規 / 編集 */
+.manager-action-button {
+  min-width: 128px;
+  padding: 8px 16px;
+  border-radius: 9999px; /* pill */
+  background: #ffffff; /* white - default action appearance */
+  color: var(--color-text-contrast);
+  border: 1px solid #e5e7eb;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.manager-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  background: #eafaf0; /* hover -> light green */
+  color: #064e3b;
+  border-color: #cdeed3;
+}
+
+/* Edit-mode buttons: default white, hover -> slightly lighter green */
+.manager-edit-button {
+  /* base styles already set above in combined selector */
+  background: #ffffff;
+  color: var(--color-text-contrast);
+  border-color: #e5e7eb;
+}
+.manager-edit-button:hover {
+  background: #eafaf0;
+  color: #064e3b;
+  border-color: #cdeed3;
 }
 
 .manager-edit-icon {
