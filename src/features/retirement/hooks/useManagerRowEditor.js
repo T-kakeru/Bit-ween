@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { mergeEditedRows } from "@/features/manager/logic/managerRowEditor.logic";
+import { mergeEditedRows } from "@/features/retirement/logic/managerRowEditor.logic";
 
 // 編集結果を行データへ反映するためのフック
 const useManagerRowEditor = ({ columns, normalizeCell, setRows }) => {

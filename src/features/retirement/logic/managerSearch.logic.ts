@@ -1,4 +1,4 @@
-import type { ManagerRow } from "@/features/manager/types";
+import type { ManagerRow } from "@/features/retirement/types";
 
 export const applyManagerSearch = (
   rows: ManagerRow[] | null | undefined,

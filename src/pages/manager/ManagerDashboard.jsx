@@ -1,10 +1,10 @@
-import MetricCard from "@/features/manager/components/molecules/MetricCard";
-import EmployeeSearchPanel from "@/features/manager/components/organisms/EmployeeSearchPanel";
-import FloatingFilterPanel from "@/features/manager/components/organisms/FloatingFilterPanel";
-import useManagerFilters from "@/features/manager/hooks/useManagerFilters";
-import useManagerRowEditor from "@/features/manager/hooks/useManagerRowEditor";
-import useManagerSearch from "@/features/manager/hooks/useManagerSearch";
-import useManagerSort from "@/features/manager/hooks/useManagerSort";
+import MetricCard from "@/features/retirement/components/molecules/MetricCard";
+import EmployeeSearchPanel from "@/features/retirement/components/organisms/EmployeeSearchPanel";
+import FloatingFilterPanel from "@/features/retirement/components/organisms/FloatingFilterPanel";
+import useManagerFilters from "@/features/retirement/hooks/useManagerFilters";
+import useManagerRowEditor from "@/features/retirement/hooks/useManagerRowEditor";
+import useManagerSearch from "@/features/retirement/hooks/useManagerSearch";
+import useManagerSort from "@/features/retirement/hooks/useManagerSort";
 import { useState } from "react";
 import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";

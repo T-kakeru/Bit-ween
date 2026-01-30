@@ -1,9 +1,9 @@
-import useEditableEmployeeTableSession from "@/features/manager/hooks/useEditableEmployeeTableSession";
-import EditableEmployeeTableView from "@/features/manager/components/views/EditableEmployeeTableView";
+import useEditableEmployeeTableSession from "@/features/retirement/hooks/useEditableEmployeeTableSession";
+import EditableEmployeeTableView from "@/features/retirement/components/views/EditableEmployeeTableView";
 
-// 編集可能な社員テーブル（organism）
-// - stateはhookへ
-// - 表示はviewへ
+// 編集可能な社員テーブルの Organism
+// - state は hook 側で管理
+// - 表示は view 側へ委譲
 const EditableEmployeeTable = ({
   columns,
   rows,

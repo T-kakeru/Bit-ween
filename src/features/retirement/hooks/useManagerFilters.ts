@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { applyManagerFilters, DEFAULT_MANAGER_FILTERS } from "@/features/manager/logic/managerFilters.logic";
-import type { ManagerRow } from "@/features/manager/types";
+import { applyManagerFilters, DEFAULT_MANAGER_FILTERS } from "@/features/retirement/logic/managerFilters.logic";
+import type { ManagerRow } from "@/features/retirement/types";
 
 const useManagerFilters = (rows: ManagerRow[]) => {
   const [filters, setFilters] = useState<any>(DEFAULT_MANAGER_FILTERS);

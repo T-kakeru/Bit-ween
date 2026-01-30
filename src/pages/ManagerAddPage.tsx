@@ -1,1 +1,1 @@
-export { default } from "@/features/manager/components/organisms/ManagerAddPage";
+export { default } from "@/features/addRetirement/components/organisms/ManagerAddPage";

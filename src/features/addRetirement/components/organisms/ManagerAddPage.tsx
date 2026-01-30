@@ -3,9 +3,9 @@ import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";
 import Button from "@/shared/ui/Button";
 
-import useManagerAddForm from "@/features/manager/hooks/useManagerAddForm";
-import type { ManagerColumn, ManagerRowInput } from "@/features/manager/hooks/useManagerAddForm";
-import useManagerAddOptionLists from "@/features/manager/hooks/useManagerAddOptionLists";
+import useManagerAddForm from "@/features/addRetirement/hooks/useManagerAddForm";
+import type { ManagerColumn, ManagerRowInput } from "@/features/addRetirement/hooks/useManagerAddForm";
+import useManagerAddOptionLists from "@/features/addRetirement/hooks/useManagerAddOptionLists";
 
 import {
 	FieldText,
@@ -13,7 +13,8 @@ import {
 	FieldNumber,
 	FieldChipGroup,
 	FieldCombobox,
-} from "@/features/manager/components/molecules/ManagerAddField";
+} from "@/features/addRetirement/components/molecules";
+
 
 type Props = {
 	columns: ManagerColumn[];

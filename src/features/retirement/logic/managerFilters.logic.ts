@@ -1,5 +1,5 @@
-import { parseSlashDateToMs } from "@/features/manager/logic/dateParsers";
-import type { ManagerRow } from "@/features/manager/types";
+import { parseSlashDateToMs } from "@/features/retirement/logic/dateParsers";
+import type { ManagerRow } from "@/features/retirement/types";
 
 export const DEFAULT_MANAGER_FILTERS: any = {
   ageBands: {

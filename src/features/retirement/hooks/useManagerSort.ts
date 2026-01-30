@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { compareManagerRows } from "@/features/manager/logic/managerSort.logic";
-import type { ManagerColumn, ManagerRow } from "@/features/manager/types";
+import { compareManagerRows } from "@/features/retirement/logic/managerSort.logic";
+import type { ManagerColumn, ManagerRow } from "@/features/retirement/types";
 
 const useManagerSort = (
   rows: ManagerRow[],

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   buildPendingChanges,
   buildRowMapById,
-} from "@/features/manager/logic/employeeEdit.logic";
+} from "@/features/retirement/logic/employeeEdit.logic";
 
 // EditableEmployeeTable の編集セッションを管理（状態管理の責務）
 const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveRows }) => {
@@ -15,7 +15,7 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
 
   const originalRowMap = useMemo(() => buildRowMapById(rows), [rows]);
 
-  // 編集モードでないときは常に最新のrowsへ同期
+  // 編集モードでない時は常に最新の rows へ同期
   useEffect(() => {
     if (!isEditing) {
       setDraftRows((rows ?? []).map((row) => ({ ...row })));

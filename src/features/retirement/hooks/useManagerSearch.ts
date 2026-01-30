@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { applyManagerSearch } from "@/features/manager/logic/managerSearch.logic";
-import type { ManagerRow } from "@/features/manager/types";
+import { applyManagerSearch } from "@/features/retirement/logic/managerSearch.logic";
+import type { ManagerRow } from "@/features/retirement/types";
 
-// 社員検索（名前 or ID）
+// 社員検索�E�名剁Eor ID�E�E
 const useManagerSearch = (rows: ManagerRow[]) => {
   const [query, setQuery] = useState<string>("");
 

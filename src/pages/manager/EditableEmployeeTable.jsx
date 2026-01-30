@@ -1,4 +1,4 @@
-import useEditableEmployeeTableSession from "@/features/manager/hooks/useEditableEmployeeTableSession";
+import useEditableEmployeeTableSession from "@/features/retirement/hooks/useEditableEmployeeTableSession";
 import EditableEmployeeTableView from "@/pages/manager/EditableEmployeeTableView";
 
 // 編集可能な社員テーブル（pages 配下の組み立て）

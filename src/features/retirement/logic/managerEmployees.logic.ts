@@ -1,6 +1,6 @@
-// 社員一覧の整形（純ロジック）
+// 社員一覧の整形用ロジック
 
-import type { ManagerColumn, ManagerRow } from "@/features/manager/types";
+import type { ManagerColumn, ManagerRow } from "@/features/retirement/types";
 
 export const normalizeEmployeeCell = (value: any): string => {
   if (value == null) return "-";
@@ -23,7 +23,7 @@ export const buildManagerEmployeeRows = ({ employees, columns }: { employees: an
     });
 };
 
-// 年数を計算するユーティリティ例
+// 年数を計算するユーティリティ関数
 export const computeManagerMetrics = (rows: ManagerRow[] | null | undefined): any => {
   const total = (rows ?? []).length;
   const resigned = (rows ?? []).filter((r) => r["退職日"] !== "-").length;

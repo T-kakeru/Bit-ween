@@ -1,15 +1,16 @@
-import MetricCard from "@/features/manager/components/molecules/MetricCard";
-import EditableEmployeeTable from "@/features/manager/components/organisms/EditableEmployeeTable";
-import EmployeeSearchPanel from "@/features/manager/components/organisms/EmployeeSearchPanel";
-import FloatingFilterPanel from "@/features/manager/components/organisms/FloatingFilterPanel";
-import useManagerFilters from "@/features/manager/hooks/useManagerFilters";
-import useManagerRowEditor from "@/features/manager/hooks/useManagerRowEditor";
-import useManagerSearch from "@/features/manager/hooks/useManagerSearch";
-import useManagerSort from "@/features/manager/hooks/useManagerSort";
+import MetricCard from "@/features/retirement/components/molecules/MetricCard";
+import EditableEmployeeTable from "@/features/retirement/components/organisms/EditableEmployeeTable";
+import EmployeeSearchPanel from "@/features/retirement/components/organisms/EmployeeSearchPanel";
+import FloatingFilterPanel from "@/features/retirement/components/organisms/FloatingFilterPanel";
+import useManagerFilters from "@/features/retirement/hooks/useManagerFilters";
+import useManagerRowEditor from "@/features/retirement/hooks/useManagerRowEditor";
+import useManagerSearch from "@/features/retirement/hooks/useManagerSearch";
+import useManagerSort from "@/features/retirement/hooks/useManagerSort";
 import { useState } from "react";
 import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";
 import TextCaption from "@/shared/ui/TextCaption";
+import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
 
 const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
@@ -32,13 +33,16 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         <div>
           <Heading level={1} className="manager-title">管理画面</Heading>
         </div>
-        <button
-          type="button"
-          onClick={onAddOpen}
-          className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-        >
-          新規登録
-        </button>
+        <div className="flex items-center gap-2">
+          <CsvDownloadButton rows={sortedRows} columns={columns.map(c => c.key)} />
+          <button
+            type="button"
+            onClick={onAddOpen}
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          >
+            新規登録
+          </button>
+        </div>
       </div>
 
       <Divider />

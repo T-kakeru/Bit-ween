@@ -1,7 +1,7 @@
-import EditableCellField from "@/features/manager/components/molecules/EditableCellField";
-import EditModeControls from "@/features/manager/components/molecules/EditModeControls";
-import ConfirmChangesModal from "@/features/manager/components/molecules/ConfirmChangesModal";
-import { isCellChanged } from "@/features/manager/logic/employeeEdit.logic";
+import EditableCellField from "@/features/retirement/components/molecules/EditableCellField";
+import EditModeControls from "@/features/retirement/components/molecules/EditModeControls";
+import ConfirmChangesModal from "@/features/retirement/components/molecules/ConfirmChangesModal";
+import { isCellChanged } from "@/features/retirement/logic/employeeEdit.logic";
 import Button from "@/shared/ui/Button";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 

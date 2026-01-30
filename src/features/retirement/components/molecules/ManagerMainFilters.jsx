@@ -1,8 +1,8 @@
-import FilterCheckbox from "@/features/manager/components/molecules/FilterCheckbox";
+import FilterCheckbox from "@/features/retirement/components/molecules/FilterCheckbox";
 import Button from "@/shared/ui/Button";
 
-// 絞り込み（メインタブ）
-// - UIだけを担当（状態は親から受け取る）
+// 絞り込みメインタブ
+// - UIだけを担う（状態は親から受け取る）
 const ManagerMainFilters = ({ filters, onToggleGroup, onReset }) => {
   return (
     <div className="manager-filter-grid">
@@ -41,17 +41,17 @@ const ManagerMainFilters = ({ filters, onToggleGroup, onReset }) => {
         <div className="manager-filter-section-title">在籍期間</div>
         <div className="manager-filter-options">
           <FilterCheckbox
-            label="半年未満（初期離職リスク）"
+            label="半年未満（短期離職リスク）"
             checked={filters.tenureBands.under6}
             onChange={() => onToggleGroup("tenureBands", "under6")}
           />
           <FilterCheckbox
-            label="半年〜3年（中堅・定着）"
+            label="半年〜3年（中期定着）"
             checked={filters.tenureBands.between6And36}
             onChange={() => onToggleGroup("tenureBands", "between6And36")}
           />
           <FilterCheckbox
-            label="3年以上（ベテラン）"
+            label="3年以上（長期在籍）"
             checked={filters.tenureBands.over36}
             onChange={() => onToggleGroup("tenureBands", "over36")}
           />

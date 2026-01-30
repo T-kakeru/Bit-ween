@@ -1,6 +1,6 @@
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
-import ManagerAddPage from "@/pages/ManagerAddPage.tsx";
-import useManagerEmployees from "@/features/manager/hooks/useManagerEmployees";
+import ManagerAddPage from "@/pages/ManagerAddPage";
+import useManagerEmployees from "@/features/retirement/hooks/useManagerEmployees";
 import useManagerPageController from "@/pages/manager/useManagerPageController";
 
 // pages: 画面全体の責務（配線/遷移）だけを持ち、表示は features 側へ寄せる

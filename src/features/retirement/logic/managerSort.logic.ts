@@ -1,5 +1,5 @@
-import { parseJapaneseMonthToMs, parseSlashDateToMs } from "@/features/manager/logic/dateParsers";
-import type { ManagerColumn, ManagerRow } from "@/features/manager/types";
+import { parseJapaneseMonthToMs, parseSlashDateToMs } from "@/features/retirement/logic/dateParsers";
+import type { ManagerColumn, ManagerRow } from "@/features/retirement/types";
 
 const getSortValue = (row: ManagerRow | null | undefined, column: ManagerColumn | null | undefined): any => {
   if (!row || !column) return null;
