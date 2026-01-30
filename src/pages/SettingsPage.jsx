@@ -1,6 +1,12 @@
 import { useMemo, useState } from "react";
 import settingsData from "@/shared/data/mock/settings.json";
 import ProfileEditPage from "./ProfileEditPage";
+import Heading from "@/shared/ui/Heading";
+import Divider from "@/shared/ui/Divider";
+import Card from "@/shared/ui/Card";
+import Button from "@/shared/ui/Button";
+import Input from "@/shared/ui/Input";
+import TextCaption from "@/shared/ui/TextCaption";
 
 // pages: 画面単位の状態（画面遷移/表示分岐）を統合する
 const SettingsPage = () => {
@@ -53,56 +59,53 @@ const SettingsPage = () => {
 
   return (
     <section className="screen settings-screen">
-      <div className="content-header">
-        <div>
-          <h1 className="title">設定</h1>
-        </div>
-      </div>
+      <Heading level={1}>設定</Heading>
+      <Divider />
 
-      <section className="card-panel settings-hero">
+      <Card className="settings-hero">
         <div className="settings-hero-row">
           <div>
             <p className="settings-hero-name">{heroName}</p>
-            <p className="muted">{heroSubtitle}</p>
+            <TextCaption>{heroSubtitle}</TextCaption>
           </div>
-          <button type="button" className="primary-button" onClick={() => setView("profile")}> 
+          <Button type="button" variant="primary" onClick={() => setView("profile")}>
             プロフィールを確認・編集
-          </button>
+          </Button>
         </div>
-      </section>
+      </Card>
 
       <div className="settings-section-head">
-        <h2 className="title">オファーに関する設定</h2>
+        <Heading level={2}>オファーに関する設定</Heading>
         <a className="settings-link" href="#" onClick={(e) => e.preventDefault()}>
           詳細
         </a>
       </div>
 
-      <section className="card-panel settings-panel">
+      <Card className="settings-panel">
         <div className="settings-row">
           <div>
             <p className="settings-title">スカウトを受け取る</p>
-            <p className="muted">他社からのスカウトを受け取ります。</p>
+            <TextCaption>他社からのスカウトを受け取ります。</TextCaption>
           </div>
           <label className="switch">
-            <input type="checkbox" checked={settings.offer.receiveOffers} onChange={toggle("offer.receiveOffers")} />
+            <Input type="checkbox" checked={settings.offer.receiveOffers} onChange={toggle("offer.receiveOffers")} />
             <span className="switch-slider" />
           </label>
         </div>
         <div className="settings-row">
           <div>
             <p className="settings-title">ダイレクトオファーを受け取る</p>
-            <p className="muted">より精度の高いオファーを受け取ります。</p>
+            <TextCaption>より精度の高いオファーを受け取ります。</TextCaption>
           </div>
           <label className="switch">
-            <input type="checkbox" checked={settings.offer.receiveDirectOffers} onChange={toggle("offer.receiveDirectOffers")} />
+            <Input type="checkbox" checked={settings.offer.receiveDirectOffers} onChange={toggle("offer.receiveDirectOffers")} />
             <span className="switch-slider" />
           </label>
         </div>
         <div className="settings-row">
           <div>
             <p className="settings-title">ブロック企業</p>
-            <p className="muted">ブロック中の企業はオファーが届きません。</p>
+            <TextCaption>ブロック中の企業はオファーが届きません。</TextCaption>
           </div>
           <div className="tag-list">
             {settings.offer.blockedCompanies.map((company) => (
@@ -110,30 +113,30 @@ const SettingsPage = () => {
             ))}
           </div>
         </div>
-      </section>
+      </Card>
 
       <div className="settings-section-head">
-        <h2 className="title">通知設定</h2>
+        <Heading level={2}>通知設定</Heading>
       </div>
 
-      <section className="card-panel settings-panel">
+      <Card className="settings-panel">
         <div className="settings-row">
           <div>
             <p className="settings-title">新着記事</p>
-            <p className="muted">新しい記事が公開されたら通知します。</p>
+            <TextCaption>新しい記事が公開されたら通知します。</TextCaption>
           </div>
           <label className="switch">
-            <input type="checkbox" checked={settings.delivery.newPosts} onChange={toggle("delivery.newPosts")} />
+            <Input type="checkbox" checked={settings.delivery.newPosts} onChange={toggle("delivery.newPosts")} />
             <span className="switch-slider" />
           </label>
         </div>
         <div className="settings-row">
           <div>
             <p className="settings-title">おすすめ記事</p>
-            <p className="muted">あなた向けの記事をおすすめします。</p>
+            <TextCaption>あなた向けの記事をおすすめします。</TextCaption>
           </div>
           <label className="switch">
-            <input
+            <Input
               type="checkbox"
               checked={settings.delivery.recommendedPosts}
               onChange={toggle("delivery.recommendedPosts")}
@@ -144,14 +147,14 @@ const SettingsPage = () => {
         <div className="settings-row">
           <div>
             <p className="settings-title">週間ダイジェスト</p>
-            <p className="muted">週の人気記事をまとめてお知らせします。</p>
+            <TextCaption>週の人気記事をまとめてお知らせします。</TextCaption>
           </div>
           <label className="switch">
-            <input type="checkbox" checked={settings.delivery.weeklyDigest} onChange={toggle("delivery.weeklyDigest")} />
+            <Input type="checkbox" checked={settings.delivery.weeklyDigest} onChange={toggle("delivery.weeklyDigest")} />
             <span className="switch-slider" />
           </label>
         </div>
-      </section>
+      </Card>
     </section>
   );
 };

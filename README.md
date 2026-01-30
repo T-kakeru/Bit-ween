@@ -26,3 +26,6 @@ npm create vite@latest new_project -- --template react
 cd new_project
 npm install
 npm run dev
+
+# システムを使うにあたって
+IEですとタイウィンドCSSが誤動作（画面が白くなるなど）する可能性あり

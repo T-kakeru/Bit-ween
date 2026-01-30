@@ -1,0 +1,16 @@
+.root {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-link);
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  transition: var(--transition-smooth);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import Heading from "@/shared/ui/Heading";
+import Divider from "@/shared/ui/Divider";
+import Card from "@/shared/ui/Card";
+import Button from "@/shared/ui/Button";
+import TextCaption from "@/shared/ui/TextCaption";
+import Badge from "@/shared/ui/Badge";
 
 // pages: 画面単位の状態（フィルタ/既読など）を統合する
 
@@ -36,68 +42,52 @@ const NotificationsPage = () => {
   );
 
   return (
-    <div style={{ padding: 16 }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
-        <h2 style={{ margin: 0 }}>お知らせ</h2>
-        <span style={{ color: "#666" }}>未読 {unreadCount}</span>
+    <section className="screen notifications-screen">
+      <div className="notifications-header">
+        <Heading level={1}>お知らせ</Heading>
+        <TextCaption as="span">未読 {unreadCount}</TextCaption>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        <button
+      <Divider />
+
+      <div className="notifications-tabs">
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => setActiveTab("all")}
           aria-pressed={activeTab === "all"}
         >
           すべて
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => setActiveTab("unread")}
           aria-pressed={activeTab === "unread"}
         >
           未読のみ
-        </button>
+        </Button>
       </div>
 
-      <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+      <div className="notifications-list">
         {filtered.length === 0 ? (
-          <p style={{ color: "#666" }}>該当するお知らせはありません。</p>
+          <TextCaption>該当するお知らせはありません。</TextCaption>
         ) : (
           filtered.map((n) => (
-            <div
-              key={n.id}
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
-                padding: 12,
-                background: n.isRead ? "#fff" : "#f8fafc",
-              }}
-            >
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <Card key={n.id} className="notification-card">
+              <div className="notification-title-row">
                 <strong>{n.title}</strong>
-                {!n.isRead && (
-                  <span
-                    style={{
-                      fontSize: 12,
-                      padding: "2px 8px",
-                      borderRadius: 999,
-                      background: "#111827",
-                      color: "#fff",
-                    }}
-                  >
-                    NEW
-                  </span>
-                )}
+                {!n.isRead && <Badge variant="danger">NEW</Badge>}
               </div>
-              <p style={{ margin: "6px 0 0", color: "#555" }}>{n.body}</p>
-              <div style={{ marginTop: 8, color: "#888", fontSize: 12 }}>
-                type: {n.type}
-              </div>
-            </div>
+              <TextCaption>{n.body}</TextCaption>
+              <TextCaption className="notification-meta">type: {n.type}</TextCaption>
+            </Card>
           ))
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

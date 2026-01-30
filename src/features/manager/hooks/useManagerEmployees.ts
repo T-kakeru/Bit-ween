@@ -1,7 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import employees from "@/shared/data/mock/retirement.json";
+import {
+  buildManagerEmployeeRows,
+  computeManagerMetrics,
+  normalizeEmployeeCell,
+} from "@/features/manager/logic/managerEmployees.logic";
+import type { ManagerColumn, ManagerRow } from "@/features/manager/types";
 
-const COLUMNS = [
+const COLUMNS: ManagerColumn[] = [
   { key: "退職月", label: "退職月", type: "date" },
   { key: "名前", label: "名前", type: "string" },
   { key: "入社日", label: "入社", type: "date" },
@@ -17,43 +23,21 @@ const COLUMNS = [
   { key: "経歴point", label: "経歴point", type: "number" },
 ];
 
-const normalizeCell = (value) => {
-  if (value == null) return "-";
-  if (typeof value === "string" && value.trim() === "") return "-";
-  return String(value);
-};
-
 const useManagerEmployees = () => {
-  const rows = useMemo(() => {
-    const list = Array.isArray(employees) ? employees : [];
-    return list
-      .slice()
-      .sort((a, b) => Number(a?.id ?? 0) - Number(b?.id ?? 0))
-      .map((emp) => {
-        const normalized = { id: emp?.id };
-        for (const col of COLUMNS) {
-          normalized[col.key] = normalizeCell(emp?.[col.key]);
-        }
-        return normalized;
-      });
-  }, []);
+  const employeeList = employees as any;
+  const [rows, setRows] = useState<ManagerRow[]>(() =>
+    buildManagerEmployeeRows({ employees: employeeList, columns: COLUMNS })
+  );
 
-  const metrics = useMemo(() => {
-    const total = rows.length;
-    const resigned = rows.filter((r) => r["退職日"] !== "-").length;
-    return {
-      total,
-      resigned,
-      active: total - resigned,
-    };
-  }, [rows]);
+  const metrics = useMemo(() => computeManagerMetrics(rows), [rows]);
 
   return useMemo(
     () => ({
       columns: COLUMNS,
       rows,
+      setRows,
       metrics,
-      normalizeCell,
+      normalizeCell: normalizeEmployeeCell,
     }),
     [metrics, rows]
   );

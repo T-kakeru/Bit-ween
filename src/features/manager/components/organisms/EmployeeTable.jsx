@@ -1,3 +1,6 @@
+import Button from "@/shared/ui/Button";
+import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
+
 const EmployeeTable = ({ columns, rows, normalizeCell, sort, onSort }) => {
   const getSortIcon = (key) => {
     if (!sort || sort.key !== key) return null;
@@ -17,14 +20,16 @@ const EmployeeTable = ({ columns, rows, normalizeCell, sort, onSort }) => {
   };
 
   return (
-    <div className="manager-table-wrap" role="region" aria-label="社員一覧">
-      <table className="manager-table">
+    <TableContainer className="manager-table-wrap" role="region" aria-label="社員一覧">
+      <Table className="manager-table">
         <thead>
           <tr>
             {columns.map((c) => (
-              <th key={c.key} scope="col" aria-sort={getAriaSort(c.key)} className={getHeaderClass(c.key)}>
-                <button
+              <Th key={c.key} scope="col" aria-sort={getAriaSort(c.key)} className={getHeaderClass(c.key)}>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   className={sort?.key === c.key && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
                   onClick={() => onSort(c.key)}
                 >
@@ -34,8 +39,8 @@ const EmployeeTable = ({ columns, rows, normalizeCell, sort, onSort }) => {
                       {getSortIcon(c.key)}
                     </span>
                   ) : null}
-                </button>
-              </th>
+                </Button>
+              </Th>
             ))}
           </tr>
         </thead>
@@ -43,13 +48,13 @@ const EmployeeTable = ({ columns, rows, normalizeCell, sort, onSort }) => {
           {rows.map((row) => (
             <tr key={String(row.id)}>
               {columns.map((c) => (
-                <td key={`${row.id}-${c.key}`}>{normalizeCell(row[c.key])}</td>
+                <Td key={`${row.id}-${c.key}`}>{normalizeCell(row[c.key])}</Td>
               ))}
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+      </Table>
+    </TableContainer>
   );
 };
 

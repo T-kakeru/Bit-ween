@@ -1,16 +1,22 @@
 import MetricCard from "@/features/manager/components/molecules/MetricCard";
-import EmployeeTable from "@/features/manager/components/organisms/EmployeeTable";
+import EditableEmployeeTable from "@/features/manager/components/organisms/EditableEmployeeTable";
+import EmployeeSearchPanel from "@/features/manager/components/organisms/EmployeeSearchPanel";
 import FloatingFilterPanel from "@/features/manager/components/organisms/FloatingFilterPanel";
-import useManagerEmployees from "@/features/manager/hooks/useManagerEmployees";
 import useManagerFilters from "@/features/manager/hooks/useManagerFilters";
+import useManagerRowEditor from "@/features/manager/hooks/useManagerRowEditor";
+import useManagerSearch from "@/features/manager/hooks/useManagerSearch";
 import useManagerSort from "@/features/manager/hooks/useManagerSort";
 import { useState } from "react";
+import Heading from "@/shared/ui/Heading";
+import Divider from "@/shared/ui/Divider";
+import TextCaption from "@/shared/ui/TextCaption";
 
-const ManagerDashboard = () => {
-  const { columns, rows, metrics, normalizeCell } = useManagerEmployees();
-  const { filters, filteredRows, toggleGroup, updateDetail, resetFilters } = useManagerFilters(rows);
+const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
+  const { query, setQuery, searchedRows } = useManagerSearch(rows);
+  const { filters, filteredRows, toggleGroup, updateDetail, resetFilters } = useManagerFilters(searchedRows);
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows });
 
   return (
     <section className="screen manager-screen">
@@ -24,10 +30,18 @@ const ManagerDashboard = () => {
       />
       <div className="manager-header">
         <div>
-          <h1 className="title manager-title">管理画面</h1>
-          <p className="muted">現職・退職者をまとめて一覧表示（モック: .json）</p>
+          <Heading level={1} className="manager-title">管理画面</Heading>
         </div>
+        <button
+          type="button"
+          onClick={onAddOpen}
+          className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+        >
+          新規登録
+        </button>
       </div>
+
+      <Divider />
 
       <div className="manager-metrics">
         <MetricCard label="総人数" value={metrics.total} />
@@ -35,28 +49,21 @@ const ManagerDashboard = () => {
         <MetricCard label="退職" value={metrics.resigned} />
       </div>
 
-      <div className="manager-table-toolbar">
-        <button
-          type="button"
-          className={isFilterOpen ? "manager-filter-button is-open" : "manager-filter-button"}
-          onClick={() => setIsFilterOpen((prev) => !prev)}
-        >
-          <span className="manager-filter-icon">⛅</span>
-          絞り込み
-        </button>
-      </div>
-
-      <EmployeeTable
+      <EditableEmployeeTable
         columns={columns}
         rows={sortedRows}
         normalizeCell={normalizeCell}
         sort={sort}
         onSort={toggleSort}
+        isFilterOpen={isFilterOpen}
+        onToggleFilter={() => setIsFilterOpen((prev) => !prev)}
+        onSaveRows={saveRows}
+        leadingContent={<EmployeeSearchPanel query={query} onChange={setQuery} />}
       />
 
-      <p className="muted manager-footnote">
+      <TextCaption className="manager-footnote">
         ここは土台（表示）に集中：次ステップで絞り込み・並び替え・ページングを追加します。
-      </p>
+      </TextCaption>
     </section>
   );
 };

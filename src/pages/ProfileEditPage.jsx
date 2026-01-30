@@ -1,4 +1,11 @@
 import { useMemo, useState } from "react";
+import Heading from "@/shared/ui/Heading";
+import Divider from "@/shared/ui/Divider";
+import Card from "@/shared/ui/Card";
+import Button from "@/shared/ui/Button";
+import Input from "@/shared/ui/Input";
+import Select from "@/shared/ui/Select";
+import TextCaption from "@/shared/ui/TextCaption";
 
 // プロフィール編集（マイページから遷移する想定）
 const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
@@ -74,52 +81,54 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
     <section className="screen profile-edit-screen">
       <header className="content-header profile-edit-header">
         <div>
-          <h1 className="title">プロフィール編集</h1>
-          <p className="muted">名前と基本情報、自己紹介を編集できます。</p>
+          <Heading level={1}>プロフィール編集</Heading>
+          <TextCaption>名前と基本情報、自己紹介を編集できます。</TextCaption>
         </div>
         <div className="profile-edit-actions">
-          <button type="button" className="pill-button" onClick={handleCancel}>
+          <Button type="button" variant="outline" onClick={handleCancel}>
             キャンセル
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             form="profile-edit-form"
-            className="primary-button"
+            variant="primary"
             disabled={!isDirty}
           >
             保存
-          </button>
+          </Button>
         </div>
       </header>
 
-      <form id="profile-edit-form" className="card-panel profile-edit-form" onSubmit={handleSubmit}>
+      <Divider />
+
+      <Card as="form" id="profile-edit-form" className="profile-edit-form" onSubmit={handleSubmit}>
         <div className="form-row">
           <label className="form-label">名前</label>
-          <input type="text" value={form.name} onChange={handleChange("name")} />
+          <Input type="text" value={form.name} onChange={handleChange("name")} />
         </div>
         <div className="form-row">
           <label className="form-label">部署</label>
-          <input type="text" value={form.department} onChange={handleChange("department")} />
+          <Input type="text" value={form.department} onChange={handleChange("department")} />
         </div>
         <div className="form-row">
           <label className="form-label">役割</label>
-          <input type="text" value={form.role} onChange={handleChange("role")} />
+          <Input type="text" value={form.role} onChange={handleChange("role")} />
         </div>
         <div className="form-row">
           <label className="form-label">チーム</label>
-          <input type="text" value={form.team} onChange={handleChange("team")} />
+          <Input type="text" value={form.team} onChange={handleChange("team")} />
         </div>
         <div className="form-row">
           <label className="form-label">ステータス</label>
-          <select value={form.status} onChange={handleChange("status")}>
+          <Select value={form.status} onChange={handleChange("status")}>
             {['オンライン', 'オフライン', '取り込み中'].map((status) => (
               <option key={status} value={status}>{status}</option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="form-row">
           <label className="form-label">プロフィール画像</label>
-          <input type="file" accept="image/*" onChange={handleAvatarFile} />
+          <Input type="file" accept="image/*" onChange={handleAvatarFile} />
           {form.avatar ? (
             <img src={form.avatar} alt="プロフィール" className="avatar-preview" />
           ) : null}
@@ -128,7 +137,7 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
           <label className="form-label">自己紹介</label>
           <textarea rows={4} value={form.bio} onChange={handleChange("bio")} />
         </div>
-      </form>
+      </Card>
     </section>
   );
 };

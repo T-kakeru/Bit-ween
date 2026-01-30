@@ -1,0 +1,127 @@
+:root {
+  /* Color (legacy) */
+  --primary: #2f8f7f;
+  --danger: #ef4444;
+  --success: #34d399;
+  --gray-light: #e5e7eb;
+  --gray-dark: #1f2933;
+  --bg-main: #f3f7f5;
+
+  /* Color (tokens) */
+  --color-white: #ffffff;
+  --color-surface: #ffffff;
+  --color-bg-base: #f3f7f5;
+  --color-bg-subtle: #f8fafc;
+  --color-bg-soft: #eef2f7;
+  --color-bg-chip: #f3f4f6;
+  --color-border: #e5e7eb;
+  --color-border-strong: #e6e8ec;
+  --color-border-subtle: #e3e8e6;
+  --color-border-soft: rgba(15, 23, 42, 0.06);
+  --color-text-main: #1f2933;
+  --color-text-strong: #0f172a;
+  --color-text-contrast: #111827;
+  --color-text-sub: #94a3b8;
+  --color-text-muted: #6b7280;
+  --color-text-muted-2: #667085;
+  --color-brand: #0873d7;
+  --color-link: #2b74ff;
+  --color-info: #2563eb;
+  --color-warn-bg: #fef3c7;
+  --color-accent-soft: #dbeafe;
+  --color-success-strong: #0f766e;
+
+  /* Spacing */
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-24: 24px;
+
+  /* Spacing (legacy) */
+  --space-sm: var(--space-8);
+  --space-md: var(--space-16);
+  --space-lg: var(--space-24);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+
+  /* Typography */
+  --font-base: "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+
+  /* Token aliases to legacy names */
+  --color-primary: var(--primary);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-gray-light: var(--gray-light);
+  --color-gray-dark: var(--gray-dark);
+
+  /* Shadows / Alpha tokens */
+  --shadow-primary: rgba(47, 143, 127, 0.2);
+  --shadow-danger: rgba(239, 68, 68, 0.2);
+  --shadow-elevate: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-card-hover: 0 16px 36px rgba(15, 23, 42, 0.12);
+
+  /* Motion */
+  --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Heading tokens */
+  --heading-line-height: 1.3;
+  --heading-weight: 800;
+  --heading-margin-bottom: var(--space-md);
+
+  /* Badge tokens */
+  --badge-primary-bg: rgba(47, 143, 127, 0.12);
+  --badge-success-bg: rgba(52, 211, 153, 0.18);
+  --badge-danger-bg: rgba(239, 68, 68, 0.16);
+  --badge-neutral-bg: var(--color-bg-chip);
+}
+
+/* Normalize / Base Typography */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-text-main);
+  background: var(--color-bg-base);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

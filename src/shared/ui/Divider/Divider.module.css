@@ -1,0 +1,7 @@
+.root {
+  border: none;
+  height: 1px;
+  width: 100%;
+  background: var(--color-border);
+  margin: var(--space-md) 0;
+}

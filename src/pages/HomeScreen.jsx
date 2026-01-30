@@ -6,6 +6,11 @@ import {
   FilteredArticleCarouselSection,
 } from "../features/articles/components/Article/ArticleCarousel";
 import { applyArticleFilter } from "../features/articles/domain/articleFilters";
+import Heading from "@/shared/ui/Heading";
+import Divider from "@/shared/ui/Divider";
+import Card from "@/shared/ui/Card";
+import Button from "@/shared/ui/Button";
+import TextCaption from "@/shared/ui/TextCaption";
 
 const HomeScreen = ({ onOpenArticles }) => {
   const [rating, setRating] = useState(0);
@@ -44,18 +49,16 @@ const HomeScreen = ({ onOpenArticles }) => {
 
   return (
     <>
-      <header className="content-header">
-        <div>
-          <h1 className="title">ホーム</h1>
-        </div>
-      </header>
       <section className="screen home-screen">
+        <Heading level={1}>ホーム</Heading>
+        <Divider />
 
         <section className="home-top-grid" aria-label="ダッシュボード">
-          <section className="card-panel home-square-card home-shortcuts-card" aria-label="クイックショートカット">
+          <Card className="home-square-card home-shortcuts-card" aria-label="クイックショートカット">
             <div className="home-square-main home-shortcuts-list">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 className="home-shortcut-item"
                 onClick={() =>
                   onOpenArticles?.({
@@ -71,10 +74,11 @@ const HomeScreen = ({ onOpenArticles }) => {
                   <span className="home-shortcut-count">{thisWeekCount}</span>
                   <span className="home-shortcut-arrow" aria-hidden="true">→</span>
                 </span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 className="home-shortcut-item"
                 onClick={() =>
                   onOpenArticles?.({
@@ -90,10 +94,11 @@ const HomeScreen = ({ onOpenArticles }) => {
                   <span className="home-shortcut-count">{importantCount}</span>
                   <span className="home-shortcut-arrow" aria-hidden="true">→</span>
                 </span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 className="home-shortcut-item"
                 onClick={() =>
                   onOpenArticles?.({
@@ -109,36 +114,36 @@ const HomeScreen = ({ onOpenArticles }) => {
                   <span className="home-shortcut-count">{readingCount}</span>
                   <span className="home-shortcut-arrow" aria-hidden="true">→</span>
                 </span>
-              </button>
+              </Button>
             </div>
-          </section>
+          </Card>
 
-          <section className="card-panel home-square-card home-metrics-card" aria-label="自分の記事閲覧">
+          <Card className="home-square-card home-metrics-card" aria-label="自分の記事閲覧">
             <div className="home-square-head">
-              <h2 className="title">自分の記事閲覧</h2>
+              <Heading level={2}>自分の記事閲覧</Heading>
             </div>
             <div className="home-square-main">
               <div className="home-metrics-grid">
                 <div>
                   <p className="home-metrics-number">{metrics.readRate}%</p>
-                  <p className="muted">既読率</p>
+                  <TextCaption>既読率</TextCaption>
                 </div>
                 <div>
                   <p className="home-metrics-number">{metrics.unreadCount}</p>
-                  <p className="muted">未読</p>
+                  <TextCaption>未読</TextCaption>
                 </div>
                 <div>
                   <p className="home-metrics-number">{metrics.streakDays}日</p>
-                  <p className="muted">連続</p>
+                  <TextCaption>連続</TextCaption>
                 </div>
               </div>
             </div>
-          </section>
+          </Card>
 
-          <section className="card-panel home-square-card home-survey" aria-label="アンケート">
+          <Card className="home-square-card home-survey" aria-label="アンケート">
             <div className="home-square-head">
               <div>
-                <h2 className="title">アンケート</h2>
+                <Heading level={2}>アンケート</Heading>
               </div>
               {surveyCompleted ? <span className="home-survey-done">完了</span> : null}
             </div>
@@ -146,23 +151,25 @@ const HomeScreen = ({ onOpenArticles }) => {
             <div className="home-square-main">
               <div className="home-survey-stars" role="group" aria-label="評価">
                 {[1, 2, 3, 4, 5].map((value) => (
-                  <button
+                  <Button
                     key={value}
                     type="button"
+                    variant="outline"
                     className={value <= rating ? "home-star is-active" : "home-star"}
                     onClick={() => setRating(value)}
                     aria-label={`${value}つ星を付ける`}
                   >
                     ★
-                  </button>
+                  </Button>
                 ))}
               </div>
 
               <div className="home-survey-list" aria-label="おすすめの記事">
                 {topRecommendations.map((article, index) => (
-                  <button
+                  <Button
                     key={article.id}
                     type="button"
+                    variant="outline"
                     className={
                       selectedRecommendation === article.id
                         ? "home-survey-item is-selected"
@@ -173,9 +180,9 @@ const HomeScreen = ({ onOpenArticles }) => {
                     <span className="home-survey-rank">{index + 1}</span>
                     <div className="home-survey-info">
                       <p className="home-survey-title">{article.title}</p>
-                      <span className="muted small">{article.author} ・ {article.date}</span>
+                      <TextCaption as="span" className="small">{article.author} ・ {article.date}</TextCaption>
                     </div>
-                  </button>
+                  </Button>
                 ))}
               </div>
 
@@ -183,7 +190,7 @@ const HomeScreen = ({ onOpenArticles }) => {
                 <p className="home-survey-thanks">ご協力いただきありがとうございます！</p>
               ) : null}
             </div>
-          </section>
+          </Card>
         </section>
 
 

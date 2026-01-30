@@ -1,6 +1,12 @@
 import { useMemo, useState } from "react";
 import mypageData from "@/shared/data/mock/mypage.json";
 import Icon from "@/shared/ui/Icon";
+import Heading from "@/shared/ui/Heading";
+import Divider from "@/shared/ui/Divider";
+import Card from "@/shared/ui/Card";
+import Button from "@/shared/ui/Button";
+import TextCaption from "@/shared/ui/TextCaption";
+import Avatar from "@/shared/ui/Avatar";
 
 const viewIds = {
   HOME: "home",
@@ -35,90 +41,96 @@ const MyPage = ({ onOpenSettings }) => {
     <section className="screen mypage-screen">
       <div className="content-header mypage-header">
         <div>
-          <h1 className="title">マイページ</h1>
+          <Heading level={1}>マイページ</Heading>
         </div>
       </div>
 
+      <Divider />
+
       {view === viewIds.HOME ? (
         <div className="mypage-grid">
-          <section className="card-panel mypage-card">
+          <Card className="mypage-card">
             <div className="mypage-card-head">
               <div className="profile-row">
-                <Icon className="avatar avatar-xl" name={profile.avatar} alt="" />
+                {profile.avatar ? (
+                  <Icon className="avatar avatar-xl" name={profile.avatar} alt="" />
+                ) : (
+                  <Avatar className="avatar avatar-xl" name={profile.name} />
+                )}
                 <div>
                   <p className="profile-name">{profile.name}</p>
-                  <p className="muted">{profile.role} / {profile.team}</p>
+                  <TextCaption>{profile.role} / {profile.team}</TextCaption>
                   <span className={profile.status === "オフライン" ? "status-chip offline" : "status-chip"}>
                     {profile.status}
                   </span>
                 </div>
               </div>
               <div className="mypage-card-actions">
-                <button type="button" className="pill-button" onClick={onOpenSettings}>
+                <Button type="button" variant="outline" onClick={onOpenSettings}>
                   編集
-                </button>
-                <button type="button" className="pill-button" onClick={() => setView(viewIds.NOTIFICATIONS)}>
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setView(viewIds.NOTIFICATIONS)}>
                   通知
-                </button>
+                </Button>
               </div>
             </div>
 
-            <p className="muted">{profile.bio}</p>
+            <TextCaption>{profile.bio}</TextCaption>
 
             <div className="profile-coverage" aria-label="プロフィール充実度">
               <div className="profile-coverage-meta">
-                <span className="muted">プロフィール充実度</span>
+                <TextCaption as="span">プロフィール充実度</TextCaption>
                 <span className="profile-coverage-val">{completeness}%</span>
               </div>
               <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={completeness}>
                 <div className="progress-fill" style={{ width: `${completeness}%` }} />
               </div>
               {completeness < 80 ? (
-                <p className="muted small">部署・役割・ひとことを埋めると、マッチングやおすすめ精度が上がります。</p>
+                <TextCaption className="small">部署・役割・ひとことを埋めると、マッチングやおすすめ精度が上がります。</TextCaption>
               ) : null}
             </div>
-          </section>
+          </Card>
 
-          <section className="card-panel mypage-card">
+          <Card className="mypage-card">
             <div className="card-head">
-              <h2 className="title">スタッツ</h2>
+              <Heading level={2}>スタッツ</Heading>
             </div>
             <div className="mypage-stats">
               <div>
                 <p className="mypage-stat-number">{stats.read}</p>
-                <p className="muted small">既読</p>
+                <TextCaption className="small">既読</TextCaption>
               </div>
               <div>
                 <p className="mypage-stat-number">{stats.saved}</p>
-                <p className="muted small">保存</p>
+                <TextCaption className="small">保存</TextCaption>
               </div>
               <div>
                 <p className="mypage-stat-number">{stats.reactions}</p>
-                <p className="muted small">リアクション</p>
+                <TextCaption className="small">リアクション</TextCaption>
               </div>
               <div>
                 <p className="mypage-stat-number">{stats.thanks}</p>
-                <p className="muted small">感謝</p>
+                <TextCaption className="small">感謝</TextCaption>
               </div>
             </div>
-          </section>
+          </Card>
 
-          <section className="card-panel mypage-card">
+          <Card className="mypage-card">
             <div className="card-head">
-              <h2 className="title">エンゲージメント</h2>
+              <Heading level={2}>エンゲージメント</Heading>
             </div>
             <div className="mypage-engagement">
               <div>
                 <p className="mypage-stat-number">{engagement.score}</p>
-                <p className="muted small">スコア</p>
+                <TextCaption className="small">スコア</TextCaption>
               </div>
               <div>
                 <p className="mypage-stat-number">{engagement.weeklyReactions}</p>
-                <p className="muted small">今週のリアクション</p>
+                <TextCaption className="small">今週のリアクション</TextCaption>
               </div>
               <div>
                 <p className="mypage-stat-number">{engagement.streakDays}日</p>
-                <p className="muted small">連続アクション</p>
+                <TextCaption className="small">連続アクション</TextCaption>
               </div>
             </div>
             <div className="tag-list">
@@ -126,55 +138,55 @@ const MyPage = ({ onOpenSettings }) => {
                 <span key={tag} className="tag-chip">#{tag}</span>
               ))}
             </div>
-          </section>
+          </Card>
 
-          <section className="card-panel mypage-card">
+          <Card className="mypage-card">
             <div className="card-head">
-              <h2 className="title">最近の活動</h2>
-              <button type="button" className="pill-button" onClick={() => setView(viewIds.ACTIVITY)}>
+              <Heading level={2}>最近の活動</Heading>
+              <Button type="button" variant="outline" onClick={() => setView(viewIds.ACTIVITY)}>
                 一覧
-              </button>
+              </Button>
             </div>
             <ul className="mypage-list">
               {recentActivities.map((activity) => (
                 <li key={activity.id} className="mypage-list-item">
                   <p>{activity.title}</p>
-                  <span className="muted small">{activity.meta}</span>
+                  <TextCaption as="span" className="small">{activity.meta}</TextCaption>
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
 
-          <section className="card-panel mypage-card">
+          <Card className="mypage-card">
             <div className="card-head">
-              <h2 className="title">感謝されたこと</h2>
-              <button type="button" className="pill-button" onClick={() => setView(viewIds.THANKS)}>
+              <Heading level={2}>感謝されたこと</Heading>
+              <Button type="button" variant="outline" onClick={() => setView(viewIds.THANKS)}>
                 一覧
-              </button>
+              </Button>
             </div>
             <ul className="mypage-list">
               {thanksHistory.map((item) => (
                 <li key={item.id} className="mypage-list-item">
                   <p>{item.message}</p>
-                  <span className="muted small">{item.to} ・ {item.date}</span>
+                  <TextCaption as="span" className="small">{item.to} ・ {item.date}</TextCaption>
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
         </div>
       ) : null}
 
       {view === viewIds.ACTIVITY ? (
         <section className="mypage-section">
-          <button type="button" className="pill-button" onClick={() => setView(viewIds.HOME)}>
+          <Button type="button" variant="outline" onClick={() => setView(viewIds.HOME)}>
             戻る
-          </button>
-          <h2 className="title">最近の活動</h2>
+          </Button>
+          <Heading level={2}>最近の活動</Heading>
           <ul className="mypage-list">
             {recentActivities.map((activity) => (
               <li key={activity.id} className="mypage-list-item">
                 <p>{activity.title}</p>
-                <span className="muted small">{activity.meta}</span>
+                <TextCaption as="span" className="small">{activity.meta}</TextCaption>
               </li>
             ))}
           </ul>
@@ -183,15 +195,15 @@ const MyPage = ({ onOpenSettings }) => {
 
       {view === viewIds.THANKS ? (
         <section className="mypage-section">
-          <button type="button" className="pill-button" onClick={() => setView(viewIds.HOME)}>
+          <Button type="button" variant="outline" onClick={() => setView(viewIds.HOME)}>
             戻る
-          </button>
-          <h2 className="title">感謝されたこと</h2>
+          </Button>
+          <Heading level={2}>感謝されたこと</Heading>
           <ul className="mypage-list">
             {thanksHistory.map((item) => (
               <li key={item.id} className="mypage-list-item">
                 <p>{item.message}</p>
-                <span className="muted small">{item.to} ・ {item.date}</span>
+                <TextCaption as="span" className="small">{item.to} ・ {item.date}</TextCaption>
               </li>
             ))}
           </ul>
@@ -200,11 +212,11 @@ const MyPage = ({ onOpenSettings }) => {
 
       {view === viewIds.NOTIFICATIONS ? (
         <section className="mypage-section">
-          <button type="button" className="pill-button" onClick={() => setView(viewIds.HOME)}>
+          <Button type="button" variant="outline" onClick={() => setView(viewIds.HOME)}>
             戻る
-          </button>
-          <h2 className="title">通知</h2>
-          <p className="muted">通知は準備中です。</p>
+          </Button>
+          <Heading level={2}>通知</Heading>
+          <TextCaption>通知は準備中です。</TextCaption>
         </section>
       ) : null}
     </section>

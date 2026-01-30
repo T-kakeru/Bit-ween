@@ -1,0 +1,21 @@
+.root {
+  width: 100%;
+  padding: var(--space-10) var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-main);
+  transition: var(--transition-smooth);
+}
+
+.root:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--shadow-primary), var(--shadow-elevate);
+  transform: translateY(-1px);
+}
+
+.error {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px var(--shadow-danger);
+}

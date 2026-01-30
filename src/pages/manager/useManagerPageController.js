@@ -1,0 +1,60 @@
+import { useCallback, useState } from "react";
+
+const DATE_KEYS = new Set(["生年月日", "入社日", "退職日"]);
+
+const toSlashDate = (value) => {
+  if (!value) return "";
+  return String(value).replaceAll("-", "/");
+};
+
+const buildNewRowFromInput = ({ columns, rows, input, normalizeCell }) => {
+  const maxId = (rows ?? []).reduce((acc, row) => {
+    const num = Number(row?.id ?? 0);
+    return Number.isFinite(num) ? Math.max(acc, num) : acc;
+  }, 0);
+
+  const base = { id: maxId + 1 };
+  for (const col of columns ?? []) {
+    let value = input?.[col.key] ?? "";
+    if (DATE_KEYS.has(col.key)) {
+      value = toSlashDate(value);
+    }
+    base[col.key] = normalizeCell(value);
+  }
+
+  return base;
+};
+
+/**
+ * ManagerPage の「画面切替 + 新規追加保存」のロジックをまとめた controller。
+ */
+const useManagerPageController = ({ columns, rows, setRows, normalizeCell }) => {
+  const [isAddOpen, setIsAddOpen] = useState(false);
+
+  const openAdd = useCallback(() => setIsAddOpen(true), []);
+  const closeAdd = useCallback(() => setIsAddOpen(false), []);
+
+  const buildNewRow = useCallback(
+    (input) => buildNewRowFromInput({ columns, rows, input, normalizeCell }),
+    [columns, rows, normalizeCell]
+  );
+
+  const handleSave = useCallback(
+    (input) => {
+      const newRow = buildNewRow(input);
+      setRows((prev) => [...prev, newRow]);
+      closeAdd();
+    },
+    [buildNewRow, closeAdd, setRows]
+  );
+
+  return {
+    isAddOpen,
+    openAdd,
+    closeAdd,
+    buildNewRow,
+    handleSave,
+  };
+};
+
+export default useManagerPageController;

@@ -1,0 +1,9 @@
+.root {
+  cursor: pointer;
+  color: inherit;
+  transition: var(--transition-smooth);
+}
+
+.root:hover {
+  color: var(--color-text-strong);
+}

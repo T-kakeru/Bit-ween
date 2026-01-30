@@ -1,0 +1,52 @@
+import { useCallback, useMemo, useState } from "react";
+import { applyManagerFilters, DEFAULT_MANAGER_FILTERS } from "@/features/manager/logic/managerFilters.logic";
+import type { ManagerRow } from "@/features/manager/types";
+
+const useManagerFilters = (rows: ManagerRow[]) => {
+  const [filters, setFilters] = useState<any>(DEFAULT_MANAGER_FILTERS);
+
+  const toggleGroup = useCallback((groupKey: string, optionKey: string) => {
+    setFilters((prev: any) => {
+      const group = prev?.[groupKey] ?? {};
+      const current = Boolean(group?.[optionKey]);
+      return {
+        ...prev,
+        [groupKey]: {
+          ...group,
+          [optionKey]: !current,
+        },
+      };
+    });
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setFilters(DEFAULT_MANAGER_FILTERS);
+  }, []);
+
+  const updateDetail = useCallback((key: string, value: string) => {
+    setFilters((prev: any) => ({
+      ...prev,
+      detail: {
+        ...prev.detail,
+        [key]: value,
+      },
+    }));
+  }, []);
+
+  const filteredRows = useMemo(() => {
+    return applyManagerFilters(rows, filters);
+  }, [filters, rows]);
+
+  return useMemo(
+    () => ({
+      filters,
+      filteredRows,
+      toggleGroup,
+      updateDetail,
+      resetFilters,
+    }),
+    [filters, filteredRows, resetFilters, toggleGroup, updateDetail]
+  );
+};
+
+export default useManagerFilters;
