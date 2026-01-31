@@ -10,7 +10,7 @@ const ArticleDetailPage = ({ article, onBack, isSaved, toggleSaved }) => {
   if (!article) {
     return (
       <section className="screen article-detail-screen">
-        <Heading level={1}>記事</Heading>
+        <Heading level={2}>記事</Heading>
         <TextCaption>記事が見つかりませんでした。</TextCaption>
         <Divider />
         <Button type="button" variant="outline" onClick={onBack}>

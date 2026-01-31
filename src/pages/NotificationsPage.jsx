@@ -44,11 +44,8 @@ const NotificationsPage = () => {
   return (
     <section className="screen notifications-screen">
       <div className="notifications-header">
-        <Heading level={1}>お知らせ</Heading>
-        <TextCaption as="span">未読 {unreadCount}</TextCaption>
+        <Heading level={2} className="title" aria-hidden="true" />
       </div>
-
-      <Divider />
 
       <div className="notifications-tabs">
         <Button

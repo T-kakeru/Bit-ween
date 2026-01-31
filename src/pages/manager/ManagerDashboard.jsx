@@ -34,9 +34,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
 
       <div className="manager-header">
         <div>
-          <Heading level={1} className="manager-title">
-            管理画面
-          </Heading>
+            <Heading level={2} className="manager-title" aria-hidden="true" />
         </div>
 
         <div className="flex items-center gap-2">
@@ -46,9 +44,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           </Button>
         </div>
       </div>
-
-      <Divider />
-
+      
       <div className="manager-metrics">
         <MetricCard label="総人数" value={metrics.total} />
         <MetricCard label="現職" value={metrics.active} />

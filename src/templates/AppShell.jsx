@@ -1,5 +1,7 @@
 // サイドバーメニューレスポンシブ対応のためのオーバーレイ追加
-const AppShell = ({ header, sidebar, children, isSidebarOpen, onOverlayClick }) => {
+import PageTitle from "@/shared/ui/PageTitle/PageTitle";
+
+const AppShell = ({ header, sidebar, children, isSidebarOpen, onOverlayClick, pageTitle }) => {
   return (
     <div className="app">
       {header}
@@ -16,7 +18,10 @@ const AppShell = ({ header, sidebar, children, isSidebarOpen, onOverlayClick }) 
       <div className={isSidebarOpen ? "sidebar-drawer is-open" : "sidebar-drawer"}>{sidebar}</div>
 
       <div className="layout">
-        <main className="content">{children}</main>
+        <main className="content">
+          <PageTitle title={pageTitle} />
+          {children}
+        </main>
       </div>
     </div>
   );

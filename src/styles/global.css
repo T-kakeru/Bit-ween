@@ -130,7 +130,9 @@
   margin: 14px auto 0;
 }
 
-/* Admin/Manager: gray-based theme (ページ内だけ雰囲気を切り替える) */
+/* Admin/Manager: core layout and components (restored) */
+/* These styles scope the admin/manager screens and provide a neutral card/table
+   appearance that matches the rest of the app while keeping layout stable. */
 .admin-screen,
 .manager-screen {
   width: 100%;
@@ -145,6 +147,7 @@
 .admin-title,
 .manager-title {
   color: var(--color-text-contrast);
+  font-weight: 900;
 }
 
 .admin-header,
@@ -164,40 +167,13 @@
   margin-bottom: 14px;
 }
 
-.admin-card,
-.manager-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 14px 14px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
-}
-
-.admin-card-label,
-.manager-card-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #6b7280;
-  letter-spacing: 0.02em;
-}
-
-.admin-card-value,
-.manager-card-value {
-  margin-top: 6px;
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--color-text-contrast);
-}
-
-.admin-table-wrap {
+/* Table wrappers and base table styles for admin/manager views */
+.admin-table-wrap,
+.manager-table-wrap {
   background: #ffffff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   overflow: auto;
-  max-height: calc(100vh - 260px);
-}
-
-.manager-table-wrap {
   max-height: calc(100vh - 260px);
 }
 
@@ -233,9 +209,87 @@
   padding: 0;
 }
 
-.manager-th {
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+.manager-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 10px;
 }
+
+.manager-search-panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: var(--color-text-contrast);
+  font-weight: 800;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.manager-search-input {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  outline: none;
+  min-width: 180px;
+  font-size: 13px;
+  color: var(--color-text-strong);
+  width: auto;
+  flex: 1 1 auto;
+}
+
+.manager-table-area {
+  display: grid;
+  gap: 6px;
+}
+
+.manager-filter-button {
+  display: inline-flex;
+  align-items: center;
+}
+
+.manager-filter-button {
+  width: 120px;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-card,
+.manager-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px 14px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.admin-card-label,
+.manager-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+}
+
+.admin-card-value,
+.manager-card-value {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--color-text-contrast);
+}
+
+/* admin-table / .manager-table styles removed per request. */
+/* Table styles for admin/manager were removed to simplify admin UI. If needed,
+   reintroduce targeted rules instead of global admin-specific styles. */
 
 .manager-th.is-sorted-asc {
   background: #ffe6e6; /* stronger pink */
@@ -293,76 +347,8 @@
   color: #6b7280;
 }
 
-.manager-table-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 10px 0 10px;
-}
-
-.manager-search-panel {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: var(--color-text-contrast);
-  font-weight: 800;
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
-}
-
-.manager-search-input {
-  /* shared/ui/Input のデフォルト装飾を無効化（外枠サイズを絞り込みと揃える） */
-  padding: 0 !important;
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
-
-  outline: none;
-  min-width: 180px;
-  font-size: 13px;
-  color: var(--color-text-strong);
-  width: auto;
-  flex: 1 1 auto;
-}
-
-.manager-search-panel .manager-search-input:focus {
-  outline: none;
-  box-shadow: none !important;
-  transform: none !important;
-  border-radius: 0 !important;
-}
-
-.manager-search-input::placeholder {
-  color: #94a3b8;
-}
-
-.manager-table-area {
-  display: grid;
-  gap: 6px;
-}
-
-.manager-filter-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: var(--color-text-contrast);
-  font-weight: 800;
-  cursor: pointer;
-  width: 120px;
-  justify-content: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
+/* manager table toolbar and related search styles removed per request.
+  Orphaned property block removed. */
 
 .manager-filter-button:hover {
   transform: translateY(-1px);
@@ -567,14 +553,8 @@
   color: var(--color-text-contrast);
 }
 
-.manager-table.is-editing tbody td {
-  background: var(--color-bg-subtle);
-}
-
-.manager-table tbody td.is-changed {
-  background: #f8d9e6;
-  box-shadow: inset 0 0 0 1px rgba(236, 72, 153, 0.28);
-}
+/* manager-table edit-state styles removed per request. */
+/* Removed .manager-table editing/change highlight styles. */
 
 .manager-modal-overlay {
   position: fixed;
@@ -790,23 +770,9 @@
   cursor: pointer;
 }
 
-.admin-table tbody tr:nth-child(even) td,
-.manager-table tbody tr:nth-child(even) td {
-  background: #fafafa;
-}
-
-.admin-footnote,
-.manager-footnote {
-  margin-top: 10px;
-  font-size: 12px;
-}
-
-@media (max-width: 900px) {
-  .admin-metrics,
-  .manager-metrics {
-    grid-template-columns: 1fr;
-  }
-}
+/* admin/manager row striping and footnote styles removed per request.
+  Removed alternating row background and footnote styles for admin/manager tables.
+  Also removed the related responsive metric rules. */
 
 .articles-section {
   display: grid;
@@ -2784,9 +2750,9 @@
 .breadcrumb {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #9aa3af;
-  font-size: 12px;
+  gap: 10px;
+  color: #64748b; /* neutral slate */
+  font-size: 14px;
 }
 
 .breadcrumb-item {
@@ -2795,27 +2761,33 @@
   gap: 8px;
 }
 
+/* previous items: pill-like button to emphasize navigation */
 .breadcrumb-link {
-  border: none;
-  background: transparent;
-  color: #9aa3af;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d1fae5;
+  background: #ffffff;
+  color: #065f46; /* emerald-700 */
+  padding: 6px 10px;
+  border-radius: 9999px;
   cursor: pointer;
-  padding: 2px 0;
-  font-size: 12px;
+  font-weight: 700;
 }
 
 .breadcrumb-link:hover {
-  color: #64748b;
-  text-decoration: underline;
+  background: #eafaf0; /* light green hover */
+  border-color: #cdeed3;
 }
 
 .breadcrumb-sep {
-  color: #c0c7d1;
+  color: #cbd5e1;
+  font-weight: 600;
 }
 
 .breadcrumb-current {
-  color: #9aa3af;
-  font-weight: 600;
+  color: #064e3b; /* darker green for current */
+  font-weight: 800;
 }
 
 .detail-hero {
@@ -3148,4 +3120,11 @@
   .cards {
     grid-template-columns: 1fr;
   }
+}
+
+/* Hide per-page header titles inside the main content header to avoid duplicate-looking titles
+   when the global PageTitle (H1) is present. This hides only the top header title, not
+   other section headings inside pages. */
+.content > .content-header .title {
+  display: none;
 }

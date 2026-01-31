@@ -81,7 +81,7 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
     <section className="screen profile-edit-screen">
       <header className="content-header profile-edit-header">
         <div>
-          <Heading level={1}>プロフィール編集</Heading>
+          <Heading level={2}>プロフィール編集</Heading>
           <TextCaption>名前と基本情報、自己紹介を編集できます。</TextCaption>
         </div>
         <div className="profile-edit-actions">

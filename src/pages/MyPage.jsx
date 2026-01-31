@@ -41,11 +41,9 @@ const MyPage = ({ onOpenSettings }) => {
     <section className="screen mypage-screen">
       <div className="content-header mypage-header">
         <div>
-          <Heading level={1}>マイページ</Heading>
+          <Heading level={2} className="title" aria-hidden="true" />
         </div>
       </div>
-
-      <Divider />
 
       {view === viewIds.HOME ? (
         <div className="mypage-grid">

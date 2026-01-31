@@ -59,9 +59,6 @@ const SettingsPage = () => {
 
   return (
     <section className="screen settings-screen">
-      <Heading level={1}>設定</Heading>
-      <Divider />
-
       <Card className="settings-hero">
         <div className="settings-hero-row">
           <div>
@@ -74,43 +71,55 @@ const SettingsPage = () => {
         </div>
       </Card>
 
+      {/* オファー設定は削除されました（項目ごと削除の要望により）。 */}
+
       <div className="settings-section-head">
-        <Heading level={2}>オファーに関する設定</Heading>
+        <Heading level={2}>退職者情報管理</Heading>
         <a className="settings-link" href="#" onClick={(e) => e.preventDefault()}>
-          詳細
+          管理
         </a>
       </div>
 
       <Card className="settings-panel">
         <div className="settings-row">
           <div>
-            <p className="settings-title">スカウトを受け取る</p>
-            <TextCaption>他社からのスカウトを受け取ります。</TextCaption>
+            <p className="settings-title">ステータス候補の削除</p>
+            <TextCaption>システムに登録されたステータス候補を削除します。</TextCaption>
           </div>
-          <label className="switch">
-            <Input type="checkbox" checked={settings.offer.receiveOffers} onChange={toggle("offer.receiveOffers")} />
-            <span className="switch-slider" />
-          </label>
+          <div>
+            <Button type="button" variant="outline">候補を削除</Button>
+          </div>
         </div>
+
         <div className="settings-row">
           <div>
-            <p className="settings-title">ダイレクトオファーを受け取る</p>
-            <TextCaption>より精度の高いオファーを受け取ります。</TextCaption>
+            <p className="settings-title">当時のクライアント候補の削除</p>
+            <TextCaption>過去に選択されたクライアント名の候補を削除します。</TextCaption>
           </div>
-          <label className="switch">
-            <Input type="checkbox" checked={settings.offer.receiveDirectOffers} onChange={toggle("offer.receiveDirectOffers")} />
-            <span className="switch-slider" />
-          </label>
+          <div>
+            <Button type="button" variant="outline">候補を削除</Button>
+          </div>
         </div>
+
         <div className="settings-row">
           <div>
-            <p className="settings-title">ブロック企業</p>
-            <TextCaption>ブロック中の企業はオファーが届きません。</TextCaption>
+            <p className="settings-title">退職理由の候補の削除</p>
+            <TextCaption>退職理由の候補リストからアイテムを削除します。</TextCaption>
           </div>
-          <div className="tag-list">
-            {settings.offer.blockedCompanies.map((company) => (
-              <span key={company} className="tag-chip">{company}</span>
-            ))}
+          <div>
+            <Button type="button" variant="outline">候補を削除</Button>
+          </div>
+        </div>
+
+        <div className="settings-row">
+          <div>
+            <p className="settings-title">各カラムの表示・非表示</p>
+            <TextCaption>テーブル列の表示／非表示設定（昨日は未実装です）。</TextCaption>
+          </div>
+          <div>
+            <Button type="button" variant="outline" disabled>
+              未実装
+            </Button>
           </div>
         </div>
       </Card>

@@ -106,6 +106,7 @@ function App() {
       sidebar={<AppSidebar navItems={navItems} activeNav={activeNav} onNavChange={handleNavChange} user={user} />}
       isSidebarOpen={isSidebarOpen}
       onOverlayClick={() => setIsSidebarOpen(false)}
+      pageTitle={activeNav}
     >
       {renderNavContent()}
     </AppShell>

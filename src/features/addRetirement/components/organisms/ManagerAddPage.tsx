@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";
 import Button from "@/shared/ui/Button";
+import Breadcrumb from "@/shared/components/Breadcrumb";
 
 import useManagerAddForm from "@/features/addRetirement/hooks/useManagerAddForm";
 import type { ManagerColumn, ManagerRowInput } from "@/features/addRetirement/hooks/useManagerAddForm";
@@ -62,18 +63,10 @@ const ManagerAddPage = ({ columns, onCancel, onSave }: Props) => {
 			<div className="mx-auto w-full max-w-2xl px-4 py-6">
 				<div className="flex items-center justify-between gap-3">
 					<div>
-						<nav className="text-sm mb-1" aria-label="Breadcrumb">
-							<button
-								type="button"
-								onClick={onCancel}
-								className="text-emerald-600 hover:text-emerald-800 font-medium"
-							>
-								管理画面
-							</button>
-							<span className="px-2 text-slate-400">›</span>
-							<span className="text-emerald-800 font-semibold">新規登録</span>
-						</nav>
-						<Heading level={1} className="text-[22px] font-bold">
+						<div className="mb-1">
+							<Breadcrumb items={[{ label: "管理画面", onClick: onCancel }, { label: "新規登録" }]} />
+						</div>
+						<Heading level={2} className="text-[22px] font-bold">
 							新規従業員の登録
 						</Heading>
 					</div>

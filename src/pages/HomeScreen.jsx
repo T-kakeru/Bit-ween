@@ -50,8 +50,7 @@ const HomeScreen = ({ onOpenArticles }) => {
   return (
     <>
       <section className="screen home-screen">
-        <Heading level={1}>ホーム</Heading>
-        <Divider />
+        <Heading level={2}>ホーム</Heading>
 
         <section className="home-top-grid" aria-label="ダッシュボード">
           <Card className="home-square-card home-shortcuts-card" aria-label="クイックショートカット">

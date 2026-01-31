@@ -1,4 +1,5 @@
 import { ArticleCarouselSection, FilteredArticleCarouselSection } from "@/features/articles/components/views/ArticleCarousel";
+import Heading from "@/shared/ui/Heading";
 
 const HomeFeed = ({
   onOpenArticles,
@@ -19,7 +20,7 @@ const HomeFeed = ({
     <>
       <header className="content-header">
         <div>
-          <h1 className="title">ホーム</h1>
+          <Heading level={2} className="title">ホーム</Heading>
         </div>
       </header>
       <section className="screen home-screen">

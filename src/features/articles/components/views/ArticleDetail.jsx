@@ -1,5 +1,6 @@
 import Breadcrumb from "@/shared/components/Breadcrumb";
 import Icon from "@/shared/ui/Icon";
+import Heading from "@/shared/ui/Heading";
 import { useEffect, useState } from "react";
 import BookmarkButton from "@/features/articles/components/molecules/BookmarkButton";
 
@@ -40,7 +41,7 @@ const ArticleDetail = ({ article, onBack, isSaved, toggleSaved }) => {
         </div>
 
         <div className="detail-title-row">
-          <h1 className="detail-title">{article.title}</h1>
+          <Heading level={2} className="detail-title">{article.title}</Heading>
           <div className="detail-title-actions">
             <BookmarkButton
               saved={saved}

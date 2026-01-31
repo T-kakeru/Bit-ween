@@ -1,0 +1,16 @@
+.root {
+  padding: 20px 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: #0f172a; /* deep slate */
+  letter-spacing: -0.02em;
+  background: linear-gradient(180deg, rgba(234,250,240,0.35), rgba(255,255,255,0));
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 8px;
+}

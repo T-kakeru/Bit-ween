@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import Breadcrumb from "@/shared/components/Breadcrumb";
+import Heading from "@/shared/ui/Heading";
 import ArticleDropdownFilter from "../molecules/ArticleDropdownFilter";
 import ArticleActionBar from "../molecules/ArticleActionBar";
 import ArticleGrid from "../views/ArticleGrid";
@@ -66,7 +67,7 @@ const ArticleSectionContainer = ({
               items={[{ label: "ホーム", onClick: onNavigateHome }, { label: breadcrumbLabel }]}
             />
           ) : (
-            <h1 className="title">記事</h1>
+            <Heading level={2} className="title" aria-hidden="true" />
           )}
 
           {hideFilterUI ? null : (
