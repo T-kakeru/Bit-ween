@@ -1,4 +1,5 @@
 import Button from "@/shared/ui/Button";
+import Icon from "@/shared/ui/Icon";
 
 // 編集モード切り替えボタン群（molecule）
 const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel }) => {
@@ -16,9 +17,7 @@ const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel }) =
         className={(isEditing ? "manager-edit-button is-editing" : "manager-edit-button") + " manager-action-button"}
         onClick={handleToggleEditing}
       >
-        <span className="manager-edit-icon" aria-hidden="true">
-          ✎
-        </span>
+        <Icon className="manager-edit-icon" src="/img/icon_edit.png" alt="" />
         {isEditing ? "編集中" : "編集"}
       </Button>
 

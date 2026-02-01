@@ -11,6 +11,7 @@ import Divider from "@/shared/ui/Divider";
 import Card from "@/shared/ui/Card";
 import Button from "@/shared/ui/Button";
 import TextCaption from "@/shared/ui/TextCaption";
+import Icon from "@/shared/ui/Icon";
 
 const HomeScreen = ({ onOpenArticles }) => {
   const [rating, setRating] = useState(0);
@@ -67,7 +68,7 @@ const HomeScreen = ({ onOpenArticles }) => {
                   })
                 }
               >
-                <span className="home-shortcut-icon" aria-hidden="true">🗓️</span>
+                <Icon className="home-shortcut-icon" src="/img/icon_article.png" alt="" />
                 <span className="home-shortcut-title">今週の記事</span>
                 <span className="home-shortcut-meta">
                   <span className="home-shortcut-count">{thisWeekCount}</span>
@@ -87,7 +88,7 @@ const HomeScreen = ({ onOpenArticles }) => {
                   })
                 }
               >
-                <span className="home-shortcut-icon" aria-hidden="true">⚑</span>
+                <Icon className="home-shortcut-icon" src="/img/icon_notification.png" alt="" />
                 <span className="home-shortcut-title">おしらせ</span>
                 <span className="home-shortcut-meta">
                   <span className="home-shortcut-count">{importantCount}</span>
@@ -107,7 +108,7 @@ const HomeScreen = ({ onOpenArticles }) => {
                   })
                 }
               >
-                <span className="home-shortcut-icon" aria-hidden="true">🔖</span>
+                <Icon className="home-shortcut-icon" src="/img/icon_bookmark_1.png" alt="" />
                 <span className="home-shortcut-title">保存した記事</span>
                 <span className="home-shortcut-meta">
                   <span className="home-shortcut-count">{readingCount}</span>
@@ -158,7 +159,10 @@ const HomeScreen = ({ onOpenArticles }) => {
                     onClick={() => setRating(value)}
                     aria-label={`${value}つ星を付ける`}
                   >
-                    ★
+                    <Icon
+                      src={value <= rating ? "/img/icon_star_2.png" : "/img/icon_star_1.png"}
+                      alt=""
+                    />
                   </Button>
                 ))}
               </div>

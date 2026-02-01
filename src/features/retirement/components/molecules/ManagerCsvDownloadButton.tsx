@@ -1,4 +1,5 @@
 import Button from "@/shared/ui/Button";
+import Icon from "@/shared/ui/Icon";
 import type { ManagerRow } from "@/features/manager/types";
 
 const DEFAULT_FILE_NAME = "manager_list.csv";
@@ -74,7 +75,7 @@ type ManagerCsvDownloadButtonProps = {
 const ManagerCsvDownloadButton = ({
   rows,
   fileName = DEFAULT_FILE_NAME,
-  label = "CSV出力",
+  label = "ダウンロード",
 }: ManagerCsvDownloadButtonProps) => {
   return (
     <Button
@@ -84,13 +85,7 @@ const ManagerCsvDownloadButton = ({
       className="flex items-center gap-2 rounded-full border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-emerald-700 hover:bg-emerald-700"
       onClick={() => downloadCsv(rows ?? [], fileName)}
     >
-      <span className="inline-flex h-4 w-4 items-center justify-center" aria-hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <path d="M7 10l5 5 5-5" />
-          <path d="M12 15V3" />
-        </svg>
-      </span>
+      <Icon className="manager-edit-icon" src="/img/icon_csv.png" alt="" />
       <span>{label}</span>
     </Button>
   );

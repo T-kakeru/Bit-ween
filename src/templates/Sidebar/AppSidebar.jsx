@@ -1,14 +1,10 @@
 import Icon from "@/shared/ui/Icon";
 
 // サイドバー：メニューとユーザー情報を表示
-const AppSidebar = ({ navItems, activeNav, onNavChange, user }) => {
+const AppSidebar = ({ navItems, activeNav, onNavChange, user, menuTitle = "メニュー" }) => {
   return (
     <aside className="sidebar">
-      <div className="sidebar-search" role="search">
-        <span>🔎</span>
-        <input type="text" placeholder="検索" />
-      </div>
-      <div className="sidebar-title">メニュー</div>
+      <div className="sidebar-title">{menuTitle}</div>
       <nav className="nav">
         {navItems.map((item) => (
           <button
@@ -18,7 +14,9 @@ const AppSidebar = ({ navItems, activeNav, onNavChange, user }) => {
             onClick={() => onNavChange(item.label)}
           >
             <Icon className="nav-icon" name={item.icon} />
-            <span>{item.label}</span>
+            <span className="nav-item-text">
+              <span className="nav-item-label">{item.label}</span>
+            </span>
             {item.badge ? <span className="badge">{item.badge}</span> : null}
           </button>
         ))}
@@ -28,13 +26,18 @@ const AppSidebar = ({ navItems, activeNav, onNavChange, user }) => {
         <div className="sidebar-team">Bit-ween開発</div>
       </div>
       <div className="sidebar-footer">
-        <div className="sidebar-user">
+        <button
+          type="button"
+          className="sidebar-user"
+          onClick={() => onNavChange("マイページ")}
+          aria-label="マイページを開く"
+        >
           <Icon className="avatar" name={user.icon} alt="" />
           <div>
             <p className="sidebar-user-name">{user.name}</p>
             <p className="muted">{user.team}</p>
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );

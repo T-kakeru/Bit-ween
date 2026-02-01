@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import Breadcrumb from "@/shared/components/Breadcrumb";
 import Heading from "@/shared/ui/Heading";
 import ArticleDropdownFilter from "../molecules/ArticleDropdownFilter";
+import SearchField from "../molecules/SearchField";
 import ArticleActionBar from "../molecules/ArticleActionBar";
 import ArticleGrid from "../views/ArticleGrid";
 import ArticleRightbar from "../views/ArticleRightbar";
@@ -41,6 +42,13 @@ const ArticleSectionContainer = ({
   const shouldShowEmptyResultNotice =
     !isLoadingInitial && !isLoadingMore && !loadError && (articles?.length ?? 0) === 0;
 
+  // 検索用 state
+  const [searchValue, setSearchValue] = useState("");
+  const onSearchSubmit = useCallback(() => {
+    // TODO: 検索ロジックをここに実装（例: フィルタやAPI呼び出し）
+    // 現状はUIのみ設置
+  }, []);
+
   const [tagList, setTagList] = useState(() => tags);
 
   const handleAddTag = useCallback(
@@ -72,6 +80,12 @@ const ArticleSectionContainer = ({
 
           {hideFilterUI ? null : (
             <div className="article-filter-bar article-filter-bar--left">
+              <SearchField
+                value={searchValue}
+                onChange={setSearchValue}
+                onSubmit={onSearchSubmit}
+                placeholder="検索"
+              />
               <ArticleDropdownFilter value={activeFilterId} onChange={onFilterChange} />
             </div>
           )}

@@ -1,5 +1,6 @@
 import { ArticleCarouselSection, FilteredArticleCarouselSection } from "@/features/articles/components/views/ArticleCarousel";
 import Heading from "@/shared/ui/Heading";
+import Icon from "@/shared/ui/Icon";
 
 const HomeFeed = ({
   onOpenArticles,
@@ -38,7 +39,7 @@ const HomeFeed = ({
                   })
                 }
               >
-                <span className="home-shortcut-icon" aria-hidden="true">🗓️</span>
+                <Icon className="home-shortcut-icon" src="/img/icon_article.png" alt="" />
                 <span className="home-shortcut-title">今週の記事</span>
                 <span className="home-shortcut-meta">
                   <span className="home-shortcut-count">{thisWeekCount}</span>
@@ -57,7 +58,7 @@ const HomeFeed = ({
                   })
                 }
               >
-                <span className="home-shortcut-icon" aria-hidden="true">⚑</span>
+                <Icon className="home-shortcut-icon" src="/img/icon_notification.png" alt="" />
                 <span className="home-shortcut-title">おしらせ</span>
                 <span className="home-shortcut-meta">
                   <span className="home-shortcut-count">{counts.importantCount}</span>
@@ -76,7 +77,7 @@ const HomeFeed = ({
                   })
                 }
               >
-                <span className="home-shortcut-icon" aria-hidden="true">🔖</span>
+                <Icon className="home-shortcut-icon" src="/img/icon_bookmark_1.png" alt="" />
                 <span className="home-shortcut-title">保存した記事</span>
                 <span className="home-shortcut-meta">
                   <span className="home-shortcut-count">{counts.savedCount}</span>
@@ -126,7 +127,10 @@ const HomeFeed = ({
                     onClick={() => onRate(value)}
                     aria-label={`${value}つ星を付ける`}
                   >
-                    ★
+                    <Icon
+                      src={value <= rating ? "/img/icon_star_2.png" : "/img/icon_star_1.png"}
+                      alt=""
+                    />
                   </button>
                 ))}
               </div>

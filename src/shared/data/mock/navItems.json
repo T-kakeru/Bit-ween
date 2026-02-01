@@ -1,27 +1,23 @@
 [
   {
     "label": "ホーム",
-    "icon": "🏠"
+    "icon": "/img/icon%20home.png"
   },
   {
     "label": "記事",
-    "icon": "📰"
+    "icon": "/img/icon_article.png"
   },
   {
     "label": "通知",
-    "icon": "🔔",
+    "icon": "/img/icon_notification.png",
     "badge": 3
   },
   {
-    "label": "マイページ",
-    "icon": "/img/sampleimg.png"
-  },
-  {
     "label": "設定",
-    "icon": "⚙️"
+    "icon": "/img/icon_settings.png"
   },
   {
     "label": "管理画面",
-    "icon": "🗂️"
+    "icon": "/img/icon_manager.png"
   }
 ]

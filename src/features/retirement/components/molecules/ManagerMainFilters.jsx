@@ -7,6 +7,22 @@ const ManagerMainFilters = ({ filters, onToggleGroup, onReset }) => {
   return (
     <div className="manager-filter-grid">
       <div className="manager-filter-section">
+        <div className="manager-filter-section-title">離職</div>
+        <div className="manager-filter-options">
+          <FilterCheckbox
+            label="離職した社員"
+            checked={filters.employmentStatus.retired}
+            onChange={() => onToggleGroup("employmentStatus", "retired")}
+          />
+          <FilterCheckbox
+            label="在籍中の社員"
+            checked={filters.employmentStatus.active}
+            onChange={() => onToggleGroup("employmentStatus", "active")}
+          />
+        </div>
+      </div>
+
+      <div className="manager-filter-section">
         <div className="manager-filter-section-title">年齢</div>
         <div className="manager-filter-options">
           <FilterCheckbox

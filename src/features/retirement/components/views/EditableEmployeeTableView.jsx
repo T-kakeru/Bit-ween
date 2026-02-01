@@ -3,9 +3,9 @@ import EditModeControls from "@/features/retirement/components/molecules/EditMod
 import ConfirmChangesModal from "@/features/retirement/components/molecules/ConfirmChangesModal";
 import { isCellChanged } from "@/features/retirement/logic/employeeEdit.logic";
 import Button from "@/shared/ui/Button";
+import Icon from "@/shared/ui/Icon";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 
-// EditableEmployeeTable の表示責務！Eiew�E�E
 // - toolbar + table + confirm modal
 const EditableEmployeeTableView = ({
   // shared
@@ -61,7 +61,7 @@ const EditableEmployeeTableView = ({
           className={isFilterOpen ? "manager-filter-button is-open" : "manager-filter-button"}
           onClick={onToggleFilter}
         >
-          <span className="manager-filter-icon">⛁</span>
+          <Icon className="manager-filter-icon" src="/img/icon_data.png" alt="" />
           絞り込み
         </Button>
 

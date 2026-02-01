@@ -1,4 +1,5 @@
 .root {
+  --icon-size: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -10,8 +11,8 @@
 
 .image {
   display: block;
-  width: 1em;
-  height: 1em;
+  width: var(--icon-size, 1em);
+  height: var(--icon-size, 1em);
   object-fit: contain;
 }
 
@@ -47,41 +48,55 @@
 }
 
 :global(.nav-icon) {
-  --icon-size: 24px;
+  --icon-size: 40px;
   width: var(--icon-size);
   height: var(--icon-size);
-  display: inline-grid;
-  place-items: center;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-size: calc(var(--icon-size) * 0.58);
   line-height: 1;
 }
 
 :global(img.nav-icon) {
-  width: var(--icon-size, 24px);
-  height: var(--icon-size, 24px);
-  object-fit: cover;
-  border-radius: 50%;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  padding: 0;
+  object-fit: contain;
+  border-radius: 0;
 }
 
 :global(.manager-search-icon),
-:global(.manager-filter-icon) {
+:global(.manager-filter-icon),
+:global(.sidebar-search-icon) {
+  --icon-size: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-  font-size: 12px;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  font-size: 16px;
   line-height: 1;
 }
 
-:global(.sidebar-search span) {
-  width: 16px;
-  height: 16px;
+:global(.sidebar-search .sidebar-search-icon) {
+  --icon-size: 28px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1;
+}
+
+:global(.manager-edit-icon) {
+  --icon-size: 28px;
+  width: 28px;
+  height: 28px;
 }

@@ -84,20 +84,20 @@ const SettingsPage = () => {
         <div className="settings-row">
           <div>
             <p className="settings-title">ステータス候補の削除</p>
-            <TextCaption>システムに登録されたステータス候補を削除します。</TextCaption>
+            <TextCaption>システムに登録されたステータス候補の削除をします。</TextCaption>
           </div>
           <div>
-            <Button type="button" variant="outline">候補を削除</Button>
+            <Button type="button" variant="outline">変更/削除（P2にて実装予定？）</Button>
           </div>
         </div>
 
         <div className="settings-row">
           <div>
             <p className="settings-title">当時のクライアント候補の削除</p>
-            <TextCaption>過去に選択されたクライアント名の候補を削除します。</TextCaption>
+            <TextCaption>過去に選択されたクライアント名の候補の削除をします。</TextCaption>
           </div>
           <div>
-            <Button type="button" variant="outline">候補を削除</Button>
+            <Button type="button" variant="outline">変更/削除（P2にて実装予定？）</Button>
           </div>
         </div>
 
@@ -107,7 +107,7 @@ const SettingsPage = () => {
             <TextCaption>退職理由の候補リストからアイテムを削除します。</TextCaption>
           </div>
           <div>
-            <Button type="button" variant="outline">候補を削除</Button>
+            <Button type="button" variant="outline">変更/削除（P2にて実装予定？）</Button>
           </div>
         </div>
 

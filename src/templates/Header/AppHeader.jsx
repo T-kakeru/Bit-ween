@@ -14,10 +14,7 @@ const AppHeader = ({ user, onMenuToggle, isMenuOpen }) => {
         </button>
         <span className="brand-name">Bit-ween</span>
       </div>
-      <div className="header-search" role="search">
-        <span>🔎</span>
-        <input type="text" placeholder="検索" />
-      </div>
+      {/* header search removed - per request the per-page search is used instead */}
       <div className="header-status">
         <span className="status-company">Reach</span>
       </div>

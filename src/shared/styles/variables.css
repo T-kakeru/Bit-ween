@@ -1,16 +1,16 @@
 :root {
   /* Color (legacy) */
-  --primary: #2f8f7f;
+  --primary: #2b74ff;
   --danger: #ef4444;
   --success: #34d399;
   --gray-light: #e5e7eb;
   --gray-dark: #1f2933;
-  --bg-main: #f3f7f5;
+  --bg-main: #f5f8ff;
 
   /* Color (tokens) */
   --color-white: #ffffff;
   --color-surface: #ffffff;
-  --color-bg-base: #f3f7f5;
+  --color-bg-base: #f5f8ff;
   --color-bg-subtle: #f8fafc;
   --color-bg-soft: #eef2f7;
   --color-bg-chip: #f3f4f6;
@@ -69,7 +69,7 @@
   --color-gray-dark: var(--gray-dark);
 
   /* Shadows / Alpha tokens */
-  --shadow-primary: rgba(47, 143, 127, 0.2);
+  --shadow-primary: rgba(43, 116, 255, 0.2);
   --shadow-danger: rgba(239, 68, 68, 0.2);
   --shadow-elevate: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.08);
@@ -88,6 +88,12 @@
   --badge-success-bg: rgba(52, 211, 153, 0.18);
   --badge-danger-bg: rgba(239, 68, 68, 0.16);
   --badge-neutral-bg: var(--color-bg-chip);
+
+  /* Accent tokens (blue) */
+  --color-accent: var(--color-link);
+  --color-accent-bg: #eaf2ff;
+  --color-accent-border: #cfe3ff;
+  --color-accent-text: #1d4ed8;
 }
 
 /* Normalize / Base Typography */

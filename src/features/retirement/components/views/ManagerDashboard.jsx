@@ -11,6 +11,7 @@ import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";
 import TextCaption from "@/shared/ui/TextCaption";
 import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
+import Icon from "@/shared/ui/Icon";
 
 const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
@@ -37,7 +38,8 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         <div className="flex items-center gap-2">
           <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns.map(c => c.key)} />
           <button type="button" onClick={onAddOpen} className="manager-action-button">
-            新規登録
+            <Icon className="manager-edit-icon" src="/img/icon_file_add.png" alt="" />
+            離職者登録
           </button>
         </div>
       </div>

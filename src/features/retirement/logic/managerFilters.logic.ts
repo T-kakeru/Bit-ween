@@ -2,6 +2,10 @@ import { parseSlashDateToMs } from "@/features/retirement/logic/dateParsers";
 import type { ManagerRow } from "@/features/retirement/types";
 
 export const DEFAULT_MANAGER_FILTERS: any = {
+  employmentStatus: {
+    retired: true,
+    active: false,
+  },
   ageBands: {
     under20: false,
     twenties: false,
@@ -67,6 +71,11 @@ const matchTenureBand = (months: any, bands: any): boolean => {
   );
 };
 
+const matchEmploymentStatus = (isRetired: boolean, group: any): boolean => {
+  if (!isAnySelected(group)) return true;
+  return (group.retired && isRetired) || (group.active && !isRetired);
+};
+
 const matchMultiSelect = (value: any, group: any, mapping: Record<string, string>): boolean => {
   if (!isAnySelected(group)) return true;
   if (!value) return false;
@@ -84,6 +93,10 @@ export const applyManagerFilters = (
     const tenure = toNumber(row?.["在籍月数"]);
     const status = row?.["ステータス"] as string | undefined;
     const gender = row?.["性別"] as string | undefined;
+    const retireDate = parseSlashDateToMs(row?.["退職日"]);
+    const isRetired = retireDate != null;
+
+    if (!matchEmploymentStatus(isRetired, filters.employmentStatus)) return false;
 
     if (!matchAgeBand(age, filters.ageBands)) return false;
     if (!matchTenureBand(tenure, filters.tenureBands)) return false;
@@ -131,7 +144,6 @@ export const applyManagerFilters = (
       if (joinDate == null || joinDate > to) return false;
     }
 
-    const retireDate = parseSlashDateToMs(row?.["退職日"]);
     if (detail.retireFrom) {
       const from = new Date(detail.retireFrom).getTime();
       if (retireDate == null || retireDate < from) return false;

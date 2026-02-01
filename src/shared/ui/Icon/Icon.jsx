@@ -1,6 +1,18 @@
 import styles from "./Icon.module.css";
 
-const DEFAULT_ICON_SRC = "/img/default.png";
+const BASE_URL = import.meta.env.BASE_URL ?? "/";
+
+const withBaseUrl = (path) => {
+  if (typeof path !== "string") return path;
+  const trimmed = path.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  if (!trimmed.startsWith("/")) return trimmed;
+  if (BASE_URL === "/") return trimmed;
+  return `${BASE_URL}${trimmed.slice(1)}`;
+};
+
+const DEFAULT_ICON_SRC = withBaseUrl("/img/default.png");
 
 const isImageLike = (value) => {
   if (typeof value !== "string") return false;
@@ -14,8 +26,11 @@ const isImageLike = (value) => {
   return false;
 };
 
-const Icon = ({ name, src, alt = "", className = "", ...props }) => {
-  const resolvedSrc = src ?? (isImageLike(name) ? name : null);
+/**
+ * @param {{ name?: string, src?: string, alt?: string, className?: string, [key: string]: any }} props
+ */
+const Icon = ({ name = "", src, alt = "", className = "", ...props }) => {
+  const resolvedSrc = withBaseUrl(src ?? (isImageLike(name) ? name : null));
 
   if (resolvedSrc || !name) {
     return (

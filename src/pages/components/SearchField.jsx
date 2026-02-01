@@ -1,12 +1,11 @@
-// pages 配下に配置する検索フィールド（UI部品）
-// ※要望により pages 配下へ移動（本来は feature/components 配下が一般的）
 import Input from "@/shared/ui/Input";
+import Icon from "@/shared/ui/Icon";
+
+// ページ/管理画面用検索スタイル（manager-search-panel）
 const SearchField = ({ id, label, placeholder, value, onChange }) => {
   return (
     <div className="manager-search-panel" role="search" aria-label={label || placeholder}>
-      <span className="manager-search-icon" aria-hidden="true">
-        🔎
-      </span>
+      <Icon className="manager-search-icon" src="/img/icon_search.png" alt="" />
       <Input
         id={id}
         type="search"
@@ -21,3 +20,4 @@ const SearchField = ({ id, label, placeholder, value, onChange }) => {
 };
 
 export default SearchField;
+

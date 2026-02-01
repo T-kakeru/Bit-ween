@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import Icon from "@/shared/ui/Icon";
 
 // 右カラム：カテゴリ/タグ/部門の一覧
 const ArticleRightbar = ({
@@ -39,7 +40,9 @@ const ArticleRightbar = ({
   return (
     <aside className="rightbar">
       <section className="panel">
-        <h3>☰ カテゴリ</h3>
+        <h3>
+          <Icon className="manager-filter-icon" src="/img/icon_article.png" alt="" /> カテゴリ
+        </h3>
         <ul>
           {categories.map((category) => {
             const isActive = selectedCategorySet.has(category);

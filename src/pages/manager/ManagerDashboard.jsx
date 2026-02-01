@@ -10,6 +10,7 @@ import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";
 import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
+import Icon from "@/shared/ui/Icon";
 import EditableEmployeeTable from "@/features/retirement/components/organisms/EditableEmployeeTable";
 import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
 
@@ -40,7 +41,8 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         <div className="flex items-center gap-2">
           <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns?.map((c) => c.key)} />
           <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
-            新規登録
+            <Icon className="manager-edit-icon" src="/img/icon_file_add.png" alt="" />
+            離職者登録
           </Button>
         </div>
       </div>

@@ -64,7 +64,7 @@ const ManagerAddPage = ({ columns, onCancel, onSave }: Props) => {
 				<div className="flex items-center justify-between gap-3">
 					<div>
 						<div className="mb-1">
-							<Breadcrumb items={[{ label: "管理画面", onClick: onCancel }, { label: "新規登録" }]} />
+							<Breadcrumb items={[{ label: "管理画面", onClick: onCancel }, { label: "離職者登録" }]} />
 						</div>
 						<Heading level={2} className="text-[22px] font-bold">
 							新規従業員の登録
