@@ -22,8 +22,8 @@
 }
 
 .success {
-  background: var(--badge-success-bg);
-  color: var(--color-success-strong);
+  background: var(--color-accent-bg);
+  color: var(--color-accent-text);
 }
 
 .danger {

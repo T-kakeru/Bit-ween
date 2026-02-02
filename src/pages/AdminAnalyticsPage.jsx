@@ -1,6 +1,6 @@
-import Card from "@/shared/ui/Card";
 import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
+import RetirementAnalyticsDashboard from "@/features/retirementAnalytics/components/RetirementAnalyticsDashboard";
 
 const AdminAnalyticsPage = () => {
   return (
@@ -13,9 +13,7 @@ const AdminAnalyticsPage = () => {
           <TextCaption>離職傾向と要因を俯瞰するダッシュボードです。</TextCaption>
         </div>
       </div>
-      <Card className="admin-panel">
-        <TextCaption>分析カードやグラフはここに表示されます。</TextCaption>
-      </Card>
+      <RetirementAnalyticsDashboard />
     </section>
   );
 };

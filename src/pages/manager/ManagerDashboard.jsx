@@ -42,7 +42,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns?.map((c) => c.key)} />
           <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
             <Icon className="manager-edit-icon" src="/img/icon_file_add.png" alt="" />
-            離職者登録
+            分析データの追加
           </Button>
         </div>
       </div>

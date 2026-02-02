@@ -1,0 +1,111 @@
+[
+  {
+    "id": "u_yamada_ichiro",
+    "name": "山田 一郎",
+    "department": "プロダクト推進部",
+    "team": "Bit-ween",
+    "role": "マネージャー",
+    "status": "オンライン",
+    "icon": "/img/sampleimg.png",
+    "gender": "男性",
+    "birthDate": "1990-04-12",
+    "joinDate": "2018-04-01",
+    "employmentStatus": "active",
+    "bio": "社内の知見を集めて循環させたいです",
+    "smallTalk": {
+      "hobbies": ["ランニング", "コーヒー"],
+      "oneLiner": "最近は朝の散歩にハマってます"
+    }
+  },
+  {
+    "id": "u_sato_jiro",
+    "name": "佐藤 次郎",
+    "department": "IT営業部",
+    "team": "Bit-ween",
+    "role": "メンバー",
+    "status": "オンライン",
+    "icon": "/img/sampleimg.png",
+    "gender": "男性",
+    "birthDate": "1992-09-03",
+    "joinDate": "2020-10-01",
+    "employmentStatus": "active",
+    "bio": "現場の温度感をちゃんと拾って提案につなげたい",
+    "smallTalk": {
+      "hobbies": ["サウナ", "サッカー"],
+      "oneLiner": "刺さる資料づくり研究中です"
+    }
+  },
+  {
+    "id": "u_sato_saburo",
+    "name": "佐藤 三郎",
+    "department": "IT営業部",
+    "team": "Bit-ween",
+    "role": "メンバー",
+    "status": "取り込み中",
+    "icon": "/img/sampleimg.png",
+    "gender": "男性",
+    "birthDate": "1994-01-20",
+    "joinDate": "2021-04-01",
+    "employmentStatus": "active",
+    "bio": "学びを再現可能にするフォーマットを考えるのが好き",
+    "smallTalk": {
+      "hobbies": ["読書", "ボードゲーム"],
+      "oneLiner": "良い型があれば共有します"
+    }
+  },
+  {
+    "id": "u_tanaka_human",
+    "name": "田中 花子",
+    "department": "人事部",
+    "team": "コーポレート",
+    "role": "メンバー",
+    "status": "オンライン",
+    "icon": "/img/sampleimg.png",
+    "gender": "女性",
+    "birthDate": "1991-12-08",
+    "joinDate": "2019-07-01",
+    "employmentStatus": "active",
+    "bio": "オンボーディングをもっと良くしたい",
+    "smallTalk": {
+      "hobbies": ["料理", "映画"],
+      "oneLiner": "趣味投稿のコメント待ってます"
+    }
+  },
+  {
+    "id": "u_suzuki_taro",
+    "name": "鈴木 太郎",
+    "department": "デザイン",
+    "team": "Bit-ween",
+    "role": "デザイナー",
+    "status": "オンライン",
+    "icon": "/img/sampleimg.png",
+    "gender": "男性",
+    "birthDate": "1993-06-30",
+    "joinDate": "2022-04-01",
+    "employmentStatus": "active",
+    "bio": "体験の気持ちよさを大事にしたい",
+    "smallTalk": {
+      "hobbies": ["写真", "カフェ"],
+      "oneLiner": "UIの違和感見つけたら言ってください"
+    }
+  },
+  {
+    "id": "u_retired_sample",
+    "name": "佐藤 花",
+    "department": "IT営業部",
+    "team": "Bit-ween",
+    "role": "メンバー",
+    "status": "オフライン",
+    "icon": "/img/sampleimg.png",
+    "gender": "女性",
+    "birthDate": "1989-02-14",
+    "joinDate": "2016-04-01",
+    "employmentStatus": "retired",
+    "retireDate": "2025-12-31",
+    "bio": "お世話になりました",
+    "smallTalk": {
+      "hobbies": ["旅行"],
+      "oneLiner": "またどこかで"
+    }
+  }
+]

@@ -87,7 +87,10 @@ const SettingsPage = () => {
             <TextCaption>システムに登録されたステータス候補の削除をします。</TextCaption>
           </div>
           <div>
-            <Button type="button" variant="outline">変更/削除（P2にて実装予定？）</Button>
+            {/* TODO(P2): ステータス候補の変更/削除（管理UI）を実装 */}
+            <Button type="button" variant="outline" disabled>
+              未実装
+            </Button>
           </div>
         </div>
 
@@ -97,7 +100,10 @@ const SettingsPage = () => {
             <TextCaption>過去に選択されたクライアント名の候補の削除をします。</TextCaption>
           </div>
           <div>
-            <Button type="button" variant="outline">変更/削除（P2にて実装予定？）</Button>
+            {/* TODO(P2): 当時のクライアント候補の変更/削除（管理UI）を実装 */}
+            <Button type="button" variant="outline" disabled>
+              未実装
+            </Button>
           </div>
         </div>
 
@@ -107,7 +113,10 @@ const SettingsPage = () => {
             <TextCaption>退職理由の候補リストからアイテムを削除します。</TextCaption>
           </div>
           <div>
-            <Button type="button" variant="outline">変更/削除（P2にて実装予定？）</Button>
+            {/* TODO(P2): 退職理由候補の変更/削除（管理UI）を実装 */}
+            <Button type="button" variant="outline" disabled>
+              未実装
+            </Button>
           </div>
         </div>
 

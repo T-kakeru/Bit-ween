@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "./templates/AppShell";
 import AppHeader from "./templates/Header/AppHeader";
 import AppSidebar from "./templates/Sidebar/AppSidebar";
@@ -9,7 +9,6 @@ import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ManagerPage from "./pages/ManagerPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
-import AdminEngagementPage from "./pages/AdminEngagementPage";
 import useArticleEntryParentInfo from "./features/articles/hooks/useArticleEntryParentInfo";
 import useSavedArticlesState from "@/features/articles/hooks/useSavedArticlesState";
 // 画面に必要なテストデータ（API未接続時の表示用）
@@ -19,18 +18,18 @@ function App() {
   const savedArticles = useSavedArticlesState();
 
   const adminNavItems = [
-    { label: "退職者分析", icon: "/img/icon_data.png" },
-    { label: "離職者情報一覧", icon: "/img/icon_manager.png" },
-    { label: "エンゲージメント", icon: "/img/icon_star_1.png" },
+    { label: "退職者分析", icon: "/img/icon_manager.png" },
+    { label: "離職者情報一覧", icon: "/img/icon_data.png" },
     { label: "設定", icon: "/img/icon_settings.png" },
-    { label: "ユーザー画面", icon: "/img/user_icon.png" },
+    { label: "ユーザー画面", icon: "/img/icon_home.png" },
   ];
 
   // 現在選択されているタブ
-  const [activeNav, setActiveNav] = useState("記事");
+  const [activeNav, setActiveNav] = useState("ホーム");
   const [adminNav, setAdminNav] = useState("退職者分析");
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [pageTitleOverride, setPageTitleOverride] = useState(null);
   const { articleEntry, articleScreenKey, resetArticleEntry, openArticles, openArticlesWithFilter } =
     useArticleEntryParentInfo({ setActiveNav, setIsSidebarOpen });
   const user = {
@@ -48,6 +47,7 @@ function App() {
   };
 
   const handleNavChange = (nav) => {
+    setPageTitleOverride(null);
     if (isAdminMode) {
       if (nav === "ユーザー画面") {
         setIsAdminMode(false);
@@ -79,6 +79,26 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    if (!isAdminMode) {
+      setActiveNav("ホーム");
+      resetArticleEntry();
+    }
+  }, [isAdminMode, resetArticleEntry]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      try {
+        const title = e?.detail;
+        setPageTitleOverride(typeof title === "string" && title.trim() ? title : null);
+      } catch (err) {
+        setPageTitleOverride(null);
+      }
+    };
+    window.addEventListener("app:page-title", handler);
+    return () => window.removeEventListener("app:page-title", handler);
+  }, []);
+
   const handleOpenSettings = () => {
     setActiveNav("設定");
     setIsSidebarOpen(false);
@@ -97,10 +117,6 @@ function App() {
 
       if (adminNav === "離職者情報一覧") {
         return <ManagerPage />;
-      }
-
-      if (adminNav === "エンゲージメント") {
-        return <AdminEngagementPage />;
       }
 
       if (adminNav === "設定") {
@@ -160,7 +176,7 @@ function App() {
       }
       isSidebarOpen={isSidebarOpen}
       onOverlayClick={() => setIsSidebarOpen(false)}
-      pageTitle={isAdminMode ? adminNav : activeNav}
+      pageTitle={pageTitleOverride ?? (isAdminMode ? adminNav : activeNav)}
     >
       {renderNavContent()}
     </AppShell>

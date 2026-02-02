@@ -34,9 +34,9 @@ export const FieldChipGroup = ({
             <label
               key={`${groupName}-${item.label}`}
               className={
-                "inline-flex cursor-pointer items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition " +
+                "inline-flex cursor-pointer items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition focus-within:ring-2 focus-within:ring-[color:var(--color-brand)] focus-within:ring-offset-2 focus-within:ring-offset-white " +
                 (checked
-                  ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                  ? "border-[color:var(--color-brand)] bg-[color:var(--color-accent-bg)] text-slate-900 shadow-sm"
                   : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
               }
             >

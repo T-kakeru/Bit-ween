@@ -1,5 +1,9 @@
 .root {
-  --icon-size: 24px;
+  /* Prefer explicit px sizes via CSS variables (tokens).
+     - Default: --ui-icon-size-default
+     - Per instance override: --ui-icon-size
+  */
+  --icon-size: var(--ui-icon-size, var(--ui-icon-size-default, 24px));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -48,9 +52,9 @@
 }
 
 :global(.nav-icon) {
-  --icon-size: 40px;
-  width: var(--icon-size);
-  height: var(--icon-size);
+  --ui-icon-size: var(--ui-icon-size-menu, 60px);
+  width: var(--ui-icon-size);
+  height: var(--ui-icon-size);
   padding: 0;
   border-radius: 0;
   background: transparent;
@@ -58,13 +62,14 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: calc(var(--icon-size) * 0.58);
+  font-size: calc(var(--ui-icon-size) * 0.58);
   line-height: 1;
 }
 
 :global(img.nav-icon) {
-  width: var(--icon-size);
-  height: var(--icon-size);
+  --ui-icon-size: var(--ui-icon-size-menu, 60px);
+  width: var(--ui-icon-size);
+  height: var(--ui-icon-size);
   padding: 0;
   object-fit: contain;
   border-radius: 0;
@@ -73,21 +78,21 @@
 :global(.manager-search-icon),
 :global(.manager-filter-icon),
 :global(.sidebar-search-icon) {
-  --icon-size: 28px;
+  --ui-icon-size: var(--ui-icon-size-compact, 40px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+  width: var(--ui-icon-size);
+  height: var(--ui-icon-size);
+  flex: 0 0 var(--ui-icon-size);
   font-size: 16px;
   line-height: 1;
 }
 
 :global(.sidebar-search .sidebar-search-icon) {
-  --icon-size: 28px;
-  width: 28px;
-  height: 28px;
+  --ui-icon-size: var(--ui-icon-size-compact, 40px);
+  width: var(--ui-icon-size);
+  height: var(--ui-icon-size);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -96,7 +101,7 @@
 }
 
 :global(.manager-edit-icon) {
-  --icon-size: 28px;
-  width: 28px;
-  height: 28px;
+  --ui-icon-size: var(--ui-icon-size-compact, 40px);
+  width: var(--ui-icon-size);
+  height: var(--ui-icon-size);
 }

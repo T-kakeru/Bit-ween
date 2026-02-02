@@ -15,14 +15,12 @@ const ManagerPage = () => {
     normalizeCell,
   });
 
-  // Listen to global navigation events so the sidebar/menu can force-reset this page state.
+  // 画面遷移時に追加モーダルを閉じる
   useEffect(() => {
     const handler = (e) => {
       try {
         const nav = e?.detail;
-        // If the menu was used to select 管理画面 while we're already here,
-        // close the add screen to restore the main dashboard view.
-        if (nav === "管理画面") {
+        if (nav === "離職者情報一覧") {
           closeAdd();
         }
       } catch (err) {

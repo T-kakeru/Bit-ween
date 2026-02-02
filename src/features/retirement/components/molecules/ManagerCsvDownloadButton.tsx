@@ -1,6 +1,6 @@
 import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
-import type { ManagerRow } from "@/features/manager/types";
+import type { ManagerRow } from "@/features/retirement/types";
 
 const DEFAULT_FILE_NAME = "manager_list.csv";
 
@@ -82,7 +82,7 @@ const ManagerCsvDownloadButton = ({
       type="button"
       variant="outline"
       size="sm"
-      className="flex items-center gap-2 rounded-full border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-emerald-700 hover:bg-emerald-700"
+      className="flex items-center gap-2 rounded-full border-[color:var(--color-brand)] bg-[color:var(--color-brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-95"
       onClick={() => downloadCsv(rows ?? [], fileName)}
     >
       <Icon className="manager-edit-icon" src="/img/icon_csv.png" alt="" />

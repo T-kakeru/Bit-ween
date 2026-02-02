@@ -1,4 +1,9 @@
 :root {
+  /* Icon sizes (global, px-based) */
+  --ui-icon-size-default: 45px;
+  --ui-icon-size-menu: 60px;
+  --ui-icon-size-compact: 40px;
+
   /* Color (legacy) */
   --primary: #2b74ff;
   --danger: #ef4444;
@@ -94,6 +99,14 @@
   --color-accent-bg: #eaf2ff;
   --color-accent-border: #cfe3ff;
   --color-accent-text: #1d4ed8;
+
+  /* Gradients (shared) */
+  --gradient-media-base: linear-gradient(120deg, #dbeafe, #fef3c7);
+  --gradient-media-city: linear-gradient(120deg, #c7d2fe, #fef3c7);
+  --gradient-media-logo: linear-gradient(120deg, #fee2e2, #fecaca);
+  --gradient-media-street: var(--gradient-media-base);
+  --gradient-media-mountain: linear-gradient(120deg, #e0f2fe, #e9d5ff);
+  --gradient-media-work: linear-gradient(120deg, #fde68a, #fca5a5);
 }
 
 /* Normalize / Base Typography */

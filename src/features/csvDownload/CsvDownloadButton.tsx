@@ -1,6 +1,6 @@
 import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
-import type { ManagerRow } from "@/features/manager/types";
+import type { ManagerRow } from "@/features/retirement/types";
 
 const DEFAULT_FILE_NAME = "manager_list.csv";
 

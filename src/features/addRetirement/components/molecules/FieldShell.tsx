@@ -13,14 +13,14 @@ type FieldShellProps = BaseFieldProps & {
 
 export const FieldShell = ({ label, helper, required, children }: FieldShellProps) => {
   return (
-    <label className="block">
-      <span className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-        {label}
-        {required ? <span className="text-[11px] text-rose-600">必須</span> : null}
-      </span>
-      <div className="mt-2">{children}</div>
-      {helper ? <p className="mt-2 text-[11px] text-slate-500">{helper}</p> : null}
-    </label>
+    <div className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-start sm:gap-x-6 sm:gap-y-2">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 sm:pt-2 sm:text-sm">
+        <span className="shrink-0">{label}</span>
+        {required ? <span className="text-[11px] font-semibold text-rose-600">必須</span> : null}
+      </div>
+      <div className="min-w-0">{children}</div>
+      {helper ? <p className="text-[11px] text-slate-500 sm:col-start-2">{helper}</p> : null}
+    </div>
   );
 };
 

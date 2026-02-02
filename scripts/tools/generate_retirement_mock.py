@@ -16,6 +16,45 @@ def calculate_months(start: date, end: date) -> int:
     return (end.year - start.year) * 12 + (end.month - start.month)
 
 
+def add_months(base: date, months: int) -> date:
+    year = base.year + (base.month - 1 + months) // 12
+    month = (base.month - 1 + months) % 12 + 1
+    # Keep it simple and safe for all months
+    day = min(base.day, 28)
+    return date(year, month, day)
+
+
+def weighted_choice(items: list[int], weights: list[int]) -> int:
+    return random.choices(items, weights=weights, k=1)[0]
+
+
+def generate_resigned_date(join_date: date, reference_date: date) -> date:
+    """Generate a realistic resignation date.
+
+    - Bias toward 2026 (current-year-heavy) while keeping dates plausible.
+    - Ensure resigned_date > join_date and <= reference_date.
+    """
+
+    # Favor shorter tenures but keep some longer stays
+    tenure_months = weighted_choice(
+        items=[6, 9, 12, 18, 24, 30, 36, 48, 60],
+        weights=[10, 12, 16, 18, 16, 10, 8, 6, 4],
+    )
+    resigned = add_months(join_date, tenure_months)
+
+    # If it lands after the reference date, pull it back inside the window
+    if resigned > reference_date:
+        # Put it somewhere in the last ~18 months, still after join_date
+        back_months = random.randint(0, 18)
+        resigned = add_months(reference_date, -back_months)
+        if resigned <= join_date:
+            resigned = add_months(join_date, random.randint(6, 18))
+
+    # Randomize day a bit (1-28)
+    resigned = date(resigned.year, resigned.month, random.randint(1, 28))
+    return resigned
+
+
 def main() -> None:
     # Reproducible by default (override with SEED env var)
     seed = int(os.getenv("SEED", "42"))
@@ -23,7 +62,8 @@ def main() -> None:
 
     num_total = 150
     num_resigned = 50
-    reference_date = date(2026, 1, 27)
+    # 2026年の月次も多く見せたいので、年内の適当な基準日で生成する
+    reference_date = date(2026, 12, 20)
 
     surnames = [
         "佐藤",
@@ -71,7 +111,9 @@ def main() -> None:
         "杏奈",
         "菜々子",
     ]
+    # NOTE: この「ステータス」は元データの都合で部署っぽい値も混ざっている
     statuses = ["開発", "派遣", "待機"]
+    # アプリ側の分析カテゴリに合わせる（未知カテゴリは作らない）
     resignation_reasons = [
         "ITモチベ低下",
         "家庭問題",
@@ -79,7 +121,6 @@ def main() -> None:
         "キャリアアップ",
         "給与不満",
         "会社不信",
-        "稼働問題",
     ]
     clients = [
         "株式会社システム・ソリューション",
@@ -104,8 +145,9 @@ def main() -> None:
             - dob.year
             - ((reference_date.month, reference_date.day) < (dob.month, dob.day))
         )
-        join_date = generate_date(2015, 2023)
-        resigned_date = generate_date(join_date.year + 1, 2025)
+        # 2026年にデータが多めになるよう、入社は近年に寄せる
+        join_date = generate_date(2020, 2025)
+        resigned_date = generate_resigned_date(join_date, reference_date)
 
         json_data.append(
             {
@@ -136,7 +178,7 @@ def main() -> None:
             - dob.year
             - ((reference_date.month, reference_date.day) < (dob.month, dob.day))
         )
-        join_date = generate_date(2018, 2025)
+        join_date = generate_date(2019, 2026)
         status = random.choice(statuses)
 
         json_data.append(
@@ -163,6 +205,13 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[2]
     out_path = repo_root / "src" / "shared" / "data" / "mock" / "retirement.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # 「休職中」が一定数ある状態を担保（分析フィルタで使えるようにする）
+    # 既存要望: 10件程度
+    rest_ids = set(random.sample(range(1, num_total + 1), 10))
+    for row in json_data:
+        if row.get("id") in rest_ids:
+            row["ステータス"] = "休職中"
 
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(json_data, f, indent=2, ensure_ascii=False)
