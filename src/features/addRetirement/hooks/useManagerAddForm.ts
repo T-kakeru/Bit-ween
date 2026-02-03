@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { ManagerAddFormValues } from "@/features/addRetirement/logic/validation/managerAdd";
+import { managerAddSchema } from "@/features/addRetirement/logic/validation/managerAdd";
+
+export type { ManagerAddFormValues };
 
 // 今回はファイル内で完結（Omit<ManagerRow, "id"> 相当をここで定義）
 // ※ manager/types の ManagerRow は any 寄りなので、理解しやすい形に寄せています。
@@ -40,18 +46,52 @@ const createInitialForm = (): ManagerRowInput => ({
 
 const useManagerAddForm = ({ columns }: UseManagerAddFormArgs) => {
   const [form, setForm] = useState<ManagerRowInput>(() => createInitialForm());
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isValid },
+  } = useForm<ManagerAddFormValues>({
+    resolver: zodResolver(managerAddSchema),// バリデーションにZodスキーマを使用
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: { name: "", gender: "" },
+  });
 
   const hasStatusColumn = useMemo(() => (columns ?? []).some((c) => c.key === "ステータス"), [columns]);
 
-  const canSave = String(form["名前"] || "").trim().length > 0;
+  const canSave = isValid;
+
+  const registerName = register("name", {
+    onChange: (event) => {
+      const value = String(event?.target?.value ?? "");
+      setForm((p) => ({ ...p, "名前": value }));
+    },
+  });
+
+  // ChipGroupはinputではないので、RHF側にフィールドだけ登録しておく
+  register("gender");
+
+  const setName = (value: string) => {
+    setForm((p) => ({ ...p, "名前": value }));
+    setValue("name", value, { shouldDirty: true, shouldValidate: true });
+  };
 
   return {
     form,
     setForm,
     hasStatusColumn,
     canSave,
-    setName: (value: string) => setForm((p) => ({ ...p, "名前": value })),
-    setGender: (value: ManagerRowInput["性別"]) => setForm((p) => ({ ...p, "性別": value })),
+    isValid,
+    registerName,
+    nameError: errors.name?.message,
+    genderError: errors.gender?.message,
+    handleSubmit,
+    setName,
+    setGender: (value: ManagerRowInput["性別"]) => {
+      setForm((p) => ({ ...p, "性別": value }));
+      setValue("gender", String(value ?? ""), { shouldDirty: true, shouldValidate: true });
+    },
     setBirthDate: (value: string) => setForm((p) => ({ ...p, "生年月日": value })),
     setJoinDate: (value: string) => setForm((p) => ({ ...p, "入社日": value })),
     setRetireDate: (value: string) => setForm((p) => ({ ...p, "退職日": value })),

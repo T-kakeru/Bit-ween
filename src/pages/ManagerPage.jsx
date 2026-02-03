@@ -1,5 +1,5 @@
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
-import ManagerAddPage from "@/pages/ManagerAddPage";
+import ManagerAddPage from "@/pages/manager/ManagerAddPage";
 import useManagerEmployees from "@/features/retirement/hooks/useManagerEmployees";
 import useManagerPageController from "@/pages/manager/useManagerPageController";
 

@@ -6,14 +6,15 @@ import { searchUsersByName } from "@/shared/api/usersService";
 
 import useManagerAddForm from "@/features/addRetirement/hooks/useManagerAddForm";
 import useManagerAddOptionLists from "@/features/addRetirement/hooks/useManagerAddOptionLists";
+import { normalizeManagerAddPayload } from "@/features/addRetirement/logic/normalizeManagerAddPayload";
 
 import {
-	FieldText,
 	FieldDate,
 	FieldNumber,
 	FieldChipGroup,
 	FieldCombobox,
 	FieldShell,
+	NameField,
 } from "@/features/addRetirement/components/molecules";
 
 const GENDER_OPTIONS = ["男性", "女性", "その他"];
@@ -57,6 +58,9 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 		form,
 		hasStatusColumn,
 		canSave,
+		registerName,
+		nameError,
+		handleSubmit,
 		setName,
 		setGender,
 		setBirthDate,
@@ -92,14 +96,14 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 	};
 
 	const isFormLocked = employmentMode === "active";
-	const canSubmit = employmentMode === "active" ? Boolean(selectedEmployee) : canSave;
+	const canSubmit = employmentMode === "active" ? Boolean(selectedEmployee) && canSave : canSave;
 	const shouldShowDetails = employmentMode === "retired" || Boolean(selectedEmployee);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
+	const onSubmit = handleSubmit((values) => {
 		if (!canSubmit) return;
-		onSave(form);
-	};
+		const payload = normalizeManagerAddPayload(form, values);
+		onSave(payload);
+	});
 
 	return (
 		<section className="screen manager-screen">
@@ -114,7 +118,7 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 					</div>
 				</div>
 
-				<form onSubmit={handleSubmit} className="mt-6 space-y-8">
+				<form onSubmit={onSubmit} className="mt-6 space-y-8">
 					<div className="space-y-5">
 						<FieldChipGroup
 							label="登録する社員の状態"
@@ -216,7 +220,7 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 									</>
 								) : (
 									<>
-										<FieldText label="名前" value={form["名前"]} onChange={setName} required />
+										<NameField label="名前" register={registerName} errorMessage={nameError} required />
 										<FieldChipGroup label="性別" value={form["性別"]} options={GENDER_OPTIONS} onChange={setGender} />
 										<FieldDate label="生年月日" value={form["生年月日"]} onChange={setBirthDate} />
 									</>
