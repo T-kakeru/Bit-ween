@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "@/shared/ui/Card";
 import TextCaption from "@/shared/ui/TextCaption";
 import RetirementAnalyticsChart from "@/features/retirementAnalytics/components/RetirementAnalyticsChart";
@@ -7,6 +7,7 @@ import RetirementAnalyticsDetailPanel from "@/features/retirementAnalytics/compo
 import useRetirementAnalyticsData from "@/features/retirementAnalytics/hooks/useRetirementAnalyticsData";
 import {
   STATUSES,
+  GENDERS,
   filterAnalyticsRowsBySelection,
 } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
@@ -22,36 +23,62 @@ const formatPeriodLabel = (axis, period) => {
 const RetirementAnalyticsDashboard = () => {
   const [axis, setAxis] = useState("month");
   const [statuses, setStatuses] = useState([...STATUSES]);
-  const [gender, setGender] = useState("");
+  const [genders, setGenders] = useState([...GENDERS]);
   const [seriesMode, setSeriesMode] = useState("reason");
   const [selectedSeriesKey, setSelectedSeriesKey] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [isAllSelected, setIsAllSelected] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const detailRef = useRef(null);
 
-  const { data, seriesKeys, filteredCount, eligibleCount, filteredRows } = useRetirementAnalyticsData({
+  const {
+    data,
+    seriesKeys,
+    filteredCountInWindow,
+    eligibleCountInWindow,
+    filteredRowsInWindow,
+  } = useRetirementAnalyticsData({
     axis,
     department: "ALL",
     statuses,
-    gender,
+    genders,
     seriesMode,
   });
 
+  // 該当者一覧に表示する行
   const detailRows = useMemo(
-    () =>
-      filterAnalyticsRowsBySelection(filteredRows, {
+    () => {
+      if (isAllSelected) return filteredRowsInWindow;
+
+      return filterAnalyticsRowsBySelection(filteredRowsInWindow, {
         axis,
         seriesMode,
         period: selectedPeriod,
         seriesKey: selectedSeriesKey,
-      }),
-    [axis, filteredRows, selectedPeriod, selectedSeriesKey, seriesMode]
+      });
+    },
+    [axis, filteredRowsInWindow, isAllSelected, selectedPeriod, selectedSeriesKey, seriesMode]
   );
 
-  const detailTitle = selectedSeriesKey
+  const windowLabel = axis === "year" ? "表示期間（直近10年）" : "表示期間（直近12ヶ月）";
+
+  const detailTitle = isAllSelected
+    ? "すべての該当者"
+    : selectedSeriesKey
     ? `${selectedSeriesKey}の該当者`
     : "";
-  const detailSubtitle = selectedPeriod
-    ? `${formatPeriodLabel(axis, selectedPeriod)}の内訳`
-    : "全期間";
+  const detailSubtitle = selectedPeriod ? `${formatPeriodLabel(axis, selectedPeriod)}の内訳` : windowLabel;
+
+  // 
+  useEffect(() => {
+    if (!isDetailOpen) return;
+    const node = detailRef.current;
+    if (!node) return;
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (typeof node.focus === "function") {
+      node.focus({ preventScroll: true });
+    }
+  }, [isDetailOpen, detailRows.length]);
 
   return (
     <Card className="analytics-panel">
@@ -64,14 +91,12 @@ const RetirementAnalyticsDashboard = () => {
       <RetirementAnalyticsFilters
         axis={axis}
         statuses={statuses}
-        gender={gender}
+        genders={genders}
         seriesMode={seriesMode}
         onAxisChange={setAxis}
         onStatusesChange={setStatuses}
-        onGenderChange={setGender}
+        onGendersChange={setGenders}
         onSeriesModeChange={setSeriesMode}
-        filteredCount={filteredCount}
-        totalCount={eligibleCount}
       />
 
       <RetirementAnalyticsChart
@@ -81,30 +106,38 @@ const RetirementAnalyticsDashboard = () => {
         axis={axis}
         onBarClick={(seriesKey, period) => {
           if (!seriesKey) return;
+          setIsAllSelected(false);
           setSelectedSeriesKey(seriesKey);
           setSelectedPeriod(period ?? "");
+          setIsDetailOpen(true);
         }}
         onLegendClick={(seriesKey) => {
           if (!seriesKey) return;
+          setIsAllSelected(false);
           setSelectedSeriesKey(seriesKey);
           setSelectedPeriod("");
+          setIsDetailOpen(true);
+        }}
+        onAllClick={() => {
+          setIsAllSelected(true);
+          setSelectedSeriesKey("");
+          setSelectedPeriod("");
+          setIsDetailOpen(true);
         }}
       />
 
       <div className="analytics-bottom-meta">
-        <span className="tag-pill">対象: {filteredCount}件</span>
-        <span className="tag-pill">総件数: {eligibleCount}件</span>
+        <span className="tag-pill">対象: {filteredCountInWindow}件</span>
+        <span className="tag-pill">総件数: {eligibleCountInWindow}件</span>
       </div>
 
-      {selectedSeriesKey ? (
+      {isDetailOpen && (isAllSelected || selectedSeriesKey) ? (
         <RetirementAnalyticsDetailPanel
+          ref={detailRef}
           title={detailTitle}
           subtitle={detailSubtitle}
           rows={detailRows}
-          onClear={() => {
-            setSelectedSeriesKey("");
-            setSelectedPeriod("");
-          }}
+          onClose={() => setIsDetailOpen(false)}
         />
       ) : null}
     </Card>

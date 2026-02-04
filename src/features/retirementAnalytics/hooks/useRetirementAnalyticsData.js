@@ -3,10 +3,17 @@ import rawRetirements from "@/shared/data/mock/retirement.json";
 import {
   buildAnalyticsAggregation,
   filterAnalyticsRows,
+  getRecentPeriodKeys,
   normalizeRetirementData,
 } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
-const useRetirementAnalyticsData = ({ axis, department, statuses, gender, seriesMode }) => {
+const getRowPeriodKey = (row, axis) => {
+  const date = axis === "year" ? row?.retirementDateOriginal : row?.retirementDate;
+  if (!date) return "";
+  return axis === "year" ? String(date).slice(0, 4) : String(date).slice(0, 7);
+};
+
+const useRetirementAnalyticsData = ({ axis, department, statuses, genders, seriesMode }) => {
   const normalized = useMemo(() => normalizeRetirementData(rawRetirements), []);
 
   const eligible = useMemo(
@@ -14,9 +21,16 @@ const useRetirementAnalyticsData = ({ axis, department, statuses, gender, series
     [normalized]
   );
 
+  const recentPeriodSet = useMemo(() => new Set(getRecentPeriodKeys(axis)), [axis]);
+
+  const eligibleRowsInWindow = useMemo(
+    () => eligible.filter((row) => recentPeriodSet.has(getRowPeriodKey(row, axis))),
+    [axis, eligible, recentPeriodSet]
+  );
+
   const filteredRows = useMemo(
-    () => filterAnalyticsRows(eligible, { department, statuses, gender }),
-    [department, eligible, gender, statuses]
+    () => filterAnalyticsRows(eligibleRowsInWindow, { department, statuses, genders }),
+    [department, eligibleRowsInWindow, genders, statuses]
   );
 
   const aggregation = useMemo(
@@ -25,19 +39,19 @@ const useRetirementAnalyticsData = ({ axis, department, statuses, gender, series
         axis,
         department,
         statuses,
-        gender,
+        genders,
         seriesMode,
       }),
-    [axis, department, eligible, gender, seriesMode, statuses]
+    [axis, department, eligible, genders, seriesMode, statuses]
   );
 
   return {
     normalizedCount: normalized.length,
-    eligibleCount: eligible.length,
-    filteredRows,
+    eligibleCountInWindow: eligibleRowsInWindow.length,
+    filteredRowsInWindow: filteredRows,
     data: aggregation.data,
     seriesKeys: aggregation.seriesKeys,
-    filteredCount: aggregation.filteredCount,
+    filteredCountInWindow: aggregation.filteredCount,
   };
 };
 

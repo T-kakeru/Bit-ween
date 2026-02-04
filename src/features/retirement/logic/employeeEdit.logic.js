@@ -97,6 +97,15 @@ export const buildAgeFromBirthDate = (birthDateValue, todayValue = new Date()) =
   return Number.isFinite(age) ? age : "-";
 };
 
+export const buildTenureMonthsFromJoinAndRetireDates = (joinDateValue, retireDateValue) => {
+  const joinDate = parseDate(joinDateValue);
+  const retireDate = parseDate(retireDateValue);
+  if (!joinDate || !retireDate) return "-";
+  if (retireDate < joinDate) return "-";
+  const months = diffMonths(joinDate, retireDate);
+  return Number.isFinite(months) ? months : "-";
+};
+
 const diffMonths = (start, end) => {
   const base = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
   return end.getDate() < start.getDate() ? base - 1 : base;

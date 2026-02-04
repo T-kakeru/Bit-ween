@@ -1,32 +1,33 @@
 import { useMemo, useRef, useState } from "react";
-import Select from "@/shared/ui/Select";
+import Button from "@/shared/ui/Button";
+import FilterTabButton from "@/features/retirement/components/molecules/FilterTabButton";
 import { GENDERS, STATUSES } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
 const AxisToggle = ({ value, onChange }) => (
-  <div className="segmented-control" role="group" aria-label="集計軸">
-    <button type="button" aria-pressed={value === "month"} onClick={() => onChange("month")}>
+  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="集計軸">
+    <FilterTabButton id="month" activeId={value} onSelect={onChange}>
       月
-    </button>
-    <button type="button" aria-pressed={value === "year"} onClick={() => onChange("year")}>
+    </FilterTabButton>
+    <FilterTabButton id="year" activeId={value} onSelect={onChange}>
       年
-    </button>
+    </FilterTabButton>
   </div>
 );
 
 const SeriesModeToggle = ({ value, onChange }) => (
-  <div className="segmented-control" role="group" aria-label="タブ">
-    <button type="button" aria-pressed={value === "reason"} onClick={() => onChange("reason")}>
+  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="タブ">
+    <FilterTabButton id="reason" activeId={value} onSelect={onChange}>
       退職理由
-    </button>
-    <button type="button" aria-pressed={value === "department"} onClick={() => onChange("department")}>
+    </FilterTabButton>
+    <FilterTabButton id="department" activeId={value} onSelect={onChange}>
       部署
-    </button>
-    <button type="button" aria-pressed={value === "age"} onClick={() => onChange("age")}>
+    </FilterTabButton>
+    <FilterTabButton id="age" activeId={value} onSelect={onChange}>
       年齢
-    </button>
-    <button type="button" aria-pressed={value === "tenure"} onClick={() => onChange("tenure")}>
+    </FilterTabButton>
+    <FilterTabButton id="tenure" activeId={value} onSelect={onChange}>
       在籍月数
-    </button>
+    </FilterTabButton>
   </div>
 );
 
@@ -58,24 +59,28 @@ const StatusMultiSelect = ({ selected, onChange }) => {
         }
       }}
     >
-      <button
+      <Button
         type="button"
-        className="multi-select-trigger"
+        variant="outline"
+        size="sm"
+        className="multi-select-trigger manager-filter-tab"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
       >
         {label}
-        <span className="multi-select-caret">▾</span>
-      </button>
+        <span className="multi-select-caret" aria-hidden="true">
+          ▾
+        </span>
+      </Button>
       <div className={isOpen ? "multi-select-menu is-open" : "multi-select-menu"} role="listbox">
         <div className="multi-select-actions">
-          <button type="button" onClick={() => onChange([...STATUSES])}>
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange([...STATUSES])}>
             全選択
-          </button>
-          <button type="button" onClick={() => onChange([])}>
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange([])}>
             クリア
-          </button>
+          </Button>
         </div>
         {STATUSES.map((status) => (
           <label key={status} className="multi-select-option">
@@ -92,23 +97,95 @@ const StatusMultiSelect = ({ selected, onChange }) => {
   );
 };
 
+const GenderMultiSelect = ({ selected, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  // ラベル表示用
+  const label = useMemo(() => {
+    if (selected.length === 0) return "未選択";
+    if (selected.length === GENDERS.length) return "男女";
+    return selected[0] ?? "未選択";
+  }, [selected]);
+
+  // 性別の選択・解除切り替え
+  const toggleGender = (gender) => {
+    if (selected.includes(gender)) {
+      onChange(selected.filter((item) => item !== gender));
+    } else {
+      onChange([...selected, gender]);
+    }
+  };
+
+  return (
+    <div
+      className="multi-select"
+      ref={containerRef}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsOpen(false);
+        }
+      }}
+    >
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="multi-select-trigger manager-filter-tab"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        {label}
+        <span className="multi-select-caret" aria-hidden="true">
+          ▾
+        </span>
+      </Button>
+
+      <div className={isOpen ? "multi-select-menu is-open" : "multi-select-menu"} role="listbox">
+        <div className="multi-select-actions">
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange([...GENDERS])}>
+            全選択
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange([])}>
+            クリア
+          </Button>
+        </div>
+        {GENDERS.map((gender) => (
+          <label key={gender} className="multi-select-option">
+            <input
+              type="checkbox"
+              checked={selected.includes(gender)}
+              onChange={() => toggleGender(gender)}
+            />
+            <span>{gender}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const RetirementAnalyticsFilters = ({
   axis,
   statuses,
-  gender,
+  genders,
   seriesMode,
   onAxisChange,
   onStatusesChange,
-  onGenderChange,
+  onGendersChange,
   onSeriesModeChange,
-  filteredCount,
-  totalCount,
 }) => {
   return (
     <div className="analytics-filters">
       <div className="analytics-filter">
         <span className="analytics-filter-label">集計軸</span>
         <AxisToggle value={axis} onChange={onAxisChange} />
+      </div>
+
+      <div className="analytics-filter analytics-filter--tabs">
+        <span className="analytics-filter-label">タブ</span>
+        <SeriesModeToggle value={seriesMode} onChange={onSeriesModeChange} />
       </div>
 
       <div className="analytics-filter">
@@ -118,24 +195,7 @@ const RetirementAnalyticsFilters = ({
 
       <div className="analytics-filter">
         <span className="analytics-filter-label">性別</span>
-        <Select value={gender} onChange={(event) => onGenderChange(event.target.value)}>
-          <option value="">全て</option>
-          {GENDERS.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      <div className="analytics-filter analytics-filter--wide">
-        <span className="analytics-filter-label">タブ</span>
-        <SeriesModeToggle value={seriesMode} onChange={onSeriesModeChange} />
-      </div>
-
-      <div className="analytics-meta">
-        <span className="tag-pill">対象: {filteredCount}件</span>
-        <span className="tag-pill">総件数: {totalCount}件</span>
+        <GenderMultiSelect selected={genders} onChange={onGendersChange} />
       </div>
     </div>
   );

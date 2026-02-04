@@ -50,10 +50,16 @@ const AnalyticsTooltip = ({ active, payload, label, seriesKeys, seriesMode, axis
   );
 };
 
-const LegendContent = ({ payload, onItemClick }) => {
+const LegendContent = ({ payload, onItemClick, onAllClick }) => {
   if (!payload || payload.length === 0) return null;
   return (
     <ul className="analytics-legend" role="list">
+      <li key="__all__" className="analytics-legend-item">
+        <button type="button" onClick={() => onAllClick?.()}>
+          <span className="analytics-legend-dot" style={{ background: "#0ea5e9" }} />
+          <span className="analytics-legend-label">すべて</span>
+        </button>
+      </li>
       {payload.map((entry) => (
         <li key={entry.value} className="analytics-legend-item">
           <button type="button" onClick={() => onItemClick?.(entry.value)}>
@@ -78,7 +84,15 @@ const extractPeriodFromBarClickArg = (arg) => {
   return "";
 };
 
-const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis, onBarClick, onLegendClick }) => {
+const RetirementAnalyticsChart = ({
+  data,
+  seriesKeys,
+  seriesMode,
+  axis,
+  onBarClick,
+  onLegendClick,
+  onAllClick,
+}) => {
   if (!data || data.length === 0) {
     return (
       <EmptyState
@@ -117,7 +131,11 @@ const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis, onBarCli
               />
             }
           />
-          <Legend content={(props) => <LegendContent {...props} onItemClick={onLegendClick} />} />
+          <Legend
+            content={(props) => (
+              <LegendContent {...props} onItemClick={onLegendClick} onAllClick={onAllClick} />
+            )}
+          />
           {seriesKeys.map((key) => (
             <Bar
               key={key}

@@ -91,6 +91,27 @@ const addMonths = (year, month, delta) => {
   return { y: d.getFullYear(), m: d.getMonth() + 1 };
 };
 
+export const getRecentPeriodKeys = (axis = "month") => {
+  const now = new Date();
+
+  if (axis === "year") {
+    const endYear = now.getFullYear();
+    const startYear = endYear - (YEAR_WINDOW_10 - 1);
+    const years = [];
+    for (let y = startYear; y <= endYear; y += 1) years.push(String(y));
+    return years;
+  }
+
+  const endYear = now.getFullYear();
+  const endMonth = now.getMonth() + 1;
+  const months = [];
+  for (let offset = MONTH_WINDOW_12 - 1; offset >= 0; offset -= 1) {
+    const { y, m } = addMonths(endYear, endMonth, -offset);
+    months.push(`${y}-${pad2(m)}`);
+  }
+  return months;
+};
+
 const normalizeSlashDate = (value) => {
   if (!value || typeof value !== "string") return null;
   const match = value.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
@@ -238,14 +259,16 @@ export const getSeriesColors = (seriesMode = "reason") =>
 
 export const filterAnalyticsRows = (
   rows = [],
-  { department = "ALL", statuses = [], gender = "" } = {}
+  { department = "ALL", statuses = [], gender = "", genders } = {}
 ) => {
   const statusSet = new Set(statuses);
+  const genderList = Array.isArray(genders) ? genders : gender ? [gender] : [];
+  const genderSet = new Set(genderList);
   return (Array.isArray(rows) ? rows : []).filter((row) => {
     if (!row?.hasRetirementInfo) return false;
     if (department !== "ALL" && row.department !== department) return false;
     if (statusSet.size > 0 && !statusSet.has(row.status)) return false;
-    if (gender && row.gender !== gender) return false;
+    if (genderSet.size > 0 && !genderSet.has(row.gender)) return false;
     return true;
   });
 };
@@ -255,6 +278,7 @@ export const filterAnalyticsRowsBySelection = (
   { axis = "month", seriesMode = "reason", period, seriesKey } = {}
 ) => {
   if (!seriesKey) return [];
+  const recentPeriodSet = new Set(getRecentPeriodKeys(axis));
   return (Array.isArray(rows) ? rows : []).filter((row) => {
     if (!row?.hasRetirementInfo) return false;
 
@@ -268,9 +292,13 @@ export const filterAnalyticsRowsBySelection = (
         : row.reason;
     if (key !== seriesKey) return false;
 
-    if (!period) return true;
     const date = axis === "year" ? row.retirementDateOriginal : row.retirementDate;
     const rowPeriod = axis === "year" ? date.slice(0, 4) : date.slice(0, 7);
+
+    // 表もグラフと同じ「表示範囲（直近固定レンジ）」に揃える
+    if (!recentPeriodSet.has(rowPeriod)) return false;
+
+    if (!period) return true;
     return rowPeriod === period;
   });
 };
@@ -305,13 +333,15 @@ const buildRecentYearBuckets = (seriesKeys) => {
 
 export const buildAnalyticsAggregation = (
   rows = [],
-  { axis = "month", department = "ALL", statuses = [], gender = "", seriesMode = "reason" }
+  { axis = "month", department = "ALL", statuses = [], gender = "", genders, seriesMode = "reason" }
 ) => {
   const seriesKeys = getSeriesKeys(seriesMode);
-  const filtered = filterAnalyticsRows(rows, { department, statuses, gender });
+  const filtered = filterAnalyticsRows(rows, { department, statuses, gender, genders });
 
   // 期間軸は「直近固定レンジ」を必ず出す（0件でも表示）
   const buckets = axis === "year" ? buildRecentYearBuckets(seriesKeys) : buildRecentMonthBuckets(seriesKeys);
+
+  let filteredCountInWindow = 0;
 
   for (const row of filtered) {
     const isYear = axis === "year";
@@ -319,6 +349,8 @@ export const buildAnalyticsAggregation = (
     const period = isYear ? date.slice(0, 4) : date.slice(0, 7);
     // 固定レンジ外は描画しない（表との互換性は保ちつつ、UIは直近レンジに統一）
     if (!buckets.has(period)) continue;
+
+    filteredCountInWindow += 1;
     const bucket = buckets.get(period);
     const key =
       seriesMode === "department"
@@ -338,6 +370,6 @@ export const buildAnalyticsAggregation = (
   return {
     data,
     seriesKeys,
-    filteredCount: filtered.length,
+    filteredCount: filteredCountInWindow,
   };
 };

@@ -7,7 +7,6 @@ import useManagerSearch from "@/features/retirement/hooks/useManagerSearch";
 import useManagerSort from "@/features/retirement/hooks/useManagerSort";
 import { useState } from "react";
 import Heading from "@/shared/ui/Heading";
-import Divider from "@/shared/ui/Divider";
 import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
@@ -49,7 +48,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           </Button>
         </div>
       </div>
-      
+
       <div className="manager-metrics">
         <MetricCard label="総人数" value={metrics.total} />
         <MetricCard label="現職" value={metrics.active} />
