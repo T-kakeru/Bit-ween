@@ -9,6 +9,7 @@ type FieldComboboxProps = BaseFieldProps & {
   onChange: (v: string) => void;
   onAddOption?: (v: string) => void;
   addLabel?: string;
+  errorMessage?: string;
 };
 
 export const FieldCombobox = ({
@@ -21,6 +22,7 @@ export const FieldCombobox = ({
   helper,
   required,
   placeholder,
+  errorMessage,
 }: FieldComboboxProps) => {
   const listId = useId();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -76,6 +78,7 @@ export const FieldCombobox = ({
           <option key={opt} value={opt} />
         ))}
       </datalist>
+      {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
       <ConfirmAddOptionModal
         isOpen={isConfirmOpen}
         label={label}

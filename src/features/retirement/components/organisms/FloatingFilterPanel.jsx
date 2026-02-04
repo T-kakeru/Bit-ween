@@ -10,7 +10,16 @@ import Button from "@/shared/ui/Button";
 // - 画面に固定表示しつつスクロールに追従
 // - ヘッダーの handle でドラッグを許可
 // - bounds 指定で画面外に消えないよう制御
-const FloatingFilterPanel = ({ isOpen, filters, onToggleGroup, onUpdateDetail, onReset, onClose }) => {
+const FloatingFilterPanel = ({
+  isOpen,
+  filters,
+  onToggleGroup,
+  onUpdateDetail,
+  onReset,
+  onClose,
+  departmentOptions,
+  reasonOptions,
+}) => {
   const nodeRef = useRef(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [activeTab, setActiveTab] = useState("main");
@@ -66,9 +75,19 @@ const FloatingFilterPanel = ({ isOpen, filters, onToggleGroup, onUpdateDetail, o
             </div>
 
             {activeTab === "main" ? (
-              <ManagerMainFilters filters={filters} onToggleGroup={onToggleGroup} onReset={onReset} />
+              <ManagerMainFilters
+                filters={filters}
+                onToggleGroup={onToggleGroup}
+                onReset={onReset}
+                departmentOptions={departmentOptions}
+                reasonOptions={reasonOptions}
+              />
             ) : (
-              <ManagerDetailFilters filters={filters} onUpdateDetail={onUpdateDetail} onReset={onReset} />
+              <ManagerDetailFilters
+                filters={filters}
+                onUpdateDetail={onUpdateDetail}
+                onReset={onReset}
+              />
             )}
           </div>
         ) : null}

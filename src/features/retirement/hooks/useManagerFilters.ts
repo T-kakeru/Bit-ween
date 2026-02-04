@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
-import { applyManagerFilters, DEFAULT_MANAGER_FILTERS } from "@/features/retirement/logic/managerFilters.logic";
+import {
+  applyManagerFilters,
+  DEFAULT_MANAGER_FILTERS,
+  DEPARTMENT_OPTIONS,
+  REASON_OPTIONS,
+} from "@/features/retirement/logic/managerFilters.logic";
 import type { ManagerRow } from "@/features/retirement/types";
 
 const useManagerFilters = (rows: ManagerRow[]) => {
@@ -41,6 +46,8 @@ const useManagerFilters = (rows: ManagerRow[]) => {
     () => ({
       filters,
       filteredRows,
+      departmentOptions: DEPARTMENT_OPTIONS,
+      reasonOptions: REASON_OPTIONS,
       toggleGroup,
       updateDetail,
       resetFilters,

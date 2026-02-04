@@ -1,8 +1,10 @@
+import { useState } from "react";
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Legend,
+  Rectangle,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -48,7 +50,35 @@ const AnalyticsTooltip = ({ active, payload, label, seriesKeys, seriesMode, axis
   );
 };
 
-const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis }) => {
+const LegendContent = ({ payload, onItemClick }) => {
+  if (!payload || payload.length === 0) return null;
+  return (
+    <ul className="analytics-legend" role="list">
+      {payload.map((entry) => (
+        <li key={entry.value} className="analytics-legend-item">
+          <button type="button" onClick={() => onItemClick?.(entry.value)}>
+            <span className="analytics-legend-dot" style={{ background: entry.color }} />
+            <span className="analytics-legend-label">{entry.value}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+const extractPeriodFromBarClickArg = (arg) => {
+  if (!arg) return "";
+  // Recharts の onClick 引数はケースによって形が違うため、多段で吸収する
+  const direct = arg?.payload?.period;
+  if (direct) return direct;
+  const nested = arg?.tooltipPayload?.[0]?.payload?.period;
+  if (nested) return nested;
+  const activeLabel = arg?.activeLabel;
+  if (activeLabel) return activeLabel;
+  return "";
+};
+
+const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis, onBarClick, onLegendClick }) => {
   if (!data || data.length === 0) {
     return (
       <EmptyState
@@ -58,15 +88,17 @@ const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis }) => {
     );
   }
 
+  const [hoveredSeriesKey, setHoveredSeriesKey] = useState("");
+
   return (
     <div className="analytics-chart">
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
           data={data}
           margin={{ top: 8, right: 18, left: 6, bottom: 8 }}
-          barCategoryGap={24}
-          barGap={4}
-          maxBarSize={18}
+          barCategoryGap={12}
+          barGap={6}
+          maxBarSize={34}
         >
           <CartesianGrid stroke="#e6e8ec" strokeDasharray="3 3" />
           <XAxis
@@ -76,6 +108,7 @@ const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis }) => {
           />
           <YAxis allowDecimals={false} />
           <Tooltip
+            cursor={false}
             content={
               <AnalyticsTooltip
                 seriesKeys={seriesKeys}
@@ -84,7 +117,7 @@ const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis }) => {
               />
             }
           />
-          <Legend />
+          <Legend content={(props) => <LegendContent {...props} onItemClick={onLegendClick} />} />
           {seriesKeys.map((key) => (
             <Bar
               key={key}
@@ -92,6 +125,26 @@ const RetirementAnalyticsChart = ({ data, seriesKeys, seriesMode, axis }) => {
               stackId="reasons"
               fill={getSeriesColors(seriesMode)[key] ?? "#94a3b8"}
               radius={[5, 5, 0, 0]}
+              cursor="pointer"
+              activeBar={
+                hoveredSeriesKey === key
+                  ? (props) => (
+                      <Rectangle
+                        {...props}
+                        fill={props?.fill}
+                        stroke="#60a5fa"
+                        strokeWidth={2}
+                        radius={[5, 5, 0, 0]}
+                      />
+                    )
+                  : false
+              }
+              onMouseEnter={() => setHoveredSeriesKey(key)}
+              onMouseLeave={() => setHoveredSeriesKey("")}
+              onClick={(arg) => {
+                const period = extractPeriodFromBarClickArg(arg);
+                onBarClick?.(key, period);
+              }}
             />
           ))}
         </BarChart>

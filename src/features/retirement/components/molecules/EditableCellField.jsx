@@ -5,7 +5,7 @@ import Select from "@/shared/ui/Select";
 // テーブルセルの編集用フィールド（Molecule）
 // - 編集不可のセルはテキスト表示
 // - 編集モード時は input / select に切り替える
-const EditableCellField = ({ isEditing, row, column, normalizeCell, onChange }) => {
+const EditableCellField = ({ isEditing, row, column, normalizeCell, onChange, errorMessage }) => {
   const key = column.key;
   const displayValue = normalizeCell(row?.[key]);
 
@@ -17,49 +17,73 @@ const EditableCellField = ({ isEditing, row, column, normalizeCell, onChange }) 
   // セレクト（ステータス / 性別 など）
   if (key === "ステータス") {
     return (
-      <Select
-        className="manager-edit-select"
-        value={toEditableValue(row?.[key], normalizeCell)}
-        onChange={(event) => onChange(row.id, key, event.target.value)}
-        aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
-      >
-        <option value="">未設定</option>
-        <option value="開発">開発</option>
-        <option value="営業">営業</option>
-        <option value="事務">事務</option>
-        <option value="派遣">派遣</option>
-        <option value="待機">待機</option>
-        <option value="その他">その他</option>
-      </Select>
+      <div className="space-y-1">
+        <Select
+          className="manager-edit-select"
+          value={toEditableValue(row?.[key], normalizeCell)}
+          onChange={(event) => onChange(row.id, key, event.target.value)}
+          aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
+          error={Boolean(errorMessage)}
+        >
+          <option value="">未設定</option>
+          <option value="開発">開発</option>
+          <option value="営業">営業</option>
+          <option value="事務">事務</option>
+          <option value="派遣">派遣</option>
+          <option value="待機">待機</option>
+          <option value="その他">その他</option>
+        </Select>
+        {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
+      </div>
     );
   }
 
   if (key === "性別") {
     return (
-      <Select
-        className="manager-edit-select"
-        value={toEditableValue(row?.[key], normalizeCell)}
-        onChange={(event) => onChange(row.id, key, event.target.value)}
-        aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
-      >
+      <div className="space-y-1">
+        <Select
+          className="manager-edit-select"
+          value={toEditableValue(row?.[key], normalizeCell)}
+          onChange={(event) => onChange(row.id, key, event.target.value)}
+          aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
+          error={Boolean(errorMessage)}
+        >
           <option value="">未設定</option>
-        <option value="男性">男性</option>
-        <option value="女性">女性</option>
-      </Select>
+          <option value="男性">男性</option>
+          <option value="女性">女性</option>
+        </Select>
+        {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
+      </div>
     );
   }
 
-  const inputType = column.type === "number" ? "number" : "text";
+  const inputType = column.type === "number" ? "number" : column.type === "date" ? "date" : "text";
+
+  const toDateInputValue = (value) => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "";
+    const normalized = raw.includes("/") ? raw.replaceAll("/", "-") : raw;
+    const [y, m, d] = normalized.split("-");
+    if (!y || !m || !d) return "";
+    return `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  };
+
+  const rawEditableValue = toEditableValue(row?.[key], normalizeCell);
+  const inputValue = inputType === "date" ? toDateInputValue(rawEditableValue) : rawEditableValue;
 
   return (
-    <Input
-      className="manager-edit-input"
-      type={inputType}
-      value={toEditableValue(row?.[key], normalizeCell)}
-      onChange={(event) => onChange(row.id, key, event.target.value)}
-      placeholder={column.type === "date" ? "YYYY/MM/DD" : ""}
-      aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
-    />
+    <div className="space-y-1">
+      <Input
+        className="manager-edit-input"
+        type={inputType}
+        value={inputValue}
+        onChange={(event) => onChange(row.id, key, event.target.value)}
+        placeholder={inputType === "date" ? "" : ""}
+        aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
+        error={Boolean(errorMessage)}
+      />
+      {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
+    </div>
   );
 };
 

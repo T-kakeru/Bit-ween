@@ -52,7 +52,16 @@ const ManagerAddPage = ({ columns, onCancel, onSave }: Props) => {
 		registerName,
 		nameError,
 		genderError,
+		birthDateError,
+		joinDateError,
+		retireDateError,
+		statusError,
+		clientError,
+		reasonError,
+		educationPointError,
+		careerPointError,
 		handleSubmit,
+		setDefaultValues,
 		setName,
 		setGender,
 		setBirthDate,
@@ -74,18 +83,20 @@ const ManagerAddPage = ({ columns, onCancel, onSave }: Props) => {
 		if (employmentMode !== "active") return;
 		setRetireDate("");
 		setReason("");
-	}, [employmentMode, setReason, setRetireDate]);
+	}, [employmentMode]);
 
 	const selectEmployee = (user: UserProfile) => {
 		setSelectedEmployee(user);
-		setName(String(user?.name ?? ""));
-		setGender((String(user?.gender ?? "") as any) || "");
-		setBirthDate(toHyphenDate(user?.birthDate));
-		setJoinDate(toHyphenDate(user?.joinDate));
-		// 既存社員は基本的にread-only表示（紐づけ）なので、ステータスも固定値で表示
-		setStatus(String(user?.status ?? ""));
-		setRetireDate("");
-		setReason("");
+		setDefaultValues({
+			"名前": String(user?.name ?? ""),
+			"性別": ((String(user?.gender ?? "") as any) || "") as any,
+			"生年月日": toHyphenDate(user?.birthDate),
+			"入社日": toHyphenDate(user?.joinDate),
+			// 既存社員は基本的にread-only表示（紐づけ）なので、ステータスも固定値で表示
+			"ステータス": String(user?.status ?? ""),
+			"退職日": "",
+			"退職理由": "",
+		});
 	};
 
 	const isFormLocked = employmentMode === "active";
@@ -122,6 +133,14 @@ const ManagerAddPage = ({ columns, onCancel, onSave }: Props) => {
 			registerName={registerName}
 			nameError={nameError}
 			genderError={genderError}
+			birthDateError={birthDateError}
+			joinDateError={joinDateError}
+			retireDateError={retireDateError}
+			statusError={statusError}
+			clientError={clientError}
+			reasonError={reasonError}
+			educationPointError={educationPointError}
+			careerPointError={careerPointError}
 			genderOptions={GENDER_OPTIONS}
 			onChangeGender={(v) => setGender(v as ManagerRowInput["性別"])}
 			onChangeBirthDate={setBirthDate}

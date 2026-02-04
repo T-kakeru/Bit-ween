@@ -423,6 +423,13 @@
   min-height: 320px;
 }
 
+.analytics-bottom-meta {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .analytics-tooltip {
   background: #ffffff;
   border-radius: 12px;
@@ -463,6 +470,71 @@
 .analytics-tooltip-value {
   font-weight: 700;
   color: var(--color-text-contrast);
+}
+
+.analytics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.analytics-legend-item button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.analytics-legend-item button:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.analytics-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.analytics-legend-label {
+  white-space: nowrap;
+}
+
+.analytics-detail {
+  margin-top: 20px;
+  padding: 16px;
+}
+
+.analytics-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.analytics-detail-subtitle {
+  margin-top: 4px;
+}
+
+.analytics-detail-table {
+  max-height: 360px;
+}
+
+.analytics-detail-meta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .admin-metrics,
@@ -556,6 +628,11 @@
 .manager-table-area {
   display: grid;
   gap: 6px;
+}
+
+.manager-table-meta {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .manager-filter-button {
@@ -1012,6 +1089,8 @@
 
 .manager-float-body {
   padding: 12px;
+  max-height: calc(100vh - 260px);
+  overflow: auto;
 }
 
 .manager-filter-grid {

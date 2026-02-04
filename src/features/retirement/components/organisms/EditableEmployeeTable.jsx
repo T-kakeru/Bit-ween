@@ -23,12 +23,14 @@ const EditableEmployeeTable = ({
     originalRowMap,
     isConfirmOpen,
     pendingChanges,
+    hasErrors,
     startEditing,
     cancelEditing,
     changeCell,
     requestSave,
     closeConfirm,
     confirmSave,
+    getCellError,
   } = useEditableEmployeeTableSession({ rows, columns, normalizeCell, onSaveRows });
 
   const visibleRows = isEditing ? draftRows : rows;
@@ -51,8 +53,10 @@ const EditableEmployeeTable = ({
       originalRowMap={originalRowMap}
       normalizeCell={normalizeCell}
       onCellChange={changeCell}
+      getCellError={getCellError}
       onEditStart={startEditing}
       onSaveRequest={requestSave}
+      isSaveDisabled={hasErrors}
       onCancel={cancelEditing}
       isConfirmOpen={isConfirmOpen}
       pendingChanges={pendingChanges}

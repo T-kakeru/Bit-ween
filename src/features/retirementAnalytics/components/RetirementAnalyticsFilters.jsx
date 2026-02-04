@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import Select from "@/shared/ui/Select";
-import { DEPARTMENTS, STATUSES } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
+import { GENDERS, STATUSES } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
 const AxisToggle = ({ value, onChange }) => (
   <div className="segmented-control" role="group" aria-label="集計軸">
@@ -20,6 +20,12 @@ const SeriesModeToggle = ({ value, onChange }) => (
     </button>
     <button type="button" aria-pressed={value === "department"} onClick={() => onChange("department")}>
       部署
+    </button>
+    <button type="button" aria-pressed={value === "age"} onClick={() => onChange("age")}>
+      年齢
+    </button>
+    <button type="button" aria-pressed={value === "tenure"} onClick={() => onChange("tenure")}>
+      在籍月数
     </button>
   </div>
 );
@@ -88,12 +94,12 @@ const StatusMultiSelect = ({ selected, onChange }) => {
 
 const RetirementAnalyticsFilters = ({
   axis,
-  department,
   statuses,
+  gender,
   seriesMode,
   onAxisChange,
-  onDepartmentChange,
   onStatusesChange,
+  onGenderChange,
   onSeriesModeChange,
   filteredCount,
   totalCount,
@@ -106,20 +112,20 @@ const RetirementAnalyticsFilters = ({
       </div>
 
       <div className="analytics-filter">
-        <span className="analytics-filter-label">部署</span>
-        <Select value={department} onChange={(event) => onDepartmentChange(event.target.value)}>
-          <option value="ALL">全て</option>
-          {DEPARTMENTS.map((dept) => (
-            <option key={dept} value={dept}>
-              {dept}
-            </option>
-          ))}
-        </Select>
+        <span className="analytics-filter-label">ステータス</span>
+        <StatusMultiSelect selected={statuses} onChange={onStatusesChange} />
       </div>
 
       <div className="analytics-filter">
-        <span className="analytics-filter-label">ステータス</span>
-        <StatusMultiSelect selected={statuses} onChange={onStatusesChange} />
+        <span className="analytics-filter-label">性別</span>
+        <Select value={gender} onChange={(event) => onGenderChange(event.target.value)}>
+          <option value="">全て</option>
+          {GENDERS.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </Select>
       </div>
 
       <div className="analytics-filter analytics-filter--wide">

@@ -32,6 +32,15 @@ type Props = {
 
   genderError?: string;
 
+  birthDateError?: string;
+  joinDateError?: string;
+  retireDateError?: string;
+  statusError?: string;
+  clientError?: string;
+  reasonError?: string;
+  educationPointError?: string;
+  careerPointError?: string;
+
   genderOptions: Array<ManagerRowInput["性別"]>;
   onChangeGender: (v: string) => void;
 
@@ -75,6 +84,14 @@ export const ManagerAddFormView = ({
   registerName,
   nameError,
   genderError,
+  birthDateError,
+  joinDateError,
+  retireDateError,
+  statusError,
+  clientError,
+  reasonError,
+  educationPointError,
+  careerPointError,
   genderOptions,
   onChangeGender,
   onChangeBirthDate,
@@ -209,7 +226,12 @@ export const ManagerAddFormView = ({
                       allowEmpty={false}
                       errorMessage={genderError}
                     />
-                    <FieldDate label="生年月日" value={form["生年月日"]} onChange={onChangeBirthDate} />
+                    <FieldDate
+                      label="生年月日"
+                      value={form["生年月日"]}
+                      onChange={onChangeBirthDate}
+                      errorMessage={birthDateError}
+                    />
                   </>
                 )}
               </div>
@@ -227,11 +249,21 @@ export const ManagerAddFormView = ({
                     />
                   </FieldShell>
                 ) : (
-                  <FieldDate label="入社日" value={form["入社日"]} onChange={onChangeJoinDate} />
+                  <FieldDate
+                    label="入社日"
+                    value={form["入社日"]}
+                    onChange={onChangeJoinDate}
+                    errorMessage={joinDateError}
+                  />
                 )}
 
                 {employmentMode === "retired" ? (
-                  <FieldDate label="退職日" value={form["退職日"]} onChange={onChangeRetireDate} />
+                  <FieldDate
+                    label="退職日"
+                    value={form["退職日"]}
+                    onChange={onChangeRetireDate}
+                    errorMessage={retireDateError}
+                  />
                 ) : null}
 
                 {isFormLocked ? (
@@ -252,6 +284,7 @@ export const ManagerAddFormView = ({
                     onAddOption={onAddStatusOption}
                     helper={hasStatusColumn ? "検索して選択 / 新規追加" : "（COLUMNSに無い場合でも保存可能）"}
                     placeholder="検索 or 追加"
+                    errorMessage={statusError}
                   />
                 )}
 
@@ -262,6 +295,7 @@ export const ManagerAddFormView = ({
                   onChange={onChangeClient}
                   onAddOption={onAddClientOption}
                   placeholder="検索 or 追加"
+                  errorMessage={clientError}
                 />
 
                 {employmentMode === "retired" ? (
@@ -272,6 +306,7 @@ export const ManagerAddFormView = ({
                     onChange={onChangeReason}
                     onAddOption={onAddReasonOption}
                     placeholder="検索 or 追加"
+                    errorMessage={reasonError}
                   />
                 ) : null}
               </div>
@@ -279,8 +314,18 @@ export const ManagerAddFormView = ({
               <Divider className="border-slate-200" />
 
               <div className="space-y-5">
-                <FieldNumber label="学歴point" value={form["学歴point"]} onChange={onChangeEducationPoint} />
-                <FieldNumber label="経歴point" value={form["経歴point"]} onChange={onChangeCareerPoint} />
+                <FieldNumber
+                  label="学歴point"
+                  value={form["学歴point"]}
+                  onChange={onChangeEducationPoint}
+                  errorMessage={educationPointError}
+                />
+                <FieldNumber
+                  label="経歴point"
+                  value={form["経歴point"]}
+                  onChange={onChangeCareerPoint}
+                  errorMessage={careerPointError}
+                />
               </div>
             </>
           ) : (

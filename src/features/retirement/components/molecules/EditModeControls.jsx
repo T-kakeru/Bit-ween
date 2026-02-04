@@ -2,7 +2,7 @@ import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
 
 // 編集モード切り替えボタン群（molecule）
-const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel }) => {
+const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel, isSaveDisabled = false }) => {
   // 「編集」→編集開始 / 「編集中」→キャンセル（中断）
   const handleToggleEditing = () => {
     if (isEditing) onCancel();
@@ -23,7 +23,14 @@ const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel }) =
 
       {isEditing ? (
         <>
-          <Button type="button" variant="primary" className="manager-save-button" onClick={onSaveRequest}>
+          <Button
+            type="button"
+            variant="primary"
+            className="manager-save-button"
+            onClick={onSaveRequest}
+            disabled={isSaveDisabled}
+            aria-disabled={isSaveDisabled}
+          >
             保存
           </Button>
           <Button type="button" variant="danger" className="manager-cancel-button" onClick={onCancel}>

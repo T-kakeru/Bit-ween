@@ -60,7 +60,17 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 		canSave,
 		registerName,
 		nameError,
+		genderError,
+		birthDateError,
+		joinDateError,
+		retireDateError,
+		statusError,
+		clientError,
+		reasonError,
+		educationPointError,
+		careerPointError,
 		handleSubmit,
+		setDefaultValues,
 		setName,
 		setGender,
 		setBirthDate,
@@ -82,17 +92,19 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 		if (employmentMode !== "active") return;
 		setRetireDate("");
 		setReason("");
-	}, [employmentMode, setReason, setRetireDate]);
+	}, [employmentMode]);
 
 	const selectEmployee = (user) => {
 		setSelectedEmployee(user);
-		setName(String(user?.name ?? ""));
-		setGender(String(user?.gender ?? ""));
-		setBirthDate(toHyphenDate(user?.birthDate));
-		setJoinDate(toHyphenDate(user?.joinDate));
-		setStatus(String(user?.status ?? ""));
-		setRetireDate("");
-		setReason("");
+		setDefaultValues({
+			"名前": String(user?.name ?? ""),
+			"性別": String(user?.gender ?? ""),
+			"生年月日": toHyphenDate(user?.birthDate),
+			"入社日": toHyphenDate(user?.joinDate),
+			"ステータス": String(user?.status ?? ""),
+			"退職日": "",
+			"退職理由": "",
+		});
 	};
 
 	const isFormLocked = employmentMode === "active";
@@ -221,8 +233,21 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 								) : (
 									<>
 										<NameField label="名前" register={registerName} errorMessage={nameError} required />
-										<FieldChipGroup label="性別" value={form["性別"]} options={GENDER_OPTIONS} onChange={setGender} />
-										<FieldDate label="生年月日" value={form["生年月日"]} onChange={setBirthDate} />
+										<FieldChipGroup
+											label="性別"
+											required
+											value={form["性別"]}
+											options={GENDER_OPTIONS}
+											onChange={setGender}
+											allowEmpty={false}
+											errorMessage={genderError}
+										/>
+										<FieldDate
+											label="生年月日"
+											value={form["生年月日"]}
+											onChange={setBirthDate}
+											errorMessage={birthDateError}
+										/>
 									</>
 								)}
 							</div>
@@ -240,11 +265,21 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 										/>
 									</FieldShell>
 								) : (
-									<FieldDate label="入社日" value={form["入社日"]} onChange={setJoinDate} />
+									<FieldDate
+										label="入社日"
+										value={form["入社日"]}
+										onChange={setJoinDate}
+										errorMessage={joinDateError}
+									/>
 								)}
 
 								{employmentMode === "retired" ? (
-									<FieldDate label="退職日" value={form["退職日"]} onChange={setRetireDate} />
+									<FieldDate
+										label="退職日"
+										value={form["退職日"]}
+										onChange={setRetireDate}
+										errorMessage={retireDateError}
+									/>
 								) : null}
 
 								{isFormLocked ? (
@@ -265,6 +300,7 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 										onAddOption={addStatusOption}
 										helper={hasStatusColumn ? "検索して選択 / 新規追加" : "（COLUMNSに無い場合でも保存可能）"}
 										placeholder="検索 or 追加"
+										errorMessage={statusError}
 									/>
 								)}
 
@@ -275,6 +311,7 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 									onChange={setClient}
 									onAddOption={addClientOption}
 									placeholder="検索 or 追加"
+									errorMessage={clientError}
 								/>
 
 								{employmentMode === "retired" ? (
@@ -285,6 +322,7 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 										onChange={setReason}
 										onAddOption={addReasonOption}
 										placeholder="検索 or 追加"
+										errorMessage={reasonError}
 									/>
 								) : null}
 							</div>
@@ -292,8 +330,18 @@ const ManagerAddPage = ({ columns, onCancel, onSave }) => {
 							<Divider className="border-slate-200" />
 
 							<div className="space-y-5">
-								<FieldNumber label="学歴point" value={form["学歴point"]} onChange={setEducationPoint} />
-								<FieldNumber label="経歴point" value={form["経歴point"]} onChange={setCareerPoint} />
+								<FieldNumber
+									label="学歴point"
+									value={form["学歴point"]}
+									onChange={setEducationPoint}
+									errorMessage={educationPointError}
+								/>
+								<FieldNumber
+									label="経歴point"
+									value={form["経歴point"]}
+									onChange={setCareerPoint}
+									errorMessage={careerPointError}
+								/>
 							</div>
 						</>
 					) : (

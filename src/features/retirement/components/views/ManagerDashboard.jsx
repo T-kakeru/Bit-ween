@@ -15,7 +15,8 @@ import Icon from "@/shared/ui/Icon";
 
 const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
-  const { filters, filteredRows, toggleGroup, updateDetail, resetFilters } = useManagerFilters(searchedRows);
+  const { filters, filteredRows, toggleGroup, updateDetail, resetFilters, departmentOptions, reasonOptions } =
+    useManagerFilters(searchedRows);
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows });
@@ -29,6 +30,8 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         onToggleGroup={toggleGroup}
         onUpdateDetail={updateDetail}
         onReset={resetFilters}
+        departmentOptions={departmentOptions}
+        reasonOptions={reasonOptions}
         onClose={() => setIsFilterOpen(false)}
       />
       <div className="manager-header">

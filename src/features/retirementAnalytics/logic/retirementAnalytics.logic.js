@@ -1,8 +1,7 @@
 // 退職者分析: データ整備・集計ロジック
 // 方針（データ整備の責務分担がしやすいように明文化）
 // 1) 退職日: 退職日 > 退職月（YYYY年M月） > 既定日(2024-01-01) で補完
-// 1-1) 期間の偏りが強い場合は、可視化用に「直近12ヶ月（現在月を右端）」へ分布し直す
-//      - 編集責務を分担しやすいよう、日付の再分布はこの関数内だけで実施
+// 1-1) 表データとの互換性を優先し、分析は実データの退職日/退職月に合わせる
 // 2) 部署: raw.部署 があれば優先。無ければ raw.ステータス が「人事/営業/開発/派遣」の場合は部署として解釈
 // 2-1) 欠損/未知は index で均等に振り分け（人事も含めて可視化できるようにする）
 // 3) ステータス: raw.ステータス が「待機/稼働中/休職中」の場合のみ採用
@@ -13,6 +12,7 @@
 
 export const DEPARTMENTS = ["人事", "営業", "開発", "派遣"];
 export const STATUSES = ["待機", "稼働中", "休職中"];
+export const GENDERS = ["男性", "女性"];
 export const REASONS = [
   "キャリアアップ",
   "同業他社転職",
@@ -20,6 +20,18 @@ export const REASONS = [
   "ITモチベ低下",
   "給与不満",
   "会社不信",
+];
+export const AGE_BANDS = ["20未満", "20〜25", "25〜30", "30〜35", "35〜40", "40以上"];
+export const TENURE_BANDS = [
+  "3ヶ月未満",
+  "3〜6ヶ月",
+  "6〜12ヶ月",
+  "12〜18ヶ月",
+  "18〜24ヶ月",
+  "24〜30ヶ月",
+  "30〜36ヶ月",
+  "36〜42ヶ月",
+  "42ヶ月以上",
 ];
 
 export const REASON_COLORS = {
@@ -36,6 +48,25 @@ export const DEPARTMENT_COLORS = {
   開発: "#f0a35e",
   派遣: "#9b8df2",
 };
+export const AGE_COLORS = {
+  "20未満": "#7aa2f7",
+  "20〜25": "#7ccba2",
+  "25〜30": "#f0a35e",
+  "30〜35": "#9b8df2",
+  "35〜40": "#8ec7e8",
+  "40以上": "#98a1b2",
+};
+export const TENURE_COLORS = {
+  "3ヶ月未満": "#7aa2f7",
+  "3〜6ヶ月": "#7ccba2",
+  "6〜12ヶ月": "#f0a35e",
+  "12〜18ヶ月": "#9b8df2",
+  "18〜24ヶ月": "#8ec7e8",
+  "24〜30ヶ月": "#98a1b2",
+  "30〜36ヶ月": "#6bb6d6",
+  "36〜42ヶ月": "#a8b3c5",
+  "42ヶ月以上": "#d1d5db",
+};
 
 const DEFAULT_DEPARTMENT = "営業";
 const DEFAULT_STATUS = "稼働中";
@@ -43,14 +74,22 @@ const DEFAULT_STATUS = "稼働中";
 // 方針: unknown/空欄は「会社不信」に正規化（理由未設定＝会社への不満として扱う）
 const DEFAULT_REASON = "会社不信";
 const DEFAULT_DATE = "2024-01-01";
-const DISTRIBUTION_MONTHS = 12;
+const MONTH_WINDOW_12 = 12;
 const YEAR_WINDOW_10 = 10;
 
 const DEPARTMENT_SET = new Set(DEPARTMENTS);
 const STATUS_SET = new Set(STATUSES);
 const REASON_SET = new Set(REASONS);
+const GENDER_SET = new Set(GENDERS);
 
 const pad2 = (value) => String(value).padStart(2, "0");
+
+const toMonthKey = (dateString) => String(dateString).slice(0, 7);
+
+const addMonths = (year, month, delta) => {
+  const d = new Date(year, month - 1 + delta, 1);
+  return { y: d.getFullYear(), m: d.getMonth() + 1 };
+};
 
 const normalizeSlashDate = (value) => {
   if (!value || typeof value !== "string") return null;
@@ -68,62 +107,14 @@ const normalizeJapaneseMonth = (value) => {
   return `${y}-${pad2(m)}-01`;
 };
 
-const getRollingMonthStart = (now) => {
-  const d = now instanceof Date ? now : new Date();
-  return new Date(d.getFullYear(), d.getMonth() - (DISTRIBUTION_MONTHS - 1), 1);
-};
 
-// 年表示（過去10年）用に「今年(2026)が多め」になるよう、分析表示だけ日付を現実的に寄せる。
-// - JSON自体は変更せず、正規化時にのみ調整する（モックの見え方調整）
-// - 未来日にならないよう、今年は当月までに丸める
-const adjustOriginalDateForYearView = (ymd, seed, now) => {
-  if (!ymd || typeof ymd !== "string" || ymd.length < 10) return ymd;
-  const d = now instanceof Date ? now : new Date();
-  const nowYear = d.getFullYear();
-  const nowMonth = d.getMonth() + 1;
 
-  // 32bitっぽいハッシュ（決定的）
-  const s = Number.isFinite(Number(seed)) ? Number(seed) : 0;
-  const h = (Math.imul(s + 101, 2654435761) >>> 0) % 100;
-
-  let year;
-  // 2026多め: 44% / 2025: 28% / 2024: 16% / 2023: 8% / 2022: 4%
-  if (h < 44) year = nowYear;
-  else if (h < 72) year = nowYear - 1;
-  else if (h < 88) year = nowYear - 2;
-  else if (h < 96) year = nowYear - 3;
-  else year = nowYear - 4;
-
-  let month;
-  if (year === nowYear) {
-    // 今年は当月まで（例: 2月まで）
-    month = (Math.imul(s + 7, 1597334677) >>> 0) % Math.max(1, nowMonth);
-    month = month + 1;
-  } else {
-    month = ((Math.imul(s + 13, 2246822519) >>> 0) % 12) + 1;
-  }
-
-  const day = ymd.slice(8, 10);
-  return `${year}-${pad2(month)}-${day}`;
-};
-
-const distributeToRollingMonths = (date, index, baseStart) => {
-  const base = baseStart instanceof Date ? baseStart : getRollingMonthStart(new Date());
-  const day = Number(date?.slice(8, 10)) || 1;
-  const offset = index % DISTRIBUTION_MONTHS;
-  const distributed = new Date(base.getFullYear(), base.getMonth() + offset, day);
-  const y = distributed.getFullYear();
-  const m = pad2(distributed.getMonth() + 1);
-  const d = pad2(distributed.getDate());
-  return `${y}-${m}-${d}`;
-};
-
-const normalizeDate = (retirementDate, retirementMonth, index, baseStart) => {
-  const normalized =
+const normalizeDate = (retirementDate, retirementMonth) => {
+  return (
     normalizeSlashDate(retirementDate) ||
     normalizeJapaneseMonth(retirementMonth) ||
-    DEFAULT_DATE;
-  return distributeToRollingMonths(normalized, index, baseStart);
+    DEFAULT_DATE
+  );
 };
 
 const normalizeOriginalDate = (retirementDate, retirementMonth) => {
@@ -159,9 +150,46 @@ const normalizeReason = (value) => {
   return DEFAULT_REASON;
 };
 
+const normalizeGender = (value) => {
+  if (!value) return "";
+  const normalized = String(value).trim();
+  if (normalized === "男") return "男性";
+  if (normalized === "女") return "女性";
+  if (GENDER_SET.has(normalized)) return normalized;
+  return "";
+};
+
+const toNumber = (value) => {
+  if (value == null || value === "") return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
+};
+
+const toAgeBand = (age) => {
+  if (age == null) return null;
+  if (age < 20) return "20未満";
+  if (age < 25) return "20〜25";
+  if (age < 30) return "25〜30";
+  if (age < 35) return "30〜35";
+  if (age < 40) return "35〜40";
+  return "40以上";
+};
+
+const toTenureBand = (months) => {
+  if (months == null) return null;
+  if (months < 3) return "3ヶ月未満";
+  if (months < 6) return "3〜6ヶ月";
+  if (months < 12) return "6〜12ヶ月";
+  if (months < 18) return "12〜18ヶ月";
+  if (months < 24) return "18〜24ヶ月";
+  if (months < 30) return "24〜30ヶ月";
+  if (months < 36) return "30〜36ヶ月";
+  if (months < 42) return "36〜42ヶ月";
+  return "42ヶ月以上";
+};
+
 export const normalizeRetirementData = (rows = []) =>
   (() => {
-    const baseStart = getRollingMonthStart(new Date());
     return (Array.isArray(rows) ? rows : []).map((row, index) => ({
       ...row,
       id: row?.id ?? index + 1,
@@ -170,16 +198,15 @@ export const normalizeRetirementData = (rows = []) =>
           (row?.退職月 && String(row.退職月).trim() !== "") ||
           (row?.退職理由 && String(row.退職理由).trim() !== "")
       ),
-      // 年集計は「元の年月（正規化後）」を使い、月集計は「直近12ヶ月（現在月を右端）へ分布した年月」を使う
-      retirementDateOriginal: adjustOriginalDateForYearView(
-        normalizeOriginalDate(row?.退職日, row?.退職月),
-        row?.id ?? index + 1,
-        new Date()
-      ),
-      retirementDate: normalizeDate(row?.退職日, row?.退職月, index, baseStart),
+      // 年集計は「元の年月（正規化後）」を使う
+      retirementDateOriginal: normalizeOriginalDate(row?.退職日, row?.退職月),
+      retirementDate: normalizeDate(row?.退職日, row?.退職月),
       department: normalizeDepartment(row, index),
       status: normalizeStatus(row, index),
       reason: normalizeReason(row?.退職理由),
+      gender: normalizeGender(row?.性別),
+      age: toNumber(row?.年齢),
+      tenureMonths: toNumber(row?.["在籍月数"]),
     }));
   })();
 
@@ -192,27 +219,84 @@ const buildEmptyBucket = (period, reasons) => {
 };
 
 export const getSeriesKeys = (seriesMode = "reason") =>
-  seriesMode === "department" ? DEPARTMENTS : REASONS;
+  seriesMode === "department"
+    ? DEPARTMENTS
+    : seriesMode === "age"
+    ? AGE_BANDS
+    : seriesMode === "tenure"
+    ? TENURE_BANDS
+    : REASONS;
 
 export const getSeriesColors = (seriesMode = "reason") =>
-  seriesMode === "department" ? DEPARTMENT_COLORS : REASON_COLORS;
+  seriesMode === "department"
+    ? DEPARTMENT_COLORS
+    : seriesMode === "age"
+    ? AGE_COLORS
+    : seriesMode === "tenure"
+    ? TENURE_COLORS
+    : REASON_COLORS;
 
-const buildFixedMonthBuckets = (seriesKeys) => {
+export const filterAnalyticsRows = (
+  rows = [],
+  { department = "ALL", statuses = [], gender = "" } = {}
+) => {
+  const statusSet = new Set(statuses);
+  return (Array.isArray(rows) ? rows : []).filter((row) => {
+    if (!row?.hasRetirementInfo) return false;
+    if (department !== "ALL" && row.department !== department) return false;
+    if (statusSet.size > 0 && !statusSet.has(row.status)) return false;
+    if (gender && row.gender !== gender) return false;
+    return true;
+  });
+};
+
+export const filterAnalyticsRowsBySelection = (
+  rows = [],
+  { axis = "month", seriesMode = "reason", period, seriesKey } = {}
+) => {
+  if (!seriesKey) return [];
+  return (Array.isArray(rows) ? rows : []).filter((row) => {
+    if (!row?.hasRetirementInfo) return false;
+
+    const key =
+      seriesMode === "department"
+        ? row.department
+        : seriesMode === "age"
+        ? toAgeBand(row.age)
+        : seriesMode === "tenure"
+        ? toTenureBand(row.tenureMonths)
+        : row.reason;
+    if (key !== seriesKey) return false;
+
+    if (!period) return true;
+    const date = axis === "year" ? row.retirementDateOriginal : row.retirementDate;
+    const rowPeriod = axis === "year" ? date.slice(0, 4) : date.slice(0, 7);
+    return rowPeriod === period;
+  });
+};
+
+const buildRecentMonthBuckets = (seriesKeys) => {
+  const now = new Date();
+  const endYear = now.getFullYear();
+  const endMonth = now.getMonth() + 1;
+
   const buckets = new Map();
-  const base = getRollingMonthStart(new Date());
-  for (let i = 0; i < DISTRIBUTION_MONTHS; i += 1) {
-    const d = new Date(base.getFullYear(), base.getMonth() + i, 1);
-    const period = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+  // 左→右を「古い→新しい」に揃える（直近12ヶ月）
+  for (let offset = MONTH_WINDOW_12 - 1; offset >= 0; offset -= 1) {
+    const { y, m } = addMonths(endYear, endMonth, -offset);
+    const period = `${y}-${pad2(m)}`;
     buckets.set(period, buildEmptyBucket(period, seriesKeys));
   }
   return buckets;
 };
 
-const buildFixedYearBuckets = (seriesKeys, windowSize) => {
+const buildRecentYearBuckets = (seriesKeys) => {
+  const now = new Date();
+  const endYear = now.getFullYear();
+  const startYear = endYear - (YEAR_WINDOW_10 - 1);
+
   const buckets = new Map();
-  const maxYear = new Date().getFullYear();
-  const startYear = maxYear - (windowSize - 1);
-  for (let y = startYear; y <= maxYear; y += 1) {
+  for (let y = startYear; y <= endYear; y += 1) {
     const period = String(y);
     buckets.set(period, buildEmptyBucket(period, seriesKeys));
   }
@@ -221,28 +305,29 @@ const buildFixedYearBuckets = (seriesKeys, windowSize) => {
 
 export const buildAnalyticsAggregation = (
   rows = [],
-  { axis = "month", department = "ALL", statuses = [], seriesMode = "reason" }
+  { axis = "month", department = "ALL", statuses = [], gender = "", seriesMode = "reason" }
 ) => {
   const seriesKeys = getSeriesKeys(seriesMode);
-  const statusSet = new Set(statuses);
+  const filtered = filterAnalyticsRows(rows, { department, statuses, gender });
 
-  const filtered = (Array.isArray(rows) ? rows : []).filter((row) => {
-    if (!row?.hasRetirementInfo) return false;
-    if (department !== "ALL" && row.department !== department) return false;
-    if (statusSet.size > 0 && !statusSet.has(row.status)) return false;
-    return true;
-  });
-
-  // 期間軸は「固定レンジ」を必ず出す（0件でも表示）
-  const buckets = axis === "year" ? buildFixedYearBuckets(seriesKeys, YEAR_WINDOW_10) : buildFixedMonthBuckets(seriesKeys);
+  // 期間軸は「直近固定レンジ」を必ず出す（0件でも表示）
+  const buckets = axis === "year" ? buildRecentYearBuckets(seriesKeys) : buildRecentMonthBuckets(seriesKeys);
 
   for (const row of filtered) {
     const isYear = axis === "year";
     const date = isYear ? row.retirementDateOriginal : row.retirementDate;
     const period = isYear ? date.slice(0, 4) : date.slice(0, 7);
-    if (!buckets.has(period)) buckets.set(period, buildEmptyBucket(period, seriesKeys));
+    // 固定レンジ外は描画しない（表との互換性は保ちつつ、UIは直近レンジに統一）
+    if (!buckets.has(period)) continue;
     const bucket = buckets.get(period);
-    const key = seriesMode === "department" ? row.department : row.reason;
+    const key =
+      seriesMode === "department"
+        ? row.department
+        : seriesMode === "age"
+        ? toAgeBand(row.age)
+        : seriesMode === "tenure"
+        ? toTenureBand(row.tenureMonths)
+        : row.reason;
     if (seriesKeys.includes(key)) {
       bucket[key] += 1;
     }

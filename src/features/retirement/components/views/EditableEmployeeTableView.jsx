@@ -24,8 +24,10 @@ const EditableEmployeeTableView = ({
   originalRowMap,
   normalizeCell,
   onCellChange,
+  getCellError,
   onEditStart,
   onSaveRequest,
+  isSaveDisabled,
   onCancel,
 
   // confirm
@@ -69,8 +71,13 @@ const EditableEmployeeTableView = ({
           isEditing={isEditing}
           onEditStart={onEditStart}
           onSaveRequest={onSaveRequest}
+          isSaveDisabled={Boolean(isSaveDisabled)}
           onCancel={onCancel}
         />
+      </div>
+
+      <div className="manager-table-meta">
+        <span className="tag-pill">表示: {visibleRows.length}件</span>
       </div>
 
       <TableContainer className="manager-table-wrap" role="region" aria-label="社員一覧">
@@ -117,6 +124,7 @@ const EditableEmployeeTableView = ({
                         column={c}
                         normalizeCell={normalizeCell}
                         onChange={onCellChange}
+                        errorMessage={getCellError ? getCellError(row.id, c.key) : undefined}
                       />
                     </Td>
                   );

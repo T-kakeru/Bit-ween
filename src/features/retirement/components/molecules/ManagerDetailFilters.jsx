@@ -46,16 +46,6 @@ const ManagerDetailFilters = ({ filters, onUpdateDetail, onReset }) => {
       </label>
 
       <label className="manager-filter-field">
-        <span>ステータス</span>
-        <Select value={filters.detail.status} onChange={(event) => onUpdateDetail("status", event.target.value)}>
-          <option value="">すべて</option>
-          <option value="開発">開発</option>
-          <option value="派遣">派遣</option>
-          <option value="待機">待機</option>
-        </Select>
-      </label>
-
-      <label className="manager-filter-field">
         <span>性別</span>
         <Select value={filters.detail.gender} onChange={(event) => onUpdateDetail("gender", event.target.value)}>
           <option value="">すべて</option>

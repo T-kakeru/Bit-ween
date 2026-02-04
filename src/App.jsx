@@ -99,6 +99,7 @@ function App() {
     return () => window.removeEventListener("app:page-title", handler);
   }, []);
 
+
   const handleOpenSettings = () => {
     setActiveNav("設定");
     setIsSidebarOpen(false);
