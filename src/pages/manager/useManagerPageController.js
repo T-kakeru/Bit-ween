@@ -13,7 +13,7 @@ const buildNewRowFromInput = ({ columns, rows, input, normalizeCell }) => {
     return Number.isFinite(num) ? Math.max(acc, num) : acc;
   }, 0);
 
-  const base = { id: maxId + 1 };
+  const base = { id: maxId + 1, ...(input ?? {}) };
   for (const col of columns ?? []) {
     let value = input?.[col.key] ?? "";
     if (DATE_KEYS.has(col.key)) {
@@ -43,9 +43,8 @@ const useManagerPageController = ({ columns, rows, setRows, normalizeCell }) => 
     (input) => {
       const newRow = buildNewRow(input);
       setRows((prev) => [...prev, newRow]);
-      closeAdd();
     },
-    [buildNewRow, closeAdd, setRows]
+    [buildNewRow, setRows]
   );
 
   return {

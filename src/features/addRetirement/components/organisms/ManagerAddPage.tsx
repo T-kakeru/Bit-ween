@@ -1,70 +1,62 @@
-import { useEffect, useMemo, useState } from "react";
-import { searchUsersByName, type UserProfile } from "@/shared/api/usersService";
+import { useMemo, useState } from "react";
 
 import useManagerAddForm from "@/features/addRetirement/hooks/useManagerAddForm";
 import type { ManagerColumn, ManagerRowInput } from "@/features/addRetirement/hooks/useManagerAddForm";
 import useManagerAddOptionLists from "@/features/addRetirement/hooks/useManagerAddOptionLists";
-import { normalizeManagerAddPayload } from "@/features/addRetirement/logic/normalizeManagerAddPayload";
+import { normalizeManagerAddPayload, type ManagerAddPayload } from "@/features/addRetirement/logic/normalizeManagerAddPayload";
 import { ManagerAddFormView } from "@/features/addRetirement/components/views/ManagerAddFormView";
+import { ManagerAddConfirmView } from "@/features/addRetirement/components/views/ManagerAddConfirmView";
+import { ManagerAddCredentialsView } from "@/features/addRetirement/components/views/ManagerAddCredentialsView";
+import {
+	buildEmployeeCredentials,
+	type EmployeeCredentials,
+} from "@/features/addRetirement/logic/buildEmployeeCredentials";
+import { buildEpisodeBreadcrumbItems } from "@/shared/components/Breadcrumb";
 
 type Props = {
 	columns: ManagerColumn[];
+	rows: Array<Record<string, any>>;
 	onCancel: () => void;
 	onSave: (input: ManagerRowInput) => void;
 };
 
 const GENDER_OPTIONS: Array<ManagerRowInput["性別"]> = ["男性", "女性", "その他"];
 
-type EmploymentMode = "retired" | "active";
-
-const toHyphenDate = (value: any): string => {
-	if (!value) return "";
-	const raw = String(value).trim();
-	if (!raw) return "";
-	if (raw.includes("-")) return raw;
-	if (raw.includes("/")) {
-		const [y, m, d] = raw.split("/");
-		if (!y || !m || !d) return "";
-		return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-	}
-	return "";
-};
+type Step = "form" | "confirm" | "credentials";
 
 // organisms: 機能コンテナ（Hooks/Logic を統合し、Viewへpropsで渡す）
-const ManagerAddPage = ({ columns, onCancel, onSave }: Props) => {
-	const [employmentMode, setEmploymentMode] = useState<EmploymentMode>("retired");
-	const [employeeQuery, setEmployeeQuery] = useState("");
-	const [selectedEmployee, setSelectedEmployee] = useState<UserProfile | null>(null);
 
-	const {
-		statusOptions,
-		reasonOptions,
-		clientOptions,
-		addStatusOption,
-		addReasonOption,
-		addClientOption,
-	} = useManagerAddOptionLists();
+const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
+	const [step, setStep] = useState<Step>("form");
+	const [pendingPayload, setPendingPayload] = useState<ManagerAddPayload | null>(null);
+	const [credentials, setCredentials] = useState<EmployeeCredentials | null>(null);
+
+	const { departmentOptions, statusOptions, reasonOptions, clientOptions, addDepartmentOption, addClientOption } =
+		useManagerAddOptionLists();
 
 	const {
 		form,
-		hasStatusColumn,
 		canSave,
 		registerName,
+		employeeIdError,
+		departmentError,
 		nameError,
 		genderError,
 		birthDateError,
+		emailError,
 		joinDateError,
 		retireDateError,
+		reasonError,
 		statusError,
 		clientError,
-		reasonError,
 		educationPointError,
 		careerPointError,
 		handleSubmit,
-		setDefaultValues,
-		setName,
+		setEmployeeId,
+		setDepartment,
 		setGender,
 		setBirthDate,
+		setEmail,
 		setJoinDate,
 		setRetireDate,
 		setStatus,
@@ -72,93 +64,115 @@ const ManagerAddPage = ({ columns, onCancel, onSave }: Props) => {
 		setReason,
 		setEducationPoint,
 		setCareerPoint,
-	} = useManagerAddForm({ columns });
+		isActive,
+		setIsActive,
+	} = useManagerAddForm({ columns, rows });
 
-	const activeCandidates = useMemo(() => {
-		return searchUsersByName(employeeQuery, { limit: 10, activeOnly: true });
-	}, [employeeQuery]);
-
-	useEffect(() => {
-		// 在籍モードでは退職関連は常に「なし」
-		if (employmentMode !== "active") return;
-		setRetireDate("");
-		setReason("");
-	}, [employmentMode]);
-
-	const selectEmployee = (user: UserProfile) => {
-		setSelectedEmployee(user);
-		setDefaultValues({
-			"名前": String(user?.name ?? ""),
-			"性別": ((String(user?.gender ?? "") as any) || "") as any,
-			"生年月日": toHyphenDate(user?.birthDate),
-			"入社日": toHyphenDate(user?.joinDate),
-			// 既存社員は基本的にread-only表示（紐づけ）なので、ステータスも固定値で表示
-			"ステータス": String(user?.status ?? ""),
-			"退職日": "",
-			"退職理由": "",
-		});
-	};
-
-	const isFormLocked = employmentMode === "active";
-	const canSubmit = employmentMode === "active" ? Boolean(selectedEmployee) && canSave : canSave;
-	const shouldShowDetails = employmentMode === "retired" || Boolean(selectedEmployee);
+	// ラベル用のパンくずリストを生成
+	const breadcrumbs = useMemo(
+		() =>
+			buildEpisodeBreadcrumbItems({
+				baseItems: [{ label: "離職者情報一覧", onClick: onCancel }],
+				episodes: [
+					{ id: "form", label: "新規従業員登録" },
+					{ id: "confirm", label: "登録確認画面" },
+					{ id: "credentials", label: "登録完了画面" },
+				],
+				currentEpisodeId: step,
+				onEpisodeClick: (episodeId) => {
+					if (episodeId === "form") setStep("form");
+					if (episodeId === "confirm") setStep("confirm");
+				},
+			}),
+		[onCancel, step]
+	);
 
 	const onSubmit = handleSubmit((values) => {
-		if (!canSubmit) return;
+		if (!canSave) return;
 		const payload = normalizeManagerAddPayload(form, values);
-		onSave(payload);
+		setPendingPayload(payload);
+		setStep("confirm");
 	});
+
+	// 登録確定時の処理
+	const handleConfirm = () => {
+		if (!pendingPayload) return;
+		onSave(pendingPayload);
+
+		const isEmployeeRegistration = pendingPayload.is_active;
+		if (!isEmployeeRegistration) {
+			onCancel();
+			return;
+		}
+
+		const nextCredentials = buildEmployeeCredentials(pendingPayload);
+		setCredentials(nextCredentials);
+		setStep("credentials");
+	};
+
+	if (step === "confirm" && pendingPayload) {
+		return (
+			<ManagerAddConfirmView
+				breadcrumbs={breadcrumbs}
+				payload={pendingPayload}
+				onBack={() => setStep("form")}
+				onConfirm={handleConfirm}
+			/>
+		);
+	}
+
+	if (step === "credentials" && pendingPayload && credentials) {
+		return (
+			<ManagerAddCredentialsView
+				breadcrumbs={breadcrumbs}
+				email={credentials.email}
+				initialPassword={credentials.initialPassword}
+				copyText={credentials.copyText}
+				onDone={onCancel}
+			/>
+		);
+	}
 
 	return (
 		<ManagerAddFormView
-			breadcrumbs={[{ label: "離職者情報一覧", onClick: onCancel }, { label: "新規従業員登録" }]}
-			employmentMode={employmentMode}
-			onChangeEmploymentMode={(next) => {
-				setEmploymentMode(next);
-				setEmployeeQuery("");
-				setSelectedEmployee(null);
-				if (next === "active") {
-					setRetireDate("");
-					setReason("");
-				}
-			}}
-			employeeQuery={employeeQuery}
-			onChangeEmployeeQuery={setEmployeeQuery}
-			selectedEmployee={selectedEmployee}
-			activeCandidates={activeCandidates}
-			onSelectEmployee={selectEmployee}
-			shouldShowDetails={shouldShowDetails}
-			isFormLocked={isFormLocked}
+			breadcrumbs={breadcrumbs}
 			form={form}
+				isActive={isActive}
 			registerName={registerName}
+			employeeIdError={employeeIdError}
+			departmentError={departmentError}
 			nameError={nameError}
 			genderError={genderError}
 			birthDateError={birthDateError}
+			emailError={emailError}
 			joinDateError={joinDateError}
 			retireDateError={retireDateError}
+			reasonError={reasonError}
 			statusError={statusError}
 			clientError={clientError}
-			reasonError={reasonError}
 			educationPointError={educationPointError}
 			careerPointError={careerPointError}
 			genderOptions={GENDER_OPTIONS}
-			onChangeGender={(v) => setGender(v as ManagerRowInput["性別"])}
-			onChangeBirthDate={setBirthDate}
-			onChangeJoinDate={setJoinDate}
-			onChangeRetireDate={setRetireDate}
+			departmentOptions={departmentOptions}
 			statusOptions={statusOptions}
 			reasonOptions={reasonOptions}
 			clientOptions={clientOptions}
-			onAddStatusOption={addStatusOption}
-			onAddReasonOption={addReasonOption}
+			onAddDepartmentOption={addDepartmentOption}
 			onAddClientOption={addClientOption}
-			hasStatusColumn={hasStatusColumn}
+			onChangeEmployeeId={setEmployeeId}
+			onChangeDepartment={setDepartment}
+			onChangeGender={(v) => setGender(v as ManagerRowInput["性別"])}
+			onChangeBirthDate={setBirthDate}
+			onChangeEmail={setEmail}
+			onChangeJoinDate={setJoinDate}
+			onChangeRetireDate={setRetireDate}
 			onChangeStatus={setStatus}
 			onChangeClient={setClient}
 			onChangeReason={setReason}
 			onChangeEducationPoint={setEducationPoint}
 			onChangeCareerPoint={setCareerPoint}
-			canSubmit={canSubmit}
+				onChangeIsActive={setIsActive}
+			canSubmit={canSave}
 			onSubmit={onSubmit}
 			onCancel={onCancel}
 		/>

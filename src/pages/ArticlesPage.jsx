@@ -24,6 +24,13 @@ const ArticlesPage = ({
   initialQuickFilter,
   savedArticles,
 }) => {
+  const departmentNames = useMemo(() => {
+    const list = Array.isArray(departments) ? departments : [];
+    return list
+      .map((d) => String(d?.name ?? "").trim())
+      .filter(Boolean);
+  }, []);
+
   const { applySavedState, isSaved, toggleSaved } = savedArticles;
   const {
     selectedTags,
@@ -40,8 +47,8 @@ const ArticlesPage = ({
   // モックデータを正規化し、絞り込み用のfacetも付与（データの“入口”はPagesで統合）
   const mockItems = useMemo(() => {
     const normalized = normalizeArticles(mockArticles);
-    return addArticleFacets(normalized, { departments });
-  }, []);
+    return addArticleFacets(normalized, { departments: departmentNames });
+  }, [departmentNames]);
 
   const { articles, isLoadingInitial, isLoadingMore, loadError, hasMore, loadMoreRef } = useArticleList({
     fetcher: fetchArticles,
@@ -52,7 +59,10 @@ const ArticlesPage = ({
   });
 
   // facet付与（API/モック両方の出力に適用）
-  const articlesWithFacets = useMemo(() => addArticleFacets(articles ?? [], { departments }), [articles]);
+  const articlesWithFacets = useMemo(
+    () => addArticleFacets(articles ?? [], { departments: departmentNames }),
+    [articles, departmentNames]
+  );
   const articlesWithSavedState = useMemo(
     () => applySavedState(articlesWithFacets),
     [applySavedState, articlesWithFacets]
@@ -101,7 +111,7 @@ const ArticlesPage = ({
       loadMoreRef={loadMoreRef}
       categories={categories}
       tags={tags}
-      departments={departments}
+      departments={departmentNames}
       selectedCategories={selectedCategories}
       selectedTags={selectedTags}
       selectedDepartments={selectedDepartments}

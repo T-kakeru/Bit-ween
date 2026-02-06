@@ -214,11 +214,7 @@ export const normalizeRetirementData = (rows = []) =>
     return (Array.isArray(rows) ? rows : []).map((row, index) => ({
       ...row,
       id: row?.id ?? index + 1,
-      hasRetirementInfo: Boolean(
-        (row?.退職日 && String(row.退職日).trim() !== "") ||
-          (row?.退職月 && String(row.退職月).trim() !== "") ||
-          (row?.退職理由 && String(row.退職理由).trim() !== "")
-      ),
+      hasRetirementInfo: row?.is_active === false,
       // 年集計は「元の年月（正規化後）」を使う
       retirementDateOriginal: normalizeOriginalDate(row?.退職日, row?.退職月),
       retirementDate: normalizeDate(row?.退職日, row?.退職月),

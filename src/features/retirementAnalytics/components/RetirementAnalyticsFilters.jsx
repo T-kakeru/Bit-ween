@@ -189,7 +189,7 @@ const RetirementAnalyticsFilters = ({
       </div>
 
       <div className="analytics-filter">
-        <span className="analytics-filter-label">ステータス</span>
+        <span className="analytics-filter-label">稼働状態</span>
         <StatusMultiSelect selected={statuses} onChange={onStatusesChange} />
       </div>
 

@@ -5,6 +5,7 @@ import ManagerAddPageOrganism from "@/features/addRetirement/components/organism
 
 type Props = {
 	columns: ManagerColumn[];
+	rows: Array<Record<string, any>>;
 	onCancel: () => void;
 	onSave: (input: ManagerRowInput) => void;
 };

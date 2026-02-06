@@ -22,8 +22,6 @@ export type UserProfile = {
   };
 };
 
-const STORAGE_KEY = "bitween:mockUsers";
-
 const normalizeKey = (value: unknown) => {
   return String(value ?? "")
     .trim()
@@ -32,30 +30,11 @@ const normalizeKey = (value: unknown) => {
     .replace(/\s+/g, "");
 };
 
-const readStorageUsers = (): UserProfile[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as UserProfile[]) : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeStorageUsers = (users: UserProfile[]) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-  } catch {
-    // ignore
-  }
-};
+const runtimeUsers: UserProfile[] = [];
 
 export const listUsers = (): UserProfile[] => {
   const baseUsers = (baseUsersJson as any) as UserProfile[];
-  const storageUsers = readStorageUsers();
+  const storageUsers = runtimeUsers;
 
   // Prefer storage users if the same id exists.
   const byId = new Map<string, UserProfile>();
@@ -65,9 +44,12 @@ export const listUsers = (): UserProfile[] => {
 };
 
 export const addUser = (user: UserProfile) => {
-  const current = readStorageUsers();
-  const next = [...current, user];
-  writeStorageUsers(next);
+  const next = { ...(user ?? {}) } as UserProfile;
+  if (!next?.id) return;
+
+  const index = runtimeUsers.findIndex((u) => u.id === next.id);
+  if (index >= 0) runtimeUsers[index] = next;
+  else runtimeUsers.push(next);
 };
 
 export type SearchUsersOptions = {

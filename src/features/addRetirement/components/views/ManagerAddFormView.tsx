@@ -1,38 +1,38 @@
-import type { FormEventHandler } from "react";
-import type { UserProfile } from "@/shared/api/usersService";
+﻿import type { FormEventHandler } from "react";
 import Divider from "@/shared/ui/Divider";
 import Button from "@/shared/ui/Button";
-import Breadcrumb from "@/shared/components/Breadcrumb";
+import Breadcrumb, { type BreadcrumbItem } from "@/shared/components/Breadcrumb";
+import Heading from "@/shared/ui/Heading";
+import TextCaption from "@/shared/ui/TextCaption";
 
 import type { ManagerRowInput } from "@/features/addRetirement/hooks/useManagerAddForm";
-import { FieldDate, FieldNumber, FieldChipGroup, FieldCombobox, FieldShell, NameField } from "@/features/addRetirement/components/molecules";
-
-type EmploymentMode = "retired" | "active";
+import {
+  FieldDate,
+  FieldNumber,
+  FieldChipGroup,
+  FieldCombobox,
+  FieldSelect,
+  FieldText,
+  NameField,
+} from "@/features/addRetirement/components/molecules";
 
 type Props = {
-  breadcrumbs: Array<{ label: string; onClick?: () => void }>;
-
-  employmentMode: EmploymentMode;
-  onChangeEmploymentMode: (next: EmploymentMode) => void;
-
-  employeeQuery: string;
-  onChangeEmployeeQuery: (v: string) => void;
-
-  selectedEmployee: UserProfile | null;// 選択中の社員情報
-  activeCandidates: UserProfile[];
-  onSelectEmployee: (u: UserProfile) => void;// 選択された社員を設定する
-
-  shouldShowDetails: boolean;
-  isFormLocked: boolean;// 入力不可状態かどうか
-
+  breadcrumbs: BreadcrumbItem[];
   form: ManagerRowInput;
 
+  isActive: boolean;
+  onChangeIsActive: (next: boolean) => void;
+
   registerName: any;
+
+  employeeIdError?: string;
+  departmentError?: string;
   nameError?: string;
 
   genderError?: string;
 
   birthDateError?: string;
+  emailError?: string;
   joinDateError?: string;
   retireDateError?: string;
   statusError?: string;
@@ -45,17 +45,20 @@ type Props = {
   onChangeGender: (v: string) => void;
 
   onChangeBirthDate: (v: string) => void;
+  onChangeEmail: (v: string) => void;
+
+  onChangeEmployeeId: (v: string) => void;
+  departmentOptions: string[];
+  onChangeDepartment: (v: string) => void;
+  onAddDepartmentOption: (v: string) => void;
+
   onChangeJoinDate: (v: string) => void;
   onChangeRetireDate: (v: string) => void;
 
   statusOptions: string[];
   reasonOptions: string[];
   clientOptions: string[];
-  onAddStatusOption: (v: string) => void;
-  onAddReasonOption: (v: string) => void;
   onAddClientOption: (v: string) => void;
-
-  hasStatusColumn: boolean;
 
   onChangeStatus: (v: string) => void;
   onChangeClient: (v: string) => void;
@@ -71,20 +74,16 @@ type Props = {
 
 export const ManagerAddFormView = ({
   breadcrumbs,
-  employmentMode,
-  onChangeEmploymentMode,
-  employeeQuery,
-  onChangeEmployeeQuery,
-  selectedEmployee,
-  activeCandidates,
-  onSelectEmployee,
-  shouldShowDetails,
-  isFormLocked,
   form,
+  isActive,
+  onChangeIsActive,
   registerName,
+  employeeIdError,
+  departmentError,
   nameError,
   genderError,
   birthDateError,
+  emailError,
   joinDateError,
   retireDateError,
   statusError,
@@ -93,17 +92,19 @@ export const ManagerAddFormView = ({
   educationPointError,
   careerPointError,
   genderOptions,
+  departmentOptions,
+  onAddDepartmentOption,
+  onChangeEmployeeId,
+  onChangeDepartment,
   onChangeGender,
   onChangeBirthDate,
+  onChangeEmail,
   onChangeJoinDate,
   onChangeRetireDate,
   statusOptions,
   reasonOptions,
   clientOptions,
-  onAddStatusOption,
-  onAddReasonOption,
   onAddClientOption,
-  hasStatusColumn,
   onChangeStatus,
   onChangeClient,
   onChangeReason,
@@ -121,223 +122,157 @@ export const ManagerAddFormView = ({
             <div className="mb-1">
               <Breadcrumb items={breadcrumbs} />
             </div>
+
+				<Heading level={2}>新規従業員登録</Heading>
           </div>
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-8">
+
+          <TextCaption>
+            在籍状態（在籍中/退職済）は、退職日とは独立して選べます。退職予定（退職日あり・在籍中）も扱えます。
+          </TextCaption>
+
           <div className="space-y-5">
+            <NameField label="氏名" register={registerName} errorMessage={nameError} required />
+
             <FieldChipGroup
-              label="登録する社員の状態"
+              label="性別"
               required
-              helper="退職者を登録するか、既存（在籍）社員に紐づけて登録するかを選択します"
-              value={employmentMode === "retired" ? "退職者" : "在籍"}
-              options={["退職者", "在籍"]}
+              value={form["性別"]}
+              options={genderOptions}
+              onChange={onChangeGender}
               allowEmpty={false}
-              onChange={(v) => {
-                if (v === "退職者") {
-                  onChangeEmploymentMode("retired");
-                  return;
-                }
-                onChangeEmploymentMode("active");
-              }}
+              errorMessage={genderError}
+            />
+
+            <FieldDate
+              label="生年月日"
+              value={form["生年月日"]}
+              onChange={onChangeBirthDate}
+              errorMessage={birthDateError}
+            />
+          </div>
+
+          {/* 連絡先の上にグレーのライン */}
+          <Divider className="border-slate-200" />
+
+          <div className="space-y-5">
+            <FieldText
+              label="メールアドレス"
+              required
+              value={form["メールアドレス"]}
+              onChange={onChangeEmail}
+              placeholder="example@company.com"
+              errorMessage={emailError}
+            />
+          </div>
+
+          {/* 連絡先の下にグレーのライン（社員ID区切り） */}
+          <Divider className="border-slate-200" />
+
+          <div className="space-y-5">
+            <FieldText
+              label="社員ID"
+              required
+              value={form["社員ID"]}
+              onChange={onChangeEmployeeId}
+              placeholder="社員IDを入力"
+              errorMessage={employeeIdError}
+            />
+
+            <FieldCombobox
+              label="部署"
+              required
+              value={form["部署"]}
+              options={departmentOptions}
+              onChange={onChangeDepartment}
+              onAddOption={onAddDepartmentOption}
+              placeholder="部署を登録"
+              helper="検索して選択 / 新規追加"
+              errorMessage={departmentError}
+            />
+
+            <FieldDate
+              label="入社日"
+              value={form["入社日"]}
+              onChange={onChangeJoinDate}
+              errorMessage={joinDateError}
+            />
+
+            <FieldChipGroup
+              label="在籍状態"
+              required
+              value={isActive ? "在籍中" : "退職済"}
+              options={["在籍中", "退職済"]}
+              onChange={(v) => onChangeIsActive(v === "在籍中")}
+              allowEmpty={false}
+              helper={
+                "退職日が入力されていても在籍中（退職予定）として登録できます。退職済として登録する場合は「退職済」を選択してください。"
+              }
+            />
+
+            <FieldDate
+              label="退職日"
+              value={form["退職日"]}
+              onChange={onChangeRetireDate}
+              errorMessage={retireDateError}
+            />
+            <FieldSelect
+              label="退職理由"
+              required={!isActive}
+              disabled={!form["退職日"]}
+              value={form["退職理由"]}
+              options={reasonOptions}
+              onChange={onChangeReason}
+              helper={!form["退職日"] ? "退職日を入力すると選択できます" : undefined}
+              errorMessage={reasonError}
             />
 
             <Divider className="border-slate-200" />
 
-            {employmentMode === "active" ? (
-              <FieldShell label="社員を検索する" required helper="名前で検索して既存（在籍）社員を選択してください">
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={employeeQuery}
-                    onChange={(e) => onChangeEmployeeQuery(e.target.value)}
-                    placeholder="例）山田"
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
-                  />
+            <FieldSelect
+              label="稼働状態"
+              required
+              value={form["ステータス"]}
+              options={statusOptions}
+              onChange={onChangeStatus}
+              errorMessage={statusError}
+            />
 
-                  {selectedEmployee ? (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                      選択中: {String(selectedEmployee?.name ?? "")}
-                    </div>
-                  ) : null}
-
-                  {activeCandidates.length ? (
-                    <ul className="max-h-44 overflow-auto rounded-lg border border-slate-200 bg-white">
-                      {activeCandidates.map((u) => (
-                        <li key={u.id}>
-                          <button
-                            type="button"
-                            onClick={() => onSelectEmployee(u)}
-                            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-900 hover:bg-slate-50"
-                          >
-                            <span className="font-medium">{String(u?.name ?? "")}</span>
-                            <span className="text-xs text-slate-500">{String(u?.status ?? "")}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-xs text-slate-500">候補がありません</p>
-                  )}
-                </div>
-              </FieldShell>
-            ) : null}
+            <FieldCombobox
+              label="稼働先"
+              value={form["当時のクライアント"]}
+              options={clientOptions}
+              onChange={onChangeClient}
+              onAddOption={onAddClientOption}
+              placeholder="検索 or 追加"
+              helper="検索して選択 / 新規追加"
+              errorMessage={clientError}
+            />
           </div>
 
-          {shouldShowDetails ? (
-            <>
-              <div className="space-y-5">
-                {isFormLocked ? (
-                  <>
-                    <FieldShell label="名前" required>
-                      <input
-                        type="text"
-                        value={form["名前"]}
-                        disabled
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
-                      />
-                    </FieldShell>
-                    <FieldShell label="性別">
-                      <input
-                        type="text"
-                        value={form["性別"] || ""}
-                        disabled
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
-                      />
-                    </FieldShell>
-                    <FieldShell label="生年月日">
-                      <input
-                        type="text"
-                        value={form["生年月日"] || ""}
-                        disabled
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
-                      />
-                    </FieldShell>
-                  </>
-                ) : (
-                  <>
-                    <NameField label="名前" register={registerName} errorMessage={nameError} required />
-                    <FieldChipGroup
-                      label="性別"
-                      required
-                      value={form["性別"]}
-                      options={genderOptions}
-                      onChange={onChangeGender}
-                      allowEmpty={false}
-                      errorMessage={genderError}
-                    />
-                    <FieldDate
-                      label="生年月日"
-                      value={form["生年月日"]}
-                      onChange={onChangeBirthDate}
-                      errorMessage={birthDateError}
-                    />
-                  </>
-                )}
-              </div>
-
-              <Divider className="border-slate-200" />
-
-              <div className="space-y-5">
-                {isFormLocked ? (
-                  <FieldShell label="入社日">
-                    <input
-                      type="text"
-                      value={form["入社日"] || ""}
-                      disabled
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
-                    />
-                  </FieldShell>
-                ) : (
-                  <FieldDate
-                    label="入社日"
-                    value={form["入社日"]}
-                    onChange={onChangeJoinDate}
-                    errorMessage={joinDateError}
-                  />
-                )}
-
-                {employmentMode === "retired" ? (
-                  <FieldDate
-                    label="退職日"
-                    value={form["退職日"]}
-                    onChange={onChangeRetireDate}
-                    errorMessage={retireDateError}
-                  />
-                ) : null}
-
-                {isFormLocked ? (
-                  <FieldShell label="ステータス">
-                    <input
-                      type="text"
-                      value={form["ステータス"] || ""}
-                      disabled
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
-                    />
-                  </FieldShell>
-                ) : (
-                  <FieldCombobox
-                    label="ステータス"
-                    value={form["ステータス"]}
-                    options={statusOptions}
-                    onChange={onChangeStatus}
-                    onAddOption={onAddStatusOption}
-                    helper={hasStatusColumn ? "検索して選択 / 新規追加" : "（COLUMNSに無い場合でも保存可能）"}
-                    placeholder="検索 or 追加"
-                    errorMessage={statusError}
-                  />
-                )}
-
-                <FieldCombobox
-                  label="当時のクライアント"
-                  value={form["当時のクライアント"]}
-                  options={clientOptions}
-                  onChange={onChangeClient}
-                  onAddOption={onAddClientOption}
-                  placeholder="検索 or 追加"
-                  errorMessage={clientError}
-                />
-
-                {employmentMode === "retired" ? (
-                  <FieldCombobox
-                    label="退職理由"
-                    value={form["退職理由"]}
-                    options={reasonOptions}
-                    onChange={onChangeReason}
-                    onAddOption={onAddReasonOption}
-                    placeholder="検索 or 追加"
-                    errorMessage={reasonError}
-                  />
-                ) : null}
-              </div>
-
-              <Divider className="border-slate-200" />
-
-              <div className="space-y-5">
-                <FieldNumber
-                  label="学歴point"
-                  value={form["学歴point"]}
-                  onChange={onChangeEducationPoint}
-                  errorMessage={educationPointError}
-                />
-                <FieldNumber
-                  label="経歴point"
-                  value={form["経歴point"]}
-                  onChange={onChangeCareerPoint}
-                  errorMessage={careerPointError}
-                />
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-slate-500">社員を選択すると入力内容が表示されます。</p>
-          )}
+          <div className="space-y-5">
+            <FieldNumber
+              label="学歴P"
+              value={form["学歴point"]}
+              onChange={onChangeEducationPoint}
+              errorMessage={educationPointError}
+            />
+            <FieldNumber
+              label="経歴P"
+              value={form["経歴point"]}
+              onChange={onChangeCareerPoint}
+              errorMessage={careerPointError}
+            />
+          </div>
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={onCancel}>
               キャンセル
             </Button>
             <Button type="submit" disabled={!canSubmit}>
-              保存する
+              確認へ進む
             </Button>
           </div>
         </form>

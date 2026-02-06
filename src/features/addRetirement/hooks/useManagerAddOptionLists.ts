@@ -1,20 +1,13 @@
 import { useState } from "react";
-import employees from "@/shared/data/mock/retirement.json";
+import { REASONS, STATUSES } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
+import departments from "@/shared/data/mock/departments.json";
+import clients from "@/shared/data/mock/clients.json";
 
-const uniqueValues = (list: unknown[], key: string) =>
-  Array.from(
-    new Set(
-      list
-        .map((item) => (item as Record<string, string | undefined>)?.[key])
-        .filter((value): value is string => Boolean(value && String(value).trim()))
-    )
-  ).sort((a, b) => a.localeCompare(b, "ja"));
-
-const EMPLOYEES = employees as unknown[];
-
-const INITIAL_REASON_OPTIONS = uniqueValues(EMPLOYEES, "退職理由");
-const INITIAL_CLIENT_OPTIONS = uniqueValues(EMPLOYEES, "当時のクライアント");
-const INITIAL_STATUS_OPTIONS = ["開発", "営業", "事務", "派遣", "待機", "その他"];
+// 
+const toNames = (list: any[]): string[] =>
+  (Array.isArray(list) ? list : [])
+    .map((x) => String(x?.name ?? "").trim())
+    .filter(Boolean);
 
 const addToList = (prev: string[], nextValue: string) => {
   const value = nextValue.trim();
@@ -23,16 +16,19 @@ const addToList = (prev: string[], nextValue: string) => {
 };
 
 const useManagerAddOptionLists = () => {
-  const [statusOptions, setStatusOptions] = useState<string[]>(() => [...INITIAL_STATUS_OPTIONS]);
-  const [reasonOptions, setReasonOptions] = useState<string[]>(() => [...INITIAL_REASON_OPTIONS]);
-  const [clientOptions, setClientOptions] = useState<string[]>(() => [...INITIAL_CLIENT_OPTIONS]);
+  const [departmentOptions, setDepartmentOptions] = useState<string[]>(() => toNames(departments as any));
+  const [clientOptions, setClientOptions] = useState<string[]>(() => toNames(clients as any));
+  const statusOptions = ["稼働中", "待機", "休職中"].filter((v) =>
+    (STATUSES as unknown as string[]).includes(v)
+  );
+  const reasonOptions = REASONS as unknown as string[];
 
   return {
+    departmentOptions,
     statusOptions,
     reasonOptions,
     clientOptions,
-    addStatusOption: (value: string) => setStatusOptions((prev) => addToList(prev, value)),
-    addReasonOption: (value: string) => setReasonOptions((prev) => addToList(prev, value)),
+    addDepartmentOption: (value: string) => setDepartmentOptions((prev) => addToList(prev, value)),
     addClientOption: (value: string) => setClientOptions((prev) => addToList(prev, value)),
   };
 };

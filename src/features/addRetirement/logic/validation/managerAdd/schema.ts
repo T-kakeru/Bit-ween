@@ -1,40 +1,37 @@
 import { z } from "zod";
 import { trimmedStringMinMax } from "../shared/primitives";
 import { managerAddMessages } from "./messages";
+import { REASONS, STATUSES } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
-const parseDate = (value: string): Date | null => {
-  const raw = String(value ?? "").trim();
-  if (!raw) return null;
-  const normalized = raw.includes("/") ? raw.replaceAll("/", "-") : raw;
-  const [y, m, d] = normalized.split("-").map((v) => Number(v));
-  if (!y || !m || !d) return null;
-  const date = new Date(y, m - 1, d);
-  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return null;
-  return date;
-};
+const OPTIONAL_DATE = z
+  .string()
+  .trim()
+  .refine((v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v), { message: "日付の形式が正しくありません" });
 
-const toDateOnly = (value: Date): Date => new Date(value.getFullYear(), value.getMonth(), value.getDate());
-
-const diffMonths = (start: Date, end: Date): number => {
-  const base = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-  return end.getDate() < start.getDate() ? base - 1 : base;
-};
-
-const calculateAge = (birthDate: Date, today: Date): number => {
-  return (
-    today.getFullYear() -
-    birthDate.getFullYear() -
-    ((today.getMonth() < birthDate.getMonth()) ||
-      (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
-      ? 1
-      : 0)
-  );
-};
-
-const withinRangeDate = (value: Date, min: Date, max: Date): boolean => value >= min && value <= max;
+const EMPLOYEE_ID_MAX_LENGTH = 100;
 
 export const managerAddSchema = z.object({
-  // 現時点ではフォームで扱う主要項目のみを対象にバリデーション
+  isActive: z.boolean(),
+  employeeId: z
+    .string()
+    .trim()
+    .superRefine((v, ctx) => {
+      if (!v) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.employeeIdRequired });
+        return;
+      }
+      if (v.length > EMPLOYEE_ID_MAX_LENGTH) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.employeeIdTooLong });
+      }
+    }),
+  department: z
+    .string()
+    .trim()
+    .superRefine((v, ctx) => {
+      if (!v) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.departmentRequired });
+      }
+    }),
   name: trimmedStringMinMax({
     min: 2,
     max: 50,
@@ -50,94 +47,83 @@ export const managerAddSchema = z.object({
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.genderRequired });
     }
   }),
-  birthDate: z.string().trim(),
-  joinDate: z.string().trim(),
-  retireDate: z.string().trim(),
-  status: z.string().trim().max(20, { message: managerAddMessages.statusTooLong }),
-  client: z.string().trim().max(50, { message: managerAddMessages.clientTooLong }),
-  reason: z.string().trim().max(100, { message: managerAddMessages.reasonTooLong }),
-  educationPoint: z
-    .number({ message: managerAddMessages.educationPointInvalid })
-    .min(0, { message: managerAddMessages.educationPointInvalid })
-    .max(99, { message: managerAddMessages.educationPointTooHigh })
-    .optional(),
-  careerPoint: z
-    .number({ message: managerAddMessages.careerPointInvalid })
-    .min(0, { message: managerAddMessages.careerPointInvalid })
-    .max(99, { message: managerAddMessages.careerPointTooHigh })
-    .optional(),
+  birthDate: OPTIONAL_DATE,
+  email: z
+    .string()
+    .trim()
+    .superRefine((v, ctx) => {
+      if (!v) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.emailRequired });
+        return;
+      }
+      const ok = z.string().email().safeParse(v).success;
+      if (!ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.emailInvalid });
+    }),
+  joinDate: OPTIONAL_DATE,
+  retireDate: OPTIONAL_DATE,
+  retireReason: z.string().trim(),
+  workStatus: z.string().trim().superRefine((v, ctx) => {
+    if (!v) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.workStatusRequired });
+      return;
+    }
+    const options = STATUSES as unknown as string[];
+    if (!options.includes(v)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.workStatusRequired });
+    }
+  }),
+  client: z.string().trim(),
+  educationPoint: z.union([z.number().min(0).max(999), z.literal("")]),
+  careerPoint: z.union([z.number().min(0).max(999), z.literal("")]),
 }).superRefine((values, ctx) => {
-  const today = toDateOnly(new Date());
-  const min1900 = new Date(1900, 0, 1);
+  const reasons = REASONS as unknown as string[];
 
-  const birthDate = parseDate(values.birthDate);
-  if (birthDate) {
-    if (!withinRangeDate(birthDate, min1900, today)) {
+  // 在籍中の場合
+  if (values.isActive) {
+    // 退職日が未入力なら退職理由は入力不可
+    if (!values.retireDate && values.retireReason) {
       ctx.addIssue({
+        path: ["retireReason"],
         code: z.ZodIssueCode.custom,
-        path: ["birthDate"],
-        message: birthDate < min1900 ? managerAddMessages.birthDateBefore1900 : managerAddMessages.birthDateInFuture,
+        message: managerAddMessages.retireReasonRequiresDate,
       });
-    } else {
-      const age = calculateAge(birthDate, today);
-      if (age < 15) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["birthDate"], message: managerAddMessages.birthDateUnder15 });
-      }
-      if (age >= 75) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["birthDate"], message: managerAddMessages.birthDateOver75 });
-      }
+      return;
     }
-  }
 
-  const joinDate = parseDate(values.joinDate);
-  const retireDate = parseDate(values.retireDate);
-  if (joinDate) {
-    if (!withinRangeDate(joinDate, min1900, today)) {
+    // 退職日が入力されている（退職予定など）の場合、退職理由は任意（入力されていれば選択肢だけチェック）
+    if (values.retireDate && values.retireReason && !reasons.includes(values.retireReason)) {
       ctx.addIssue({
+        path: ["retireReason"],
         code: z.ZodIssueCode.custom,
-        path: ["joinDate"],
-        message: joinDate < min1900 ? managerAddMessages.joinDateBefore1900 : managerAddMessages.joinDateInFuture,
+        message: managerAddMessages.retireReasonRequired,
       });
     }
-    if (birthDate) {
-      const minJoin = new Date(birthDate.getFullYear() + 15, birthDate.getMonth(), birthDate.getDate());
-      if (joinDate < minJoin) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["joinDate"],
-          message: managerAddMessages.joinDateBefore15Years,
-        });
-      }
-    }
+    return;
   }
 
-  if (!retireDate) return;
-
-  if (joinDate && retireDate < joinDate) {
+  // 退職済の場合
+  if (!values.retireDate) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
       path: ["retireDate"],
-      message: managerAddMessages.retireDateBeforeJoinDate,
+      code: z.ZodIssueCode.custom,
+      message: managerAddMessages.retireDateRequired,
     });
+    return;
   }
-
-  if (retireDate > today) {
+  if (!values.retireReason) {
     ctx.addIssue({
+      path: ["retireReason"],
       code: z.ZodIssueCode.custom,
-      path: ["retireDate"],
-      message: managerAddMessages.retireDateInFuture,
+      message: managerAddMessages.retireReasonRequired,
     });
+    return;
   }
-
-  if (joinDate) {
-    const tenureMonths = diffMonths(joinDate, retireDate);
-    if (tenureMonths >= 50 * 12) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["retireDate"],
-        message: managerAddMessages.retireDateOver50Years,
-      });
-    }
+  if (!reasons.includes(values.retireReason)) {
+    ctx.addIssue({
+      path: ["retireReason"],
+      code: z.ZodIssueCode.custom,
+      message: managerAddMessages.retireReasonRequired,
+    });
   }
 });
 

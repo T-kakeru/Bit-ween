@@ -63,7 +63,7 @@ const EDIT_VALIDATION_MESSAGES = {
   retireDateBeforeJoinDate: "退職日は入社日より前の日付にできません",
   retireDateInFuture: "退職日が未来の日付です（退職予定の確認が必要です）",
   retireDateOver50Years: "勤続50年以上のため入力ミスの可能性があります",
-  statusTooLong: "ステータスは20文字以内で入力してください",
+  statusTooLong: "稼働状態は20文字以内で入力してください",
   educationPointInvalid: "学歴ポイントは0以上の数値で入力してください",
   educationPointTooHigh: "学歴ポイントは100未満で入力してください",
   careerPointInvalid: "経歴ポイントは0以上の数値で入力してください",

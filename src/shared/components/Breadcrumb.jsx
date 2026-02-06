@@ -1,3 +1,26 @@
+export const buildEpisodeBreadcrumbItems = ({
+  baseItems = [],
+  episodes = [],
+  currentEpisodeId,
+  onEpisodeClick,
+}) => {
+  const base = Array.isArray(baseItems) ? baseItems : [];
+  const eps = Array.isArray(episodes) ? episodes : [];
+
+  const currentIndex = eps.findIndex((e) => e?.id === currentEpisodeId);
+  const visibleEpisodes = currentIndex >= 0 ? eps.slice(0, currentIndex + 1) : eps;
+
+  const episodeItems = visibleEpisodes.map((e, index) => {
+    const isLast = index === visibleEpisodes.length - 1;
+    const label = String(e?.label ?? "").trim();
+    const id = String(e?.id ?? "").trim();
+    const onClick = !isLast && onEpisodeClick && id ? () => onEpisodeClick(id) : undefined;
+    return { label, onClick };
+  });
+
+  return [...base, ...episodeItems].filter((x) => String(x?.label ?? "").trim());
+};
+
 const Breadcrumb = ({ items = [] }) => {
   const lastIndex = items.length - 1;
 

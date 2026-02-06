@@ -1,18 +1,33 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   buildPendingChanges,
   buildRowMapById,
   buildAgeFromBirthDate,
   buildRetireMonthLabelFromRetireDate,
   NON_EDITABLE_KEYS,
+  toEditableValue,
   validateEditableCell,
 } from "@/features/retirement/logic/employeeEdit.logic";
+import clients from "@/shared/data/mock/clients.json";
+
+const toNames = (list) =>
+  (Array.isArray(list) ? list : [])
+    .map((x) => String(x?.name ?? "").trim())
+    .filter(Boolean);
 
 // EditableEmployeeTable の編集セッションを管理（状態管理の責務）
 const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveRows }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [draftRows, setDraftRows] = useState(() => (rows ?? []).map((row) => ({ ...row })));
   const [cellErrors, setCellErrors] = useState({});
+
+  const [clientOptions, setClientOptions] = useState(() => toNames(clients));
+
+  const addClientOption = useCallback((nextValue) => {
+    const value = String(nextValue ?? "").trim();
+    if (!value) return;
+    setClientOptions((prev) => (prev.includes(value) ? prev : [...prev, value]));
+  }, []);
 
   // 確認モーダル
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -56,6 +71,14 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
   const startEditing = () => {
     const nextDraft = (rows ?? []).map((row) => {
       const nextRow = { ...row };
+
+      // 表示用の「-」などを編集用の空文字へ寄せる（編集開始直後の誤エラー防止）
+      for (const column of columns ?? []) {
+        if (!column?.key) continue;
+        if (NON_EDITABLE_KEYS.has(column.key)) continue;
+        nextRow[column.key] = toEditableValue(nextRow[column.key], normalizeCell);
+      }
+
       // 自動計算（編集不可列）は常に最新へ揃える
       nextRow["退職月"] = buildRetireMonthLabelFromRetireDate(nextRow["退職日"]);
       nextRow["年齢"] = buildAgeFromBirthDate(nextRow["生年月日"]);
@@ -100,6 +123,11 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
         if (String(row.id) !== String(rowId)) return row;
 
         const nextRow = { ...row, [key]: value };
+
+        // 在籍状態は is_active を唯一の判定根拠にする
+        if (key === "在籍状態") {
+          nextRow.is_active = value === "在籍中";
+        }
 
         // 自動計算（編集不可列）
         if (key === "退職日") {
@@ -178,6 +206,9 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
     confirmSave,
 
     getCellError: (rowId, key) => cellErrors?.[String(rowId)]?.[key],
+
+    clientOptions,
+    addClientOption,
 
     // setters (必要最低限のみ)
     setDraftRows,

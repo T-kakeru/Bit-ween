@@ -7,6 +7,7 @@ import Card from "@/shared/ui/Card";
 import Button from "@/shared/ui/Button";
 import Input from "@/shared/ui/Input";
 import TextCaption from "@/shared/ui/TextCaption";
+import { SettingsMasterDataPanel } from "@/features/settings/components/organisms/SettingsMasterDataPanel";
 
 // pages: 画面単位の状態（画面遷移/表示分岐）を統合する
 const SettingsPage = () => {
@@ -73,65 +74,7 @@ const SettingsPage = () => {
 
       {/* オファー設定は削除されました（項目ごと削除の要望により）。 */}
 
-      <div className="settings-section-head">
-        <Heading level={2}>退職者情報管理</Heading>
-        <a className="settings-link" href="#" onClick={(e) => e.preventDefault()}>
-          管理
-        </a>
-      </div>
-
-      <Card className="settings-panel">
-        <div className="settings-row">
-          <div>
-            <p className="settings-title">ステータス候補の削除</p>
-            <TextCaption>システムに登録されたステータス候補の削除をします。</TextCaption>
-          </div>
-          <div>
-            {/* TODO(P2): ステータス候補の変更/削除（管理UI）を実装 */}
-            <Button type="button" variant="outline" disabled>
-              未実装
-            </Button>
-          </div>
-        </div>
-
-        <div className="settings-row">
-          <div>
-            <p className="settings-title">当時のクライアント候補の削除</p>
-            <TextCaption>過去に選択されたクライアント名の候補の削除をします。</TextCaption>
-          </div>
-          <div>
-            {/* TODO(P2): 当時のクライアント候補の変更/削除（管理UI）を実装 */}
-            <Button type="button" variant="outline" disabled>
-              未実装
-            </Button>
-          </div>
-        </div>
-
-        <div className="settings-row">
-          <div>
-            <p className="settings-title">退職理由の候補の削除</p>
-            <TextCaption>退職理由の候補リストからアイテムを削除します。</TextCaption>
-          </div>
-          <div>
-            {/* TODO(P2): 退職理由候補の変更/削除（管理UI）を実装 */}
-            <Button type="button" variant="outline" disabled>
-              未実装
-            </Button>
-          </div>
-        </div>
-
-        <div className="settings-row">
-          <div>
-            <p className="settings-title">各カラムの表示・非表示</p>
-            <TextCaption>テーブル列の表示／非表示設定（昨日は未実装です）。</TextCaption>
-          </div>
-          <div>
-            <Button type="button" variant="outline" disabled>
-              未実装
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <SettingsMasterDataPanel />
 
       <div className="settings-section-head">
         <Heading level={2}>通知設定</Heading>

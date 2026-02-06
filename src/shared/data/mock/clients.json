@@ -1,0 +1,16 @@
+[
+  { "id": "client-001", "name": "A社" },
+  { "id": "client-002", "name": "B社" },
+  { "id": "client-003", "name": "C社" },
+  { "id": "client-004", "name": "D社" },
+  { "id": "client-005", "name": "E社" },
+  { "id": "client-006", "name": "F社" },
+  { "id": "client-007", "name": "G社" },
+  { "id": "client-008", "name": "H社" },
+  { "id": "client-009", "name": "I社" },
+  { "id": "client-010", "name": "J社" },
+  { "id": "client-011", "name": "K社" },
+  { "id": "client-012", "name": "L社" },
+  { "id": "client-013", "name": "M社" },
+  { "id": "client-014", "name": "N社" }
+]

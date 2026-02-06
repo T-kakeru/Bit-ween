@@ -154,7 +154,7 @@ const ManagerMainFilters = ({ filters, onToggleGroup, onReset, departmentOptions
       </div>
 
       <div className="manager-filter-section">
-        <div className="manager-filter-section-title">ステータス</div>
+        <div className="manager-filter-section-title">稼働状態</div>
         <div className="manager-filter-options">
           <FilterCheckbox
             label="待機"

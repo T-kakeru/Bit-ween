@@ -5,6 +5,20 @@ declare module "@/shared/components/Breadcrumb" {
     href?: string;
     onClick?: MouseEventHandler;
   };
+
+	export type BreadcrumbEpisode = {
+		id: string;
+		label: string;
+	};
+
+	type BuildEpisodeBreadcrumbItemsArgs = {
+		baseItems?: BreadcrumbItem[];
+		episodes: BreadcrumbEpisode[];
+		currentEpisodeId: string;
+		onEpisodeClick?: (episodeId: string) => void;
+	};
+
+	export const buildEpisodeBreadcrumbItems: (args: BuildEpisodeBreadcrumbItemsArgs) => BreadcrumbItem[];
   type Props = {
     items?: BreadcrumbItem[];
   };

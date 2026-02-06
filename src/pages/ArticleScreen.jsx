@@ -15,13 +15,19 @@ const ArticleScreen = ({
   initialTab,
   initialQuickFilter,
 }) => {
+  const departmentNames = Array.isArray(departments)
+    ? departments
+        .map((d) => String(d?.name ?? "").trim())
+        .filter(Boolean)
+    : [];
+
   const pageData = {
     fetcher: fetchArticles,
     normalize: normalizeArticles,
     mockArticles,
     categories,
     tags,
-    departments,
+    departments: departmentNames,
     initialPageSize: 24,
     pageSize: 12,
     rootMargin: "200px",

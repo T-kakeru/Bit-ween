@@ -14,6 +14,14 @@ export type ManagerRow = {
   [key: string]: any;
 };
 
+// 社員データ（Mock JSON / 一覧のソース）
+// - is_active: true=在籍中 / false=退職済
+export type Employee = {
+  id?: any;
+  is_active: boolean;
+  [key: string]: any;
+};
+
 // 以降は「とにかく分かりやすさ優先」で any に寄せる
 export type ManagerMetrics = any;
 export type SortState = any;

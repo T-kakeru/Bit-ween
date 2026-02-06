@@ -35,6 +35,7 @@ const ManagerPage = () => {
     return (
       <ManagerAddPage
         columns={columns}
+        rows={rows}
         onCancel={closeAdd}
         onSave={handleSave}
       />

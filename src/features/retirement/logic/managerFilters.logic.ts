@@ -154,7 +154,8 @@ export const applyManagerFilters = (
     const department = normalizeDepartmentValue(row);
     const reason = normalizeReasonValue(row?.["退職理由"] as string | undefined);
     const retireDate = parseSlashDateToMs(row?.["退職日"]);
-    const isRetired = retireDate != null;
+    const isActive = (row as any)?.is_active !== false;
+    const isRetired = !isActive;
 
     if (!matchEmploymentStatus(isRetired, filters.employmentStatus)) return false;
 

@@ -1,17 +1,21 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ManagerAddFormValues } from "@/features/addRetirement/logic/validation/managerAdd";
-import { managerAddSchema } from "@/features/addRetirement/logic/validation/managerAdd";
+import { managerAddMessages, managerAddSchema } from "@/features/addRetirement/logic/validation/managerAdd";
+import { buildNextEmployeeIdByJoinYear } from "@/features/addRetirement/logic/employeeId/buildNextEmployeeIdByJoinYear";
 
 export type { ManagerAddFormValues };
 
 // 今回はファイル内で完結（Omit<ManagerRow, "id"> 相当をここで定義）
 // ※ manager/types の ManagerRow は any 寄りなので、理解しやすい形に寄せています。
 export type ManagerRowInput = {
+  "社員ID": string;
+  "部署": string;
   "名前": string;
   "性別": "男性" | "女性" | "その他" | "";
   "生年月日": string; // input: YYYY-MM-DD
+  "メールアドレス": string;
   "入社日": string; // input: YYYY-MM-DD
   "退職日": string; // input: YYYY-MM-DD
   "ステータス": string;
@@ -29,12 +33,16 @@ export type ManagerColumn = {
 
 type UseManagerAddFormArgs = {
   columns: ManagerColumn[];
+  rows: Array<Record<string, any>>;
 };
 
-const createInitialForm = (): ManagerRowInput => ({
+const createInitialForm = (employeeId: string): ManagerRowInput => ({
+  "社員ID": employeeId,
+  "部署": "",
   "名前": "",
   "性別": "",
   "生年月日": "",
+  "メールアドレス": "",
   "入社日": "",
   "退職日": "",
   "ステータス": "",
@@ -44,35 +52,72 @@ const createInitialForm = (): ManagerRowInput => ({
   "経歴point": "",
 });
 
-const useManagerAddForm = ({ columns }: UseManagerAddFormArgs) => {
-  const [form, setForm] = useState<ManagerRowInput>(() => createInitialForm());
+const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
+  const initialEmployeeId = useMemo(
+    () => buildNextEmployeeIdByJoinYear({ rows, joinDate: "", today: new Date(), preferHyphen: true }),
+    [rows]
+  );
+  const initialForm = useMemo(() => createInitialForm(initialEmployeeId), [initialEmployeeId]);
+  const initialEmployeeIdRef = useRef(initialEmployeeId);
+
+  const existingEmployeeIdSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const row of rows ?? []) {
+      const v = String((row as any)?.["社員ID"] ?? "").trim();
+      if (!v || v === "-") continue;
+      set.add(v);
+    }
+    return set;
+  }, [rows]);
+
+  const [form, setForm] = useState<ManagerRowInput>(() => initialForm);
+  const [isActive, setIsActiveState] = useState<boolean>(true);
   const {
     register,
     handleSubmit,
     setValue,
-    trigger,
+    setError,
+    clearErrors,
     formState: { errors, isValid },
   } = useForm<ManagerAddFormValues>({
     resolver: zodResolver(managerAddSchema),// バリデーションにZodスキーマを使用
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      name: "",
-      gender: "",
-      birthDate: "",
-      joinDate: "",
-      retireDate: "",
-      status: "",
-      client: "",
-      reason: "",
-      educationPoint: undefined,
-      careerPoint: undefined,
+      isActive: true,
+      employeeId: initialForm["社員ID"],
+      department: initialForm["部署"],
+      name: initialForm["名前"],
+      gender: initialForm["性別"],
+      birthDate: initialForm["生年月日"],
+      email: initialForm["メールアドレス"],
+      joinDate: initialForm["入社日"],
+      retireDate: initialForm["退職日"],
+      retireReason: initialForm["退職理由"],
+      workStatus: initialForm["ステータス"],
+      client: initialForm["当時のクライアント"],
+      educationPoint: initialForm["学歴point"],
+      careerPoint: initialForm["経歴point"],
     },
   });
 
   const hasStatusColumn = useMemo(() => (columns ?? []).some((c) => c.key === "ステータス"), [columns]);
 
   const canSave = isValid;
+
+  // RHFにフィールド登録（ChipGroup/Controlled Inputでもスキーマ検証を回すため）
+  register("isActive");
+  register("employeeId");
+  register("department");
+  register("birthDate");
+  register("email");
+  register("joinDate");
+  register("retireDate");
+  register("retireReason");
+  register("workStatus");
+  register("client");
+  register("educationPoint");
+  register("careerPoint");
 
   const registerName = register("name", {
     onChange: (event) => {
@@ -83,89 +128,73 @@ const useManagerAddForm = ({ columns }: UseManagerAddFormArgs) => {
 
   // ChipGroupはinputではないので、RHF側にフィールドだけ登録しておく
   register("gender");
-  register("birthDate");
-  register("joinDate");
-  register("retireDate");
-  register("status");
-  register("client");
-  register("reason");
-  register("educationPoint");
-  register("careerPoint");
 
   const setName = (value: string) => {
     setForm((p) => ({ ...p, "名前": value }));
     setValue("name", value, { shouldDirty: true, shouldValidate: true });
   };
 
-  // 既存データを初期値として流し込む用途
-  // - UI側のform state と RHF を同時に同期
-  // - 想定外値が混ざっていても、即エラー表示できるように trigger する
-  const setDefaultValues = (next: Partial<ManagerRowInput>) => {
-    setForm((p) => ({ ...p, ...next }));
+  const updateAutoEmployeeIdIfNeeded = (nextJoinDate: string) => {
+    const current = String(form["社員ID"] ?? "").trim();
+    const isAuto = !current || current === initialEmployeeIdRef.current;
+    if (!isAuto) return;
 
-    if (Object.prototype.hasOwnProperty.call(next, "名前")) {
-      setValue("name", String(next["名前"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "性別")) {
-      setValue("gender", String(next["性別"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "生年月日")) {
-      setValue("birthDate", String(next["生年月日"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "入社日")) {
-      setValue("joinDate", String(next["入社日"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "退職日")) {
-      setValue("retireDate", String(next["退職日"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "ステータス")) {
-      setValue("status", String(next["ステータス"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "当時のクライアント")) {
-      setValue("client", String(next["当時のクライアント"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "退職理由")) {
-      setValue("reason", String(next["退職理由"] ?? ""), { shouldDirty: false, shouldValidate: true });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "学歴point")) {
-      const v = next["学歴point"];
-      const num = v === "" || v == null ? undefined : Number(v);
-      setValue("educationPoint", Number.isFinite(num as number) ? (num as number) : undefined, {
-        shouldDirty: false,
-        shouldValidate: true,
-      });
-    }
-    if (Object.prototype.hasOwnProperty.call(next, "経歴point")) {
-      const v = next["経歴point"];
-      const num = v === "" || v == null ? undefined : Number(v);
-      setValue("careerPoint", Number.isFinite(num as number) ? (num as number) : undefined, {
-        shouldDirty: false,
-        shouldValidate: true,
-      });
-    }
-
-    void trigger();
+    const nextId = buildNextEmployeeIdByJoinYear({ rows, joinDate: nextJoinDate, today: new Date(), preferHyphen: true });
+    initialEmployeeIdRef.current = nextId;
+    setForm((p) => ({ ...p, "社員ID": nextId }));
+    setValue("employeeId", nextId, { shouldDirty: true, shouldValidate: true });
   };
+
+  useEffect(() => {
+    const current = String(form["社員ID"] ?? "").trim();
+    if (!current) {
+      clearErrors("employeeId");
+      return;
+    }
+    if (current === initialEmployeeIdRef.current) {
+      // 初期採番値は重複対象外（生成時は既存setに含めない想定）
+      clearErrors("employeeId");
+      return;
+    }
+    if (existingEmployeeIdSet.has(current)) {
+      setError("employeeId", { type: "custom", message: managerAddMessages.employeeIdDuplicate });
+      return;
+    }
+    if (errors.employeeId?.type === "custom") {
+      clearErrors("employeeId");
+    }
+  }, [clearErrors, errors.employeeId?.type, existingEmployeeIdSet, form, setError]);
 
   return {
     form,
     setForm,
-    setDefaultValues,
+    isActive,
     hasStatusColumn,
     canSave,
     isValid,
     registerName,
+    employeeIdError: errors.employeeId?.message,
+    departmentError: errors.department?.message,
     nameError: errors.name?.message,
     genderError: errors.gender?.message,
     birthDateError: errors.birthDate?.message,
+    emailError: errors.email?.message,
     joinDateError: errors.joinDate?.message,
     retireDateError: errors.retireDate?.message,
-    statusError: errors.status?.message,
+    reasonError: errors.retireReason?.message,
+    statusError: errors.workStatus?.message,
     clientError: errors.client?.message,
-    reasonError: errors.reason?.message,
     educationPointError: errors.educationPoint?.message,
     careerPointError: errors.careerPoint?.message,
     handleSubmit,
+    setEmployeeId: (value: string) => {
+      setForm((p) => ({ ...p, "社員ID": value }));
+      setValue("employeeId", value, { shouldDirty: true, shouldValidate: true });
+    },
+    setDepartment: (value: string) => {
+      setForm((p) => ({ ...p, "部署": value }));
+      setValue("department", value, { shouldDirty: true, shouldValidate: true });
+    },
     setName,
     setGender: (value: ManagerRowInput["性別"]) => {
       setForm((p) => ({ ...p, "性別": value }));
@@ -174,42 +203,53 @@ const useManagerAddForm = ({ columns }: UseManagerAddFormArgs) => {
     setBirthDate: (value: string) => {
       setForm((p) => ({ ...p, "生年月日": value }));
       setValue("birthDate", value, { shouldDirty: true, shouldValidate: true });
-      void trigger(["birthDate", "joinDate"]);
+    },
+    setEmail: (value: string) => {
+      setForm((p) => ({ ...p, "メールアドレス": value }));
+      setValue("email", value, { shouldDirty: true, shouldValidate: true });
     },
     setJoinDate: (value: string) => {
       setForm((p) => ({ ...p, "入社日": value }));
       setValue("joinDate", value, { shouldDirty: true, shouldValidate: true });
-      void trigger(["joinDate", "retireDate"]);
+
+      // 社員IDを手動変更していない場合のみ、入社年 + 連番で採番を更新
+      updateAutoEmployeeIdIfNeeded(value);
     },
     setRetireDate: (value: string) => {
-      setForm((p) => ({ ...p, "退職日": value }));
+      setForm((p) => {
+        // 退職日を消したら、退職理由も一緒にクリア（UI/バリデーション整合）
+        if (!value) return { ...p, "退職日": "", "退職理由": "" };
+        return { ...p, "退職日": value };
+      });
       setValue("retireDate", value, { shouldDirty: true, shouldValidate: true });
-      void trigger("retireDate");
+      if (!value) {
+        setValue("retireReason", "", { shouldDirty: true, shouldValidate: true });
+      }
     },
     setStatus: (value: string) => {
       setForm((p) => ({ ...p, "ステータス": value }));
-      setValue("status", value, { shouldDirty: true, shouldValidate: true });
-      void trigger("status");
+      setValue("workStatus", value, { shouldDirty: true, shouldValidate: true });
     },
     setReason: (value: string) => {
       setForm((p) => ({ ...p, "退職理由": value }));
-      setValue("reason", value, { shouldDirty: true, shouldValidate: true });
-      void trigger("reason");
+      setValue("retireReason", value, { shouldDirty: true, shouldValidate: true });
     },
     setClient: (value: string) => {
       setForm((p) => ({ ...p, "当時のクライアント": value }));
       setValue("client", value, { shouldDirty: true, shouldValidate: true });
-      void trigger("client");
     },
     setEducationPoint: (value: number | "") => {
       setForm((p) => ({ ...p, "学歴point": value }));
-      setValue("educationPoint", value === "" ? undefined : value, { shouldDirty: true, shouldValidate: true });
-      void trigger("educationPoint");
+      setValue("educationPoint", value as any, { shouldDirty: true, shouldValidate: true });
     },
     setCareerPoint: (value: number | "") => {
       setForm((p) => ({ ...p, "経歴point": value }));
-      setValue("careerPoint", value === "" ? undefined : value, { shouldDirty: true, shouldValidate: true });
-      void trigger("careerPoint");
+      setValue("careerPoint", value as any, { shouldDirty: true, shouldValidate: true });
+    },
+
+    setIsActive: (next: boolean) => {
+      setIsActiveState(next);
+      setValue("isActive", next, { shouldDirty: true, shouldValidate: true });
     },
   };
 };

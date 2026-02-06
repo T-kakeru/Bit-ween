@@ -25,6 +25,8 @@ const EditableEmployeeTableView = ({
   normalizeCell,
   onCellChange,
   getCellError,
+  clientOptions,
+  onAddClientOption,
   onEditStart,
   onSaveRequest,
   isSaveDisabled,
@@ -124,6 +126,8 @@ const EditableEmployeeTableView = ({
                         column={c}
                         normalizeCell={normalizeCell}
                         onChange={onCellChange}
+                        clientOptions={clientOptions}
+                        onAddClientOption={onAddClientOption}
                         errorMessage={getCellError ? getCellError(row.id, c.key) : undefined}
                       />
                     </Td>
