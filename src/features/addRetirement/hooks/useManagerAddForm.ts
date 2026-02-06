@@ -250,6 +250,13 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
     setIsActive: (next: boolean) => {
       setIsActiveState(next);
       setValue("isActive", next, { shouldDirty: true, shouldValidate: true });
+
+      // 在籍中へ戻した場合は、退職項目をフォームから外す（非表示でも残っていると誤エラーになり得る）
+      if (next) {
+        setForm((p) => ({ ...p, "退職日": "", "退職理由": "" }));
+        setValue("retireDate", "", { shouldDirty: true, shouldValidate: true });
+        setValue("retireReason", "", { shouldDirty: true, shouldValidate: true });
+      }
     },
   };
 };

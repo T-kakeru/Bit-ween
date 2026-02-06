@@ -128,11 +128,6 @@ export const ManagerAddFormView = ({
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-8">
-
-          <TextCaption>
-            在籍状態（在籍中/退職済）は、退職日とは独立して選べます。退職予定（退職日あり・在籍中）も扱えます。
-          </TextCaption>
-
           <div className="space-y-5">
             <NameField label="氏名" register={registerName} errorMessage={nameError} required />
 
@@ -189,7 +184,6 @@ export const ManagerAddFormView = ({
               onChange={onChangeDepartment}
               onAddOption={onAddDepartmentOption}
               placeholder="部署を登録"
-              helper="検索して選択 / 新規追加"
               errorMessage={departmentError}
             />
 
@@ -207,27 +201,26 @@ export const ManagerAddFormView = ({
               options={["在籍中", "退職済"]}
               onChange={(v) => onChangeIsActive(v === "在籍中")}
               allowEmpty={false}
-              helper={
-                "退職日が入力されていても在籍中（退職予定）として登録できます。退職済として登録する場合は「退職済」を選択してください。"
-              }
             />
 
-            <FieldDate
-              label="退職日"
-              value={form["退職日"]}
-              onChange={onChangeRetireDate}
-              errorMessage={retireDateError}
-            />
-            <FieldSelect
-              label="退職理由"
-              required={!isActive}
-              disabled={!form["退職日"]}
-              value={form["退職理由"]}
-              options={reasonOptions}
-              onChange={onChangeReason}
-              helper={!form["退職日"] ? "退職日を入力すると選択できます" : undefined}
-              errorMessage={reasonError}
-            />
+            {!isActive ? (
+              <>
+                <FieldDate
+                  label="退職日"
+                  value={form["退職日"]}
+                  onChange={onChangeRetireDate}
+                  errorMessage={retireDateError}
+                />
+                <FieldSelect
+                  label="退職理由"
+                  required
+                  value={form["退職理由"]}
+                  options={reasonOptions}
+                  onChange={onChangeReason}
+                  errorMessage={reasonError}
+                />
+              </>
+            ) : null}
 
             <Divider className="border-slate-200" />
 
@@ -247,7 +240,6 @@ export const ManagerAddFormView = ({
               onChange={onChangeClient}
               onAddOption={onAddClientOption}
               placeholder="検索 or 追加"
-              helper="検索して選択 / 新規追加"
               errorMessage={clientError}
             />
           </div>
