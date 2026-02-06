@@ -174,6 +174,7 @@ export const ManagerAddFormView = ({
               onChange={onChangeEmployeeId}
               placeholder="社員IDを入力"
               errorMessage={employeeIdError}
+              maxLength={30}
             />
 
             <FieldCombobox

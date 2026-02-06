@@ -5,9 +5,10 @@ type FieldTextProps = BaseFieldProps & {
   value: string;
   onChange: (v: string) => void;
   errorMessage?: string;
+  maxLength?: number;
 };
 
-export const FieldText = ({ label, value, onChange, helper, required, placeholder, errorMessage }: FieldTextProps) => {
+export const FieldText = ({ label, value, onChange, helper, required, placeholder, errorMessage, maxLength }: FieldTextProps) => {
   return (
     <FieldShell label={label} helper={helper} required={required}>
       <div className="space-y-1">
@@ -16,6 +17,7 @@ export const FieldText = ({ label, value, onChange, helper, required, placeholde
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          maxLength={maxLength}
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
         />
         {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}

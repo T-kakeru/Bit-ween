@@ -19,7 +19,7 @@ function App() {
 
   const adminNavItems = [
     { label: "退職者分析", icon: "/img/icon_manager.png" },
-    { label: "離職者情報一覧", icon: "/img/icon_data.png" },
+    { label: "社員情報一覧", icon: "/img/icon_data.png" },
     { label: "設定", icon: "/img/icon_settings.png" },
     { label: "ユーザー画面", icon: "/img/icon_home.png" },
   ];
@@ -116,7 +116,7 @@ function App() {
         return <AdminAnalyticsPage />;
       }
 
-      if (adminNav === "離職者情報一覧") {
+      if (adminNav === "社員情報一覧") {
         return <ManagerPage />;
       }
 

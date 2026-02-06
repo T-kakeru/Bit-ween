@@ -20,7 +20,7 @@ const ManagerPage = () => {
     const handler = (e) => {
       try {
         const nav = e?.detail;
-        if (nav === "離職者情報一覧") {
+        if (nav === "社員情報一覧") {
           closeAdd();
         }
       } catch (err) {

@@ -8,7 +8,7 @@ const OPTIONAL_DATE = z
   .trim()
   .refine((v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v), { message: "日付の形式が正しくありません" });
 
-const EMPLOYEE_ID_MAX_LENGTH = 100;
+const EMPLOYEE_ID_MAX_LENGTH = 30;
 
 export const managerAddSchema = z.object({
   isActive: z.boolean(),

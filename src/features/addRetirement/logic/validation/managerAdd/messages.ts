@@ -1,6 +1,6 @@
 export const managerAddMessages = {
   employeeIdRequired: "社員IDは必須です",
-  employeeIdTooLong: "社員IDは100文字以内で入力してください",
+  employeeIdTooLong: "社員IDは30文字以内で入力してください",
   employeeIdDuplicate: "この社員IDは既に使用されています",
   departmentRequired: "部署は必須です",
   emailRequired: "メールアドレスは必須です",

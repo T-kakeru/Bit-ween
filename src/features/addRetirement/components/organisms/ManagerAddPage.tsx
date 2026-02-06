@@ -72,7 +72,7 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 	const breadcrumbs = useMemo(
 		() =>
 			buildEpisodeBreadcrumbItems({
-				baseItems: [{ label: "離職者情報一覧", onClick: onCancel }],
+				baseItems: [{ label: "社員情報一覧", onClick: onCancel }],
 				episodes: [
 					{ id: "form", label: "新規従業員登録" },
 					{ id: "confirm", label: "登録確認画面" },
