@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import useManagerAddForm from "@/features/addRetirement/hooks/useManagerAddForm";
 import type { ManagerColumn, ManagerRowInput } from "@/features/addRetirement/hooks/useManagerAddForm";
@@ -12,12 +12,14 @@ import {
 	type EmployeeCredentials,
 } from "@/features/addRetirement/logic/buildEmployeeCredentials";
 import { buildEpisodeBreadcrumbItems } from "@/shared/components/Breadcrumb";
+import EmployeeCsvImportPanel from "@/features/csvImport/components/organisms/EmployeeCsvImportPanel";
+import type { ManagerRow } from "@/features/retirement/types";
 
 type Props = {
 	columns: ManagerColumn[];
 	rows: Array<Record<string, any>>;
 	onCancel: () => void;
-	onSave: (input: ManagerRowInput) => void;
+	onSave: (input: Record<string, any>) => void;
 };
 
 const GENDER_OPTIONS: Array<ManagerRowInput["性別"]> = ["男性", "女性", "その他"];
@@ -30,9 +32,17 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 	const [step, setStep] = useState<Step>("form");
 	const [pendingPayload, setPendingPayload] = useState<ManagerAddPayload | null>(null);
 	const [credentials, setCredentials] = useState<EmployeeCredentials | null>(null);
+	const csvImportAnchorRef = useRef<HTMLDivElement | null>(null);
 
-	const { departmentOptions, statusOptions, reasonOptions, clientOptions, addDepartmentOption, addClientOption } =
-		useManagerAddOptionLists();
+	const {
+		departmentOptions,
+		statusOptions,
+		reasonOptions,
+		clientOptions,
+		addDepartmentOption,
+		addClientOption,
+		addStatusOption,
+	} = useManagerAddOptionLists();
 
 	const {
 		form,
@@ -49,8 +59,6 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		reasonError,
 		statusError,
 		clientError,
-		educationPointError,
-		careerPointError,
 		handleSubmit,
 		setEmployeeId,
 		setDepartment,
@@ -62,8 +70,6 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		setStatus,
 		setClient,
 		setReason,
-		setEducationPoint,
-		setCareerPoint,
 		isActive,
 		setIsActive,
 	} = useManagerAddForm({ columns, rows });
@@ -93,6 +99,32 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		setPendingPayload(payload);
 		setStep("confirm");
 	});
+
+	const handleScrollToCsvImport = useCallback(() => {
+		csvImportAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+	}, []);
+
+	const handleImportRows = useCallback(
+		(importedRows: ManagerRow[]) => {
+			if (!importedRows || importedRows.length === 0) return;
+			for (const row of importedRows) {
+				onSave(row as any);
+			}
+		},
+		[onSave]
+	);
+	// CSVインポート後の処理で、
+	const handleAfterCsvImport = useCallback(() => {
+		try {
+			window.sessionStorage.setItem(
+				"managerSortPreset",
+				JSON.stringify({ key: "入社日", direction: "desc" })
+			);
+		} catch {
+			// 何もしない（sessionStorageが使えない環境でも登録自体は成功しているため）
+		}
+		onCancel();
+	}, [onCancel]);
 
 	// 登録確定時の処理
 	const handleConfirm = () => {
@@ -137,7 +169,13 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		<ManagerAddFormView
 			breadcrumbs={breadcrumbs}
 			form={form}
-				isActive={isActive}
+			csvImportSection={
+				<div ref={csvImportAnchorRef}>
+					<EmployeeCsvImportPanel onImportRows={handleImportRows} onAfterImport={handleAfterCsvImport} />
+				</div>
+			}
+			onScrollToCsvImport={handleScrollToCsvImport}
+			isActive={isActive}
 			registerName={registerName}
 			employeeIdError={employeeIdError}
 			departmentError={departmentError}
@@ -150,8 +188,6 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 			reasonError={reasonError}
 			statusError={statusError}
 			clientError={clientError}
-			educationPointError={educationPointError}
-			careerPointError={careerPointError}
 			genderOptions={GENDER_OPTIONS}
 			departmentOptions={departmentOptions}
 			statusOptions={statusOptions}
@@ -159,6 +195,7 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 			clientOptions={clientOptions}
 			onAddDepartmentOption={addDepartmentOption}
 			onAddClientOption={addClientOption}
+			onAddStatusOption={addStatusOption}
 			onChangeEmployeeId={setEmployeeId}
 			onChangeDepartment={setDepartment}
 			onChangeGender={(v) => setGender(v as ManagerRowInput["性別"])}
@@ -169,9 +206,7 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 			onChangeStatus={setStatus}
 			onChangeClient={setClient}
 			onChangeReason={setReason}
-			onChangeEducationPoint={setEducationPoint}
-			onChangeCareerPoint={setCareerPoint}
-				onChangeIsActive={setIsActive}
+			onChangeIsActive={setIsActive}
 			canSubmit={canSave}
 			onSubmit={onSubmit}
 			onCancel={onCancel}

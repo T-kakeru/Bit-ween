@@ -1,4 +1,4 @@
-﻿import type { FormEventHandler } from "react";
+﻿import type { FormEventHandler, ReactNode } from "react";
 import Divider from "@/shared/ui/Divider";
 import Button from "@/shared/ui/Button";
 import Breadcrumb, { type BreadcrumbItem } from "@/shared/components/Breadcrumb";
@@ -8,7 +8,6 @@ import TextCaption from "@/shared/ui/TextCaption";
 import type { ManagerRowInput } from "@/features/addRetirement/hooks/useManagerAddForm";
 import {
   FieldDate,
-  FieldNumber,
   FieldChipGroup,
   FieldCombobox,
   FieldSelect,
@@ -19,6 +18,9 @@ import {
 type Props = {
   breadcrumbs: BreadcrumbItem[];
   form: ManagerRowInput;
+
+  csvImportSection?: ReactNode;
+  onScrollToCsvImport?: () => void;
 
   isActive: boolean;
   onChangeIsActive: (next: boolean) => void;
@@ -38,8 +40,6 @@ type Props = {
   statusError?: string;
   clientError?: string;
   reasonError?: string;
-  educationPointError?: string;
-  careerPointError?: string;
 
   genderOptions: Array<ManagerRowInput["性別"]>;
   onChangeGender: (v: string) => void;
@@ -60,12 +60,11 @@ type Props = {
   clientOptions: string[];
   onAddClientOption: (v: string) => void;
 
+  onAddStatusOption: (v: string) => void;
+
   onChangeStatus: (v: string) => void;
   onChangeClient: (v: string) => void;
   onChangeReason: (v: string) => void;
-
-  onChangeEducationPoint: (v: number | "") => void;
-  onChangeCareerPoint: (v: number | "") => void;
 
   canSubmit: boolean;
   onSubmit: FormEventHandler<HTMLFormElement>;
@@ -75,6 +74,8 @@ type Props = {
 export const ManagerAddFormView = ({
   breadcrumbs,
   form,
+  csvImportSection,
+  onScrollToCsvImport,
   isActive,
   onChangeIsActive,
   registerName,
@@ -89,8 +90,6 @@ export const ManagerAddFormView = ({
   statusError,
   clientError,
   reasonError,
-  educationPointError,
-  careerPointError,
   genderOptions,
   departmentOptions,
   onAddDepartmentOption,
@@ -105,11 +104,10 @@ export const ManagerAddFormView = ({
   reasonOptions,
   clientOptions,
   onAddClientOption,
+  onAddStatusOption,
   onChangeStatus,
   onChangeClient,
   onChangeReason,
-  onChangeEducationPoint,
-  onChangeCareerPoint,
   canSubmit,
   onSubmit,
   onCancel,
@@ -123,7 +121,20 @@ export const ManagerAddFormView = ({
               <Breadcrumb items={breadcrumbs} />
             </div>
 
-				<Heading level={2}>新規従業員登録</Heading>
+
+        <Heading level={2}>新規従業員登録</Heading>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={onScrollToCsvImport}
+              disabled={!onScrollToCsvImport}
+            >
+              まとめて登録 (CSV)
+            </Button>
           </div>
         </div>
 
@@ -225,12 +236,14 @@ export const ManagerAddFormView = ({
 
             <Divider className="border-slate-200" />
 
-            <FieldSelect
+            <FieldCombobox
               label="稼働状態"
               required
               value={form["ステータス"]}
               options={statusOptions}
               onChange={onChangeStatus}
+              onAddOption={onAddStatusOption}
+              placeholder="検索 or 追加"
               errorMessage={statusError}
             />
 
@@ -245,21 +258,6 @@ export const ManagerAddFormView = ({
             />
           </div>
 
-          <div className="space-y-5">
-            <FieldNumber
-              label="学歴P"
-              value={form["学歴point"]}
-              onChange={onChangeEducationPoint}
-              errorMessage={educationPointError}
-            />
-            <FieldNumber
-              label="経歴P"
-              value={form["経歴point"]}
-              onChange={onChangeCareerPoint}
-              errorMessage={careerPointError}
-            />
-          </div>
-
           <div className="flex items-center justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={onCancel}>
               キャンセル
@@ -269,6 +267,8 @@ export const ManagerAddFormView = ({
             </Button>
           </div>
         </form>
+
+        {csvImportSection ? <div className="mt-10">{csvImportSection}</div> : null}
       </div>
     </section>
   );

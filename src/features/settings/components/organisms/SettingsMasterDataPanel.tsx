@@ -23,6 +23,15 @@ export const SettingsMasterDataPanel = () => {
         keyName="clients"
         itemLabel="稼働先"
       />
+
+      <div className="mt-4" />
+
+      <CatalogManagerSection
+        title="稼働状態管理"
+        description="稼働状態の一覧表示・追加・編集・削除を行います。"
+        keyName="workStatuses"
+        itemLabel="稼働状態"
+      />
     </>
   );
 };

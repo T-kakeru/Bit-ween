@@ -36,8 +36,6 @@ const buildRows = (payload: ManagerRowInput & { is_active: boolean }) => {
 
   push("稼働状態", payload["ステータス"]);
   push("稼働先", payload["当時のクライアント"]);
-  push("学歴P", payload["学歴point"]);
-  push("経歴P", payload["経歴point"]);
 
   return rows;
 };

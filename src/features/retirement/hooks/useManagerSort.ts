@@ -2,14 +2,32 @@ import { useCallback, useMemo, useState } from "react";
 import { compareManagerRows } from "@/features/retirement/logic/managerSort.logic";
 import type { ManagerColumn, ManagerRow } from "@/features/retirement/types";
 
+type SortState = { key: string | null; direction: "asc" | "desc" | null };
+
+const readSortPresetOnce = (): SortState | null => {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = window.sessionStorage.getItem("managerSortPreset");
+    if (!raw) return null;
+    window.sessionStorage.removeItem("managerSortPreset");
+    const parsed = JSON.parse(raw);
+    const key = typeof parsed?.key === "string" ? parsed.key : null;
+    const direction = parsed?.direction === "asc" || parsed?.direction === "desc" ? parsed.direction : null;
+    if (!key || !direction) return null;
+    return { key, direction };
+  } catch {
+    return null;
+  }
+};
+
 const useManagerSort = (
   rows: ManagerRow[],
   columns: ManagerColumn[]
 ) => {
-  const [sort, setSort] = useState<any>({ key: null, direction: null });
+  const [sort, setSort] = useState<SortState>(() => readSortPresetOnce() ?? { key: null, direction: null });
 
   const toggleSort = useCallback((key: string) => {
-    setSort((prev: any) => {
+    setSort((prev) => {
       if (prev.key !== key) return { key, direction: "asc" };
       if (prev.direction === "asc") return { key, direction: "desc" };
       return { key: null, direction: null };

@@ -7,6 +7,10 @@ const toIsActive = (value: any): boolean => value !== false;
 export const normalizeEmployeeCell = (value: any): string => {
   if (value == null) return "-";
   if (typeof value === "string" && value.trim() === "") return "-";
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^[\/／]+$/.test(trimmed)) return "-";
+  }
   return String(value);
 };
 

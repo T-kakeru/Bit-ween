@@ -187,8 +187,8 @@
 .layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
-  padding: 20px 24px 24px;
+  gap: 24px;
+  padding: 24px 28px 28px;
   margin-left: 264px;
   width: calc(100% - 264px);
 }
@@ -218,7 +218,7 @@
   width: 100%;
   max-width: 1520px;
   margin: 14px auto 0;
-  padding: 18px;
+  padding: 22px;
   border-radius: 18px;
   background: #f6f7f9;
   border: 1px solid #e5e7eb;
@@ -237,6 +237,256 @@
   justify-content: space-between;
   gap: 14px;
   margin-bottom: 14px;
+}
+
+.manager-import-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.manager-import-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.manager-import-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-contrast);
+}
+
+.manager-import-help {
+  margin-top: 4px;
+}
+
+.manager-import-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.manager-import-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px dashed #cbd5f5;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.manager-import-file-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.manager-import-file-name {
+  font-size: 12px;
+  color: var(--color-text-muted-2);
+}
+
+.manager-import-guidance {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.manager-import-guidance-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.manager-import-guidance-list {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.manager-import-guidance-note {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.manager-import-summary {
+  margin-top: 10px;
+}
+
+.manager-import-confirm {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.manager-import-confirm-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-contrast);
+}
+
+.manager-import-confirm-meta {
+  margin-top: 6px;
+}
+
+.manager-import-confirm-preview {
+  margin-top: 6px;
+}
+
+.manager-import-confirm-added {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+}
+
+.manager-import-confirm-added-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-contrast);
+}
+
+.manager-import-confirm-added-meta {
+  margin-top: 4px;
+}
+
+.manager-import-confirm-added-grid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.manager-import-confirm-added-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.manager-import-confirm-added-list {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #334155;
+  max-height: 120px;
+  overflow: auto;
+}
+
+.manager-import-preview-wrap {
+  margin-top: 8px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: auto;
+  max-height: 60vh;
+}
+
+.manager-import-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  min-width: 980px;
+}
+
+.manager-import-preview-table th,
+.manager-import-preview-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.manager-import-preview-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg-base);
+  color: #374151;
+  text-align: left;
+  font-weight: 800;
+}
+
+.manager-import-preview-ellipsis {
+  display: inline-block;
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.manager-import-confirm-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.manager-import-success {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+}
+
+.manager-import-success-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-contrast);
+}
+
+.manager-import-errors {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+}
+
+.manager-import-errors-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #be123c;
+}
+
+.manager-import-error-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.manager-import-error-list li {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #be123c;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.manager-import-error-location {
+  min-width: 64px;
+  font-weight: 700;
+}
+
+.manager-import-error-field {
+  min-width: 72px;
+  font-weight: 600;
 }
 
 .analytics-panel {
@@ -974,6 +1224,27 @@
   color: var(--color-text-contrast);
 }
 
+.manager-edit-text--ellipsis {
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.manager-th[data-col-key="当時のクライアント"] .manager-sort-button {
+  max-width: 18ch;
+  overflow: hidden;
+}
+
+.manager-th[data-col-key="当時のクライアント"] .manager-sort-label {
+  display: block;
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* manager-table edit-state styles removed per request. */
 /* Removed .manager-table editing/change highlight styles. */
 
@@ -1288,7 +1559,7 @@
   position: fixed;
   top: 92px;
   left: 24px;
-  width: 220px;
+  width: 232px;
   height: calc(100vh - 92px - 24px);
   max-height: calc(100vh - 92px - 24px);
   z-index: 20;
@@ -1335,15 +1606,15 @@
 
 .nav {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 10px;
-  min-height: 64px;
+  padding: 10px 12px;
+  min-height: 68px;
   border-radius: 12px;
   color: #4a5568;
   border: none;
@@ -1361,8 +1632,8 @@
 }
 
 .nav-item-label {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   letter-spacing: 0.01em;
   color: inherit;
   white-space: nowrap;

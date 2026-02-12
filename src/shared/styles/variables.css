@@ -62,9 +62,9 @@
 
   /* Typography */
   --font-base: "Noto Sans JP", system-ui, -apple-system, sans-serif;
-  --font-size-sm: 12px;
-  --font-size-md: 14px;
-  --font-size-lg: 16px;
+  --font-size-sm: 13px;
+  --font-size-md: 15px;
+  --font-size-lg: 17px;
 
   /* Token aliases to legacy names */
   --color-primary: var(--primary);
@@ -117,7 +117,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 17px;
 }
 
 body {

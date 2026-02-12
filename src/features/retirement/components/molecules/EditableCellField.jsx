@@ -20,7 +20,9 @@ const EditableCellField = ({
 
   // 編集モードでない / 編集不可 はテキスト表示
   if (!isEditing || NON_EDITABLE_KEYS.has(key)) {
-    return <span className="manager-edit-text">{displayValue}</span>;
+    const className =
+      key === "当時のクライアント" ? "manager-edit-text manager-edit-text--ellipsis" : "manager-edit-text";
+    return <span className={className}>{displayValue}</span>;
   }
 
   // セレクト（ステータス / 性別 など）

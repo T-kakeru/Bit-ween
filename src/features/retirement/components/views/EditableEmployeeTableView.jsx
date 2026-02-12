@@ -87,7 +87,13 @@ const EditableEmployeeTableView = ({
           <thead>
             <tr>
               {columns.map((c) => (
-                <Th key={c.key} scope="col" aria-sort={getAriaSort(c.key)} className={getHeaderClass(c.key)}>
+                <Th
+                  key={c.key}
+                  scope="col"
+                  aria-sort={getAriaSort(c.key)}
+                  className={getHeaderClass(c.key)}
+                  data-col-key={c.key}
+                >
                   <Button
                     type="button"
                     variant="outline"
@@ -119,7 +125,11 @@ const EditableEmployeeTableView = ({
                   const originalRow = originalRowMap?.get(String(row.id));
                   const changed = isCellChanged({ draftRow: row, originalRow, column: c, normalizeCell });
                   return (
-                    <Td key={`${row.id}-${c.key}`} className={changed ? "is-changed" : ""}>
+                    <Td
+                      key={`${row.id}-${c.key}`}
+                      className={changed ? "is-changed" : ""}
+                      data-col-key={c.key}
+                    >
                       <EditableCellField
                         isEditing={isEditing}
                         row={row}

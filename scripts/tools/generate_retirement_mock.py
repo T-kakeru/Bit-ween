@@ -163,8 +163,6 @@ def main() -> None:
                 "性別": gender,
                 "生年月日": dob.strftime("%Y/%m/%d"),
                 "年齢": age,
-                "学歴point": random.randint(1, 5),
-                "経歴point": random.randint(1, 5),
             }
         )
 
@@ -197,8 +195,6 @@ def main() -> None:
                 "性別": gender,
                 "生年月日": dob.strftime("%Y/%m/%d"),
                 "年齢": age,
-                "学歴point": random.randint(1, 5),
-                "経歴point": random.randint(1, 5),
             }
         )
 

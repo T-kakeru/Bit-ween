@@ -21,8 +21,6 @@ export type ManagerRowInput = {
   "ステータス": string;
   "退職理由": string;
   "当時のクライアント": string;
-  "学歴point": number | "";
-  "経歴point": number | "";
 };
 
 export type ManagerColumn = {
@@ -48,8 +46,6 @@ const createInitialForm = (employeeId: string): ManagerRowInput => ({
   "ステータス": "",
   "退職理由": "",
   "当時のクライアント": "",
-  "学歴point": "",
-  "経歴point": "",
 });
 
 const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
@@ -96,8 +92,6 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
       retireReason: initialForm["退職理由"],
       workStatus: initialForm["ステータス"],
       client: initialForm["当時のクライアント"],
-      educationPoint: initialForm["学歴point"],
-      careerPoint: initialForm["経歴point"],
     },
   });
 
@@ -116,8 +110,6 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
   register("retireReason");
   register("workStatus");
   register("client");
-  register("educationPoint");
-  register("careerPoint");
 
   const registerName = register("name", {
     onChange: (event) => {
@@ -184,8 +176,6 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
     reasonError: errors.retireReason?.message,
     statusError: errors.workStatus?.message,
     clientError: errors.client?.message,
-    educationPointError: errors.educationPoint?.message,
-    careerPointError: errors.careerPoint?.message,
     handleSubmit,
     setEmployeeId: (value: string) => {
       setForm((p) => ({ ...p, "社員ID": value }));
@@ -237,14 +227,6 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
     setClient: (value: string) => {
       setForm((p) => ({ ...p, "当時のクライアント": value }));
       setValue("client", value, { shouldDirty: true, shouldValidate: true });
-    },
-    setEducationPoint: (value: number | "") => {
-      setForm((p) => ({ ...p, "学歴point": value }));
-      setValue("educationPoint", value as any, { shouldDirty: true, shouldValidate: true });
-    },
-    setCareerPoint: (value: number | "") => {
-      setForm((p) => ({ ...p, "経歴point": value }));
-      setValue("careerPoint", value as any, { shouldDirty: true, shouldValidate: true });
     },
 
     setIsActive: (next: boolean) => {

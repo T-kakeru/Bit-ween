@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import employees from "@/shared/data/mock/retirement.json";
+import employees from "@/shared/data/mock/employee.json";
 import {
   buildManagerEmployeeRows,
   computeManagerMetrics,

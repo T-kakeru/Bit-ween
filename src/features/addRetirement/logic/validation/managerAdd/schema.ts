@@ -73,8 +73,6 @@ export const managerAddSchema = z.object({
     }
   }),
   client: z.string().trim(),
-  educationPoint: z.union([z.number().min(0).max(999), z.literal("")]),
-  careerPoint: z.union([z.number().min(0).max(999), z.literal("")]),
 }).superRefine((values, ctx) => {
   const reasons = REASONS as unknown as string[];
 

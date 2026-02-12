@@ -5,8 +5,9 @@ import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
 import departments from "@/shared/data/mock/departments.json";
 import clients from "@/shared/data/mock/clients.json";
+import workStatuses from "@/shared/data/mock/workStatuses.json";
 
-type CatalogKey = "departments" | "clients";
+type CatalogKey = "departments" | "clients" | "workStatuses";
 
 type CatalogItem = {
   id: string;
@@ -46,7 +47,7 @@ type Props = {
   title: string;
   description: string;
   keyName: CatalogKey;
-  itemLabel: "部署" | "稼働先";
+  itemLabel: "部署" | "稼働先" | "稼働状態";
 };
 
 export const CatalogManagerSection = ({ title, description, keyName, itemLabel }: Props) => {
@@ -62,7 +63,12 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel }
   const [editError, setEditError] = useState<string | null>(null);
 
   const initialItems = useMemo<CatalogItem[]>(() => {
-    const source = keyName === "departments" ? (departments as any) : (clients as any);
+    const source =
+      keyName === "departments"
+        ? (departments as any)
+        : keyName === "clients"
+          ? (clients as any)
+          : (workStatuses as any);
     return (Array.isArray(source) ? source : [])
       .map((x) => ({ id: String(x?.id ?? "").trim(), name: String(x?.name ?? "").trim() }))
       .filter((x) => x.id && x.name);
@@ -176,7 +182,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel }
                   setNewId(e.target.value);
                   if (addError) setAddError(null);
                 }}
-                placeholder={`${itemLabel}ID（例: ${keyName === "departments" ? "dept-006" : "client-015"}）`}
+                placeholder={`${itemLabel}ID（例: ${keyName === "departments" ? "dept-006" : keyName === "clients" ? "client-015" : "ws-001"}）`}
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
               />
               <input

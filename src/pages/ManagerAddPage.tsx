@@ -7,7 +7,7 @@ type Props = {
 	columns: ManagerColumn[];
 	rows: Array<Record<string, any>>;
 	onCancel: () => void;
-	onSave: (input: ManagerRowInput) => void;
+	onSave: (input: Record<string, any>) => void;
 };
 
 // pages: ページ枠（配置/ページタイトルなど）だけを持つ

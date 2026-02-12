@@ -13,6 +13,4 @@ export const MANAGER_EMPLOYEE_COLUMNS: ManagerColumn[] = [
   { key: "性別", label: "性別", type: "string" },
   { key: "生年月日", label: "生年月日", type: "date" },
   { key: "年齢", label: "年齢", type: "number" },
-  { key: "学歴point", label: "学歴point", type: "number" },
-  { key: "経歴point", label: "経歴point", type: "number" },
 ];

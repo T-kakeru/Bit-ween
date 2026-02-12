@@ -24,7 +24,5 @@ export const normalizeManagerAddPayload = (
     "退職理由": normalizedValues.retireReason,
     "ステータス": normalizedValues.workStatus,
     "当時のクライアント": normalizedValues.client,
-    "学歴point": normalizedValues.educationPoint as any,
-    "経歴point": normalizedValues.careerPoint as any,
   };
 };

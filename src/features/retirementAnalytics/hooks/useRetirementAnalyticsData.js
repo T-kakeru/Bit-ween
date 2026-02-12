@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import rawRetirements from "@/shared/data/mock/retirement.json";
+import rawRetirements from "@/shared/data/mock/employee.json";
 import {
   buildAnalyticsAggregation,
   filterAnalyticsRows,
