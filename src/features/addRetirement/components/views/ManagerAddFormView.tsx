@@ -9,7 +9,6 @@ import type { ManagerRowInput } from "@/features/addRetirement/hooks/useManagerA
 import {
   FieldDate,
   FieldChipGroup,
-  FieldCombobox,
   FieldSelect,
   FieldText,
   NameField,
@@ -50,7 +49,6 @@ type Props = {
   onChangeEmployeeId: (v: string) => void;
   departmentOptions: string[];
   onChangeDepartment: (v: string) => void;
-  onAddDepartmentOption: (v: string) => void;
 
   onChangeJoinDate: (v: string) => void;
   onChangeRetireDate: (v: string) => void;
@@ -58,9 +56,6 @@ type Props = {
   statusOptions: string[];
   reasonOptions: string[];
   clientOptions: string[];
-  onAddClientOption: (v: string) => void;
-
-  onAddStatusOption: (v: string) => void;
 
   onChangeStatus: (v: string) => void;
   onChangeClient: (v: string) => void;
@@ -92,7 +87,6 @@ export const ManagerAddFormView = ({
   reasonError,
   genderOptions,
   departmentOptions,
-  onAddDepartmentOption,
   onChangeEmployeeId,
   onChangeDepartment,
   onChangeGender,
@@ -103,8 +97,6 @@ export const ManagerAddFormView = ({
   statusOptions,
   reasonOptions,
   clientOptions,
-  onAddClientOption,
-  onAddStatusOption,
   onChangeStatus,
   onChangeClient,
   onChangeReason,
@@ -188,14 +180,12 @@ export const ManagerAddFormView = ({
               maxLength={30}
             />
 
-            <FieldCombobox
+            <FieldSelect
               label="部署"
               required
               value={form["部署"]}
               options={departmentOptions}
               onChange={onChangeDepartment}
-              onAddOption={onAddDepartmentOption}
-              placeholder="部署を登録"
               errorMessage={departmentError}
             />
 
@@ -236,24 +226,20 @@ export const ManagerAddFormView = ({
 
             <Divider className="border-slate-200" />
 
-            <FieldCombobox
+            <FieldSelect
               label="稼働状態"
               required
               value={form["ステータス"]}
               options={statusOptions}
               onChange={onChangeStatus}
-              onAddOption={onAddStatusOption}
-              placeholder="検索 or 追加"
               errorMessage={statusError}
             />
 
-            <FieldCombobox
+            <FieldSelect
               label="稼働先"
               value={form["当時のクライアント"]}
               options={clientOptions}
               onChange={onChangeClient}
-              onAddOption={onAddClientOption}
-              placeholder="検索 or 追加"
               errorMessage={clientError}
             />
           </div>

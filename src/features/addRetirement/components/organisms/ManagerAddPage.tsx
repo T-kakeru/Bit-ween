@@ -39,9 +39,6 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		statusOptions,
 		reasonOptions,
 		clientOptions,
-		addDepartmentOption,
-		addClientOption,
-		addStatusOption,
 	} = useManagerAddOptionLists();
 
 	const {
@@ -193,9 +190,6 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 			statusOptions={statusOptions}
 			reasonOptions={reasonOptions}
 			clientOptions={clientOptions}
-			onAddDepartmentOption={addDepartmentOption}
-			onAddClientOption={addClientOption}
-			onAddStatusOption={addStatusOption}
 			onChangeEmployeeId={setEmployeeId}
 			onChangeDepartment={setDepartment}
 			onChangeGender={(v) => setGender(v as ManagerRowInput["性別"])}
