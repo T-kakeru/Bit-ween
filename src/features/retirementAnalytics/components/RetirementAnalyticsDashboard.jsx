@@ -168,9 +168,9 @@ const RetirementAnalyticsDashboard = () => {
       />
 
       <div className="analytics-bottom-meta">
-        <span className="tag-pill">表示件数: {filteredCountInWindow}件</span>
-        <span className="tag-pill">該当件数: {eligibleCountInWindow}件</span>
-        <span className="tag-pill">総件数: {eligibleCountTotal}件</span>
+        <span className="tag-pill">表示項目数: {filteredCountInWindow}件</span>
+        <span className="tag-pill">該当人数: {eligibleCountInWindow}人</span>
+        <span className="tag-pill">全社員数: {eligibleCountTotal}人</span>
       </div>
 
       {isDetailOpen && (isAllSelected || selectedSeriesKey) ? (

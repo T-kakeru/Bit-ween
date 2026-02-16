@@ -4,7 +4,7 @@ import FilterTabButton from "@/features/retirement/components/molecules/FilterTa
 import { GENDERS, STATUSES, getRecentPeriodKeys } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
 const ActiveTabToggle = ({ value, onChange }) => (
-  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="タブ">
+  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="集計期間">
     <FilterTabButton id="current" activeId={value} onSelect={onChange}>
       現在
     </FilterTabButton>
@@ -18,7 +18,7 @@ const ActiveTabToggle = ({ value, onChange }) => (
 );
 
 const SeriesModeToggle = ({ value, onChange }) => (
-  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="集計項目">
+  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="分析軸">
     <FilterTabButton id="reason" activeId={value} onSelect={onChange}>
       退職理由
     </FilterTabButton>
@@ -39,9 +39,9 @@ const StatusMultiSelect = ({ selected, onChange }) => {
   const containerRef = useRef(null);
 
   const label = useMemo(() => {
-    if (selected.length === 0) return "未選択";
-    if (selected.length === STATUSES.length) return "全て";
-    return `${selected.length}件選択`;
+    if (selected.length === 0) return "稼働状態：未選択";
+    if (selected.length === STATUSES.length) return "稼働状態：全て";
+    return `稼働状態：${selected.length}件選択`;
   }, [selected]);
 
   const toggleStatus = (status) => {
@@ -106,9 +106,9 @@ const GenderMultiSelect = ({ selected, onChange }) => {
 
   // ラベル表示用
   const label = useMemo(() => {
-    if (selected.length === 0) return "未選択";
-    if (selected.length === GENDERS.length) return "男女";
-    return selected[0] ?? "未選択";
+    if (selected.length === 0) return "性別：未選択";
+    if (selected.length === GENDERS.length) return "性別：男女";
+    return `性別：${selected[0] ?? "未選択"}`;
   }, [selected]);
 
   // 性別の選択・解除切り替え
@@ -176,9 +176,9 @@ const ClientMultiSelect = ({ selected, options, onChange }) => {
   const safeOptions = Array.isArray(options) ? options : [];
 
   const label = useMemo(() => {
-    if (selected.length === 0) return "未選択";
-    if (selected.length === safeOptions.length) return "全て";
-    return `${selected.length}件選択`;
+    if (selected.length === 0) return "常駐先企業：未選択";
+    if (selected.length === safeOptions.length) return "常駐先企業：全て";
+    return `常駐先企業：${selected.length}件選択`;
   }, [safeOptions.length, selected]);
 
   const toggleClient = (client) => {
@@ -253,34 +253,11 @@ const RetirementAnalyticsFilters = ({
 
   return (
     <div className="analytics-filters">
-      <div className="analytics-filter">
-        <span className="analytics-filter-label">タブ</span>
-        <ActiveTabToggle value={activeTab} onChange={onActiveTabChange} />
-      </div>
-
       <div className="analytics-filter analytics-filter--tabs">
-        <span className="analytics-filter-label">集計項目</span>
-        <SeriesModeToggle value={seriesMode} onChange={onSeriesModeChange} />
-      </div>
+        <span className="analytics-filter-label">集計期間</span>
+        <ActiveTabToggle value={activeTab} onChange={onActiveTabChange} />
 
-      <div className="analytics-filter">
-        <span className="analytics-filter-label">稼働状態</span>
-        <StatusMultiSelect selected={statuses} onChange={onStatusesChange} />
-      </div>
-
-      <div className="analytics-filter">
-        <span className="analytics-filter-label">性別</span>
-        <GenderMultiSelect selected={genders} onChange={onGendersChange} />
-      </div>
-
-      <div className="analytics-filter">
-        <span className="analytics-filter-label">稼働先（クライアント名）</span>
-        <ClientMultiSelect selected={clients} options={clientOptions} onChange={onClientsChange} />
-      </div>
-
-      {activeTab === "month" ? (
-        <div className="analytics-filter analytics-filter--tabs">
-          <span className="analytics-filter-label">年</span>
+        {activeTab === "month" ? (
           <div
             className="manager-filter-tabs manager-filter-tabs--segmented"
             role="group"
@@ -299,8 +276,21 @@ const RetirementAnalyticsFilters = ({
               </Button>
             ))}
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
+
+      <div className="analytics-filter analytics-filter--tabs">
+        <span className="analytics-filter-label">分析軸</span>
+        <SeriesModeToggle value={seriesMode} onChange={onSeriesModeChange} />
+      </div>
+
+      <div className="analytics-filter">
+        <span className="analytics-filter-label">絞り込み条件</span>
+        <StatusMultiSelect selected={statuses} onChange={onStatusesChange} />
+        <GenderMultiSelect selected={genders} onChange={onGendersChange} />
+        <ClientMultiSelect selected={clients} options={clientOptions} onChange={onClientsChange} />
+      </div>
+
     </div>
   );
 };
