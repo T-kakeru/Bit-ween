@@ -4,6 +4,7 @@ const variantClassMap = {
   primary: styles.primary,
   danger: styles.danger,
   outline: styles.outline,
+  ghost: styles.ghost,
 };
 
 const sizeClassMap = {
@@ -17,6 +18,7 @@ const Button = ({
   variant = "primary",
   size = "md",
   className = "",
+  children,
   ...props
 }) => (
   <button
@@ -30,7 +32,9 @@ const Button = ({
       .filter(Boolean)
       .join(" ")}
     {...props}
-  />
+  >
+    {children}
+  </button>
 );
 
 export default Button;

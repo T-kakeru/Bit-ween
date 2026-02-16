@@ -14,6 +14,7 @@ import {
 
 const MAX_NAME_LENGTH = 100;
 const MAX_RETIRE_REASON_LENGTH = 2000;
+const MAX_REMARK_LENGTH = 200;
 const MAX_WORK_LOCATION_LENGTH = 200;
 const MAX_WORK_STATUS_LENGTH = 50;
 
@@ -119,6 +120,7 @@ export const validateEmployeeCsvRow = ({
   const workLocation = normalizeValue(row.workLocation) || null;
   const retirementDateRaw = normalizeValue(row.retirementDate);
   const retirementReason = normalizeValue(row.retirementReason);
+  const remark = normalizeValue(row.remark);
 
   const valuesToCheck = [
     name,
@@ -132,6 +134,7 @@ export const validateEmployeeCsvRow = ({
     workLocation ?? "",
     retirementDateRaw,
     retirementReason,
+    remark,
   ];
 
   if (valuesToCheck.some((value) => hasEncodingIssue(value))) {
@@ -153,13 +156,11 @@ export const validateEmployeeCsvRow = ({
     errors.push(toFieldError(rowNumber, "gender", "性別は『男性/女性/その他』で入力してください。"));
   }
 
-  const birthDate = birthDateRaw ? normalizeDateValue(birthDateRaw) : null;
-  if (birthDateRaw && !birthDate) {
+  const birthDate = normalizeDateValue(birthDateRaw);
+  if (isBlank(birthDateRaw)) {
+    errors.push(toFieldError(rowNumber, "birthDate", "生年月日は必須です。"));
+  } else if (!birthDate) {
     errors.push(toFieldError(rowNumber, "birthDate", "生年月日が日付として認識できません。例: 1990/04/01"));
-  }
-
-  if (!department) {
-    errors.push(toFieldError(rowNumber, "department", "部署は必須です。"));
   }
 
   if (department && !hasDepartmentMaster(department)) {
@@ -227,12 +228,14 @@ export const validateEmployeeCsvRow = ({
     }
   }
 
-  if (isBlank(retirementReason)) {
-    errors.push(toFieldError(rowNumber, "retirementReason", "退職理由は必須です。"));
-  } else if (retirementReason.length > MAX_RETIRE_REASON_LENGTH) {
+  if (retirementReason.length > MAX_RETIRE_REASON_LENGTH) {
     errors.push(
       toFieldError(rowNumber, "retirementReason", `退職理由は${MAX_RETIRE_REASON_LENGTH}文字以内で入力してください。`)
     );
+  }
+
+  if (remark.length > MAX_REMARK_LENGTH) {
+    errors.push(toFieldError(rowNumber, "remark", `備考は${MAX_REMARK_LENGTH}文字以内で入力してください。`));
   }
 
   if (errors.length > 0) {
@@ -243,15 +246,16 @@ export const validateEmployeeCsvRow = ({
     normalizedRow: {
       name,
       gender: genderValue,
-      birthDate,
+      birthDate: birthDate ?? "",
       employeeId,
       department,
-      joinDate,
+      joinDate: joinDate ?? "",
       employmentStatus: employmentStatusRaw,
       workStatus,
       workLocation,
       retirementDate: retirementDate ?? "",
       retirementReason,
+      remark,
     },
     errors: [],
   };

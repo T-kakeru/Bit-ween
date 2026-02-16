@@ -87,6 +87,10 @@ const extractPeriodFromBarClickArg = (arg) => {
 // これはｘ、ｙ軸の値をクリック可能にするためのカスタムコンポーネント
 const ClickableYearTick = ({ x, y, payload, onSelectYear }) => {
   const value = payload?.value;
+  const label = String(value ?? "");
+  const textWidth = Math.max(label.length * 8, 28);
+  const pillWidth = textWidth + 20;
+  const pillHeight = 26;
   return (
     <g
       transform={`translate(${x},${y})`}
@@ -101,8 +105,18 @@ const ClickableYearTick = ({ x, y, payload, onSelectYear }) => {
         }
       }}
     >
-      <text x={0} y={0} dy={16} textAnchor="middle">
-        {String(value)}
+      <rect
+        x={-pillWidth / 2}
+        y={8}
+        width={pillWidth}
+        height={pillHeight}
+        rx={13}
+        ry={13}
+        fill="#eff6ff"
+        stroke="#bfdbfe"
+      />
+      <text x={0} y={0} dy={26} textAnchor="middle" fill="#111827" fontSize={12} fontWeight={600}>
+        {label}
       </text>
     </g>
   );
@@ -142,13 +156,14 @@ const RetirementAnalyticsChart = ({
   }
 
   const [hoveredSeriesKey, setHoveredSeriesKey] = useState("");
+  const isYearTickMode = enableYearTickClick && axis === "year";
 
   return (
     <div className="analytics-chart">
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer width="100%" height={isYearTickMode ? 340 : 320}>
         <BarChart
           data={data}
-          margin={{ top: 8, right: 18, left: 6, bottom: 8 }}
+          margin={{ top: 8, right: 18, left: 6, bottom: isYearTickMode ? 24 : 8 }}
           barCategoryGap={12}
           barGap={6}
           maxBarSize={34}
@@ -156,7 +171,7 @@ const RetirementAnalyticsChart = ({
           <CartesianGrid stroke="#e6e8ec" strokeDasharray="3 3" />
           <XAxis
             dataKey="period"
-            tickMargin={6}
+            tickMargin={isYearTickMode ? 12 : 6}
             tick={
               enableYearTickClick && axis === "year"
                 ? (props) => <ClickableYearTick {...props} onSelectYear={onYearTickClick} />

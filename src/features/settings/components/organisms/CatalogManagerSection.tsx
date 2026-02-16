@@ -3,6 +3,7 @@ import Card from "@/shared/ui/Card";
 import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
+import Input from "@/shared/ui/Input";
 import departments from "@/shared/data/mock/departments.json";
 import clients from "@/shared/data/mock/clients.json";
 import workStatuses from "@/shared/data/mock/workStatuses.json";
@@ -48,9 +49,10 @@ type Props = {
   description: string;
   keyName: CatalogKey;
   itemLabel: "部署" | "稼働先" | "稼働状態";
+  embedded?: boolean;
 };
 
-export const CatalogManagerSection = ({ title, description, keyName, itemLabel }: Props) => {
+export const CatalogManagerSection = ({ title, description, keyName, itemLabel, embedded = false }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const [newId, setNewId] = useState("");
@@ -154,49 +156,79 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel }
     cancelEdit();
   };
 
-  return (
-    <Card className="settings-panel">
-      <div className="settings-row">
+  //
+  const handleNewIdChange = (event: any) => {
+    setNewId(event.target.value);
+    if (addError) setAddError(null);
+  };
+
+  const handleNewNameChange = (event: any) => {
+    setNewName(event.target.value);
+    if (addError) setAddError(null);
+  };
+
+  const handleEditDraftIdChange = (event: any) => {
+    setEditDraftId(event.target.value);
+    if (editError) setEditError(null);
+  };
+
+  const handleEditDraftNameChange = (event: any) => {
+    setEditDraftName(event.target.value);
+    if (editError) setEditError(null);
+  };
+
+  const containerClassName = embedded
+    ? `settings-master-item ${isOpen ? "is-open" : ""}`
+    : `settings-panel settings-menu-card ${isOpen ? "is-open settings-menu-card-span" : ""}`;
+
+  const content = (
+    <>
+      <div className="settings-menu-card-head">
         <div>
           <p className="settings-title">{title}</p>
           <TextCaption>{description}</TextCaption>
           <TextCaption className="mt-1">登録数: {items.length}</TextCaption>
         </div>
 
-			<div className="flex items-center gap-2">
-				<Button type="button" variant="outline" size="sm" onClick={toggleOpen} aria-expanded={isOpen}>
-					{isOpen ? "閉じる" : "管理する"}
-				</Button>
-			</div>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            className="settings-action-button"
+            onClick={toggleOpen}
+            aria-expanded={isOpen}
+          >
+            {isOpen ? "閉じる" : "管理する"}
+          </Button>
+        </div>
       </div>
 
       {isOpen ? (
         <div className="px-6 pb-5">
-          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
             <div className="text-sm font-semibold text-slate-900">新規{itemLabel}追加</div>
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <input
+              <Input
                 type="text"
                 value={newId}
-                onChange={(e) => {
-                  setNewId(e.target.value);
-                  if (addError) setAddError(null);
-                }}
+                onChange={handleNewIdChange}
                 placeholder={`${itemLabel}ID（例: ${keyName === "departments" ? "dept-006" : keyName === "clients" ? "client-015" : "ws-001"}）`}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
               />
-              <input
+              <Input
                 type="text"
                 value={newName}
-                onChange={(e) => {
-                  setNewName(e.target.value);
-                  if (addError) setAddError(null);
-                }}
+                onChange={handleNewNameChange}
                 placeholder={`${itemLabel}名`}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
               />
               <div className="flex items-center gap-2">
-                <Button type="button" size="sm" onClick={handleAdd}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  className="settings-action-button"
+                  onClick={handleAdd}
+                >
                   <span className="inline-flex items-center gap-2">
                     <Icon src="/img/icon_file_add.png" alt="追加" />
                     追加
@@ -209,7 +241,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel }
 
           <div className="mt-4 space-y-2">
             {items.length === 0 ? (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="rounded-lg border border-slate-200 bg-white p-4">
                 <TextCaption>まだ登録がありません。</TextCaption>
               </div>
             ) : null}
@@ -226,25 +258,17 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel }
                     {isEditing ? (
                       <div className="space-y-2">
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <input
+                          <Input
                             type="text"
                             value={editDraftId}
-                            onChange={(e) => {
-                              setEditDraftId(e.target.value);
-                              if (editError) setEditError(null);
-                            }}
+                            onChange={handleEditDraftIdChange}
                             placeholder={`${itemLabel}ID`}
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
                           />
-                          <input
+                          <Input
                             type="text"
                             value={editDraftName}
-                            onChange={(e) => {
-                              setEditDraftName(e.target.value);
-                              if (editError) setEditError(null);
-                            }}
+                            onChange={handleEditDraftNameChange}
                             placeholder={`${itemLabel}名`}
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
                           />
                         </div>
                         {editError ? <p className="text-xs text-rose-600">{editError}</p> : null}
@@ -298,6 +322,12 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel }
           </div>
         </div>
       ) : null}
-    </Card>
+    </>
   );
+
+  if (embedded) {
+    return <div className={containerClassName}>{content}</div>;
+  }
+
+  return <Card className={containerClassName}>{content}</Card>;
 };

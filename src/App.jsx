@@ -9,6 +9,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ManagerPage from "./pages/ManagerPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import SystemUsersPage from "./pages/SystemUsersPage";
 import NotFoundPanel from "@/shared/components/NotFoundPanel";
 import useArticleEntryParentInfo from "./features/articles/hooks/useArticleEntryParentInfo";
 import useSavedArticlesState from "@/features/articles/hooks/useSavedArticlesState";
@@ -19,8 +20,12 @@ function App() {
   const savedArticles = useSavedArticlesState();
 
   const adminNavItems = [
+    { type: "section", label: "業務" },
     { label: "退職者分析", icon: "/img/icon_manager.png" },
     { label: "社員情報一覧", icon: "/img/icon_data.png" },
+    { type: "divider", label: "divider-business" },
+    { type: "section", label: "システム管理" },
+    { label: "利用者管理", icon: "/img/default.png" },
     { label: "設定", icon: "/img/icon_settings.png" },
     //フェーズ２: ユーザーユースケースへのメニュー導線を再検討後に表示
     // { label: "ユーザー画面", icon: "/img/icon_home.png" },
@@ -107,6 +112,25 @@ function App() {
     setIsSidebarOpen(false);
   };
 
+  const handleRequestEmployeeRegisterFromSystemUsers = (payload) => {
+    const email = String(payload?.email ?? "").trim();
+    const role = String(payload?.role ?? "general").trim().toLowerCase();
+    try {
+      window.dispatchEvent(
+        new CustomEvent("systemUsers:startIntegratedRegister", {
+          detail: {
+            email,
+            role: role === "admin" ? "admin" : "general",
+          },
+        })
+      );
+    } catch (e) {
+      // ignore
+    }
+    setAdminNav("社員情報一覧");
+    setIsSidebarOpen(false);
+  };
+
   const renderNavContent = () => {
     if (isAdminMode) {
       if (adminNav === "退職者分析") {
@@ -119,6 +143,14 @@ function App() {
 
       if (adminNav === "設定") {
         return <SettingsPage />;
+      }
+
+      if (adminNav === "利用者管理") {
+        return (
+          <SystemUsersPage
+            onRequestEmployeeRegister={handleRequestEmployeeRegisterFromSystemUsers}
+          />
+        );
       }
 
       return (
@@ -179,13 +211,15 @@ function App() {
           navItems={isAdminMode ? adminNavItems : navItems}
           activeNav={isAdminMode ? adminNav : activeNav}
           onNavChange={handleNavChange}
-          user={user}
           menuTitle={isAdminMode ? "管理者メニュー" : "メニュー"}
         />
       }
       isSidebarOpen={isSidebarOpen}
       onOverlayClick={() => setIsSidebarOpen(false)}
-      pageTitle={pageTitleOverride ?? (isAdminMode ? adminNav : activeNav)}
+      pageTitle={
+        pageTitleOverride ??
+        (isAdminMode ? (adminNav === "利用者管理" ? "システム利用者管理" : adminNav) : activeNav)
+      }
     >
       {renderNavContent()}
     </AppShell>

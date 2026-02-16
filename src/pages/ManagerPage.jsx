@@ -2,11 +2,10 @@ import ManagerDashboard from "@/pages/manager/ManagerDashboard";
 import ManagerAddPage from "@/pages/manager/ManagerAddPage";
 import useManagerEmployees from "@/features/retirement/hooks/useManagerEmployees";
 import useManagerPageController from "@/pages/manager/useManagerPageController";
-import SystemUsersManager from "@/features/systemUsers/components/organisms/SystemUsersManager";
 import { useSystemUsersCrud } from "@/features/systemUsers/hooks/useSystemUsersCrud";
 
 // pages: 画面全体の責務（配線/遷移）だけを持ち、表示は features 側へ寄せる
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const ManagerPage = () => {
   const { columns, rows, setRows, metrics, normalizeCell } = useManagerEmployees();
@@ -17,16 +16,9 @@ const ManagerPage = () => {
     normalizeCell,
   });
   const { createUser } = useSystemUsersCrud({ companyId: "company-default" });
-  const [isUserRegisterOpen, setIsUserRegisterOpen] = useState(false);
   const [pendingUserEmail, setPendingUserEmail] = useState("");
+  const [pendingUserRole, setPendingUserRole] = useState("general");
   const [isIntegratedFlow, setIsIntegratedFlow] = useState(false);
-
-  const openUserRegister = useCallback(() => {
-    setPendingUserEmail("");
-    setIsIntegratedFlow(false);
-    setIsUserRegisterOpen(true);
-  }, []);
-  const closeUserRegister = useCallback(() => setIsUserRegisterOpen(false), []);
 
   // 画面遷移時に追加モーダルを閉じる
   useEffect(() => {
@@ -35,8 +27,8 @@ const ManagerPage = () => {
         const nav = e?.detail;
         if (nav === "社員情報一覧") {
           closeAdd();
-          closeUserRegister();
           setPendingUserEmail("");
+          setPendingUserRole("general");
           setIsIntegratedFlow(false);
         }
       } catch (err) {
@@ -45,23 +37,22 @@ const ManagerPage = () => {
     };
     window.addEventListener("app:navigate", handler);
     return () => window.removeEventListener("app:navigate", handler);
-  }, [closeAdd, closeUserRegister]);
+  }, [closeAdd]);
 
-  if (isUserRegisterOpen) {
-    return (
-      <SystemUsersManager
-        companyId="company-default"
-        currentRole="admin"
-        onDone={closeUserRegister}
-        onRequestEmployeeRegister={(email) => {
-          setPendingUserEmail(String(email ?? "").trim());
-          setIsIntegratedFlow(true);
-          closeUserRegister();
-          openAdd();
-        }}
-      />
-    );
-  }
+  useEffect(() => {
+    const handler = (event) => {
+      const email = String(event?.detail?.email ?? "").trim();
+      const role = String(event?.detail?.role ?? "general").trim().toLowerCase();
+      if (!email) return;
+      setPendingUserEmail(email);
+      setPendingUserRole(role === "admin" ? "admin" : "general");
+      setIsIntegratedFlow(true);
+      openAdd();
+    };
+
+    window.addEventListener("systemUsers:startIntegratedRegister", handler);
+    return () => window.removeEventListener("systemUsers:startIntegratedRegister", handler);
+  }, [openAdd]);
 
   if (isAddOpen) {
     return (
@@ -72,6 +63,7 @@ const ManagerPage = () => {
         onCancel={() => {
           closeAdd();
           setPendingUserEmail("");
+          setPendingUserRole("general");
           setIsIntegratedFlow(false);
         }}
         onSave={(input) => {
@@ -86,7 +78,7 @@ const ManagerPage = () => {
 
           const result = createUser({
             email,
-            role: "general",
+            role: pendingUserRole,
             employeeCode,
             employeeName,
           });
@@ -96,6 +88,7 @@ const ManagerPage = () => {
           }
 
           setPendingUserEmail("");
+          setPendingUserRole("general");
           setIsIntegratedFlow(false);
         }}
       />
@@ -110,7 +103,6 @@ const ManagerPage = () => {
       metrics={metrics}
       normalizeCell={normalizeCell}
       onAddOpen={openAdd}
-      onUserRegisterOpen={openUserRegister}
     />
   );
 };

@@ -7,15 +7,57 @@ const nowIso = () => new Date().toISOString();
 const toText = (value) => String(value ?? "").trim();
 const toEmail = (value) => toText(value).toLowerCase();
 
+const SEED_SYSTEM_USERS = [
+  {
+    id: "seed-admin-1",
+    company_id: "company-default",
+    employee_id: "26-0001",
+    employee_name: "山田 一郎",
+    display_name: "山田 一郎",
+    email: "admin@bitween.local",
+    role: "admin",
+    is_enabled: true,
+    last_login_at: "2026-02-16T08:20:00.000Z",
+    created_at: "2025-08-01T09:00:00.000Z",
+    updated_at: "2026-02-16T08:20:00.000Z",
+  },
+  {
+    id: "seed-member-1",
+    company_id: "company-default",
+    employee_id: "26-0021",
+    employee_name: "佐藤 花子",
+    display_name: "佐藤 花子",
+    email: "member@bitween.local",
+    role: "general",
+    is_enabled: true,
+    last_login_at: "2026-02-14T22:30:00.000Z",
+    created_at: "2025-10-10T09:00:00.000Z",
+    updated_at: "2026-02-14T22:30:00.000Z",
+  },
+  {
+    id: "seed-member-2",
+    company_id: "company-default",
+    employee_id: "",
+    employee_name: "",
+    display_name: "監査閲覧アカウント",
+    email: "auditor@bitween.local",
+    role: "general",
+    is_enabled: false,
+    last_login_at: "",
+    created_at: "2025-12-01T09:00:00.000Z",
+    updated_at: "2026-01-05T01:00:00.000Z",
+  },
+];
+
 const readUsers = () => {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) return SEED_SYSTEM_USERS;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : SEED_SYSTEM_USERS;
   } catch {
-    return [];
+    return SEED_SYSTEM_USERS;
   }
 };
 
@@ -62,7 +104,7 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
     });
   };
 
-  const createUser = ({ email, role, employeeCode, employeeName }) => {
+  const createUser = ({ email, role, employeeCode, employeeName, displayName }) => {
     const normalizedEmail = toEmail(email);
     const normalizedRole = toText(role).toLowerCase();
 
@@ -83,6 +125,9 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
       email: normalizedEmail,
       role: normalizedRole,
       employee_name: toText(employeeName),
+      display_name: toText(displayName || employeeName || normalizedEmail.split("@")[0]),
+      is_enabled: true,
+      last_login_at: "",
       created_at: nowIso(),
       updated_at: nowIso(),
     };
@@ -111,6 +156,8 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
         ...u,
         email: nextEmail,
         role: nextRole,
+        display_name: patch?.display_name != null ? toText(patch.display_name) : u.display_name,
+        employee_id: patch?.employee_id != null ? toText(patch.employee_id) : u.employee_id,
         updated_at: nowIso(),
       };
     });
@@ -125,10 +172,31 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
     return { ok: true };
   };
 
+  const setSystemUserEnabled = (id, enabled) => {
+    const merged = users.map((u) => {
+      if (toText(u?.id) !== toText(id)) return u;
+      return {
+        ...u,
+        is_enabled: Boolean(enabled),
+        updated_at: nowIso(),
+      };
+    });
+    saveUsers(merged);
+    return { ok: true };
+  };
+
+  const resetSystemUserPassword = (id) => {
+    const target = companyUsers.find((u) => toText(u?.id) === toText(id));
+    if (!target) return { ok: false, message: "対象利用者が見つかりません" };
+    return { ok: true, message: `利用者 ${toText(target.display_name || target.email)} に再設定案内を送信しました` };
+  };
+
   return {
     users: companyUsers,
     createUser,
     updateUser,
     removeUser,
+    setSystemUserEnabled,
+    resetSystemUserPassword,
   };
 };

@@ -16,6 +16,7 @@ export const EMPLOYEE_CSV_FIELD_LABELS: Record<EmployeeCsvField, string> = {
   workLocation: "稼働先",
   retirementDate: "退職日",
   retirementReason: "退職理由",
+  remark: "備考",
 };
 
 export type EmployeeCsvHeaderSpec = {
@@ -28,23 +29,30 @@ export type EmployeeCsvHeaderSpec = {
 export const EMPLOYEE_CSV_HEADER_SPECS: EmployeeCsvHeaderSpec[] = [
   { field: "name", label: EMPLOYEE_CSV_FIELD_LABELS.name, required: true },
   { field: "gender", label: EMPLOYEE_CSV_FIELD_LABELS.gender, required: true },
-  { field: "birthDate", label: EMPLOYEE_CSV_FIELD_LABELS.birthDate, required: false },
+  { field: "birthDate", label: EMPLOYEE_CSV_FIELD_LABELS.birthDate, required: true },
   { field: "employeeId", label: EMPLOYEE_CSV_FIELD_LABELS.employeeId, required: false },
-  { field: "department", label: EMPLOYEE_CSV_FIELD_LABELS.department, required: true },
+  { field: "department", label: EMPLOYEE_CSV_FIELD_LABELS.department, required: false },
   { field: "joinDate", label: EMPLOYEE_CSV_FIELD_LABELS.joinDate, required: true },
   { field: "employmentStatus", label: EMPLOYEE_CSV_FIELD_LABELS.employmentStatus, required: false },
   { field: "workStatus", label: EMPLOYEE_CSV_FIELD_LABELS.workStatus, required: true },
   { field: "workLocation", label: EMPLOYEE_CSV_FIELD_LABELS.workLocation, required: false },
   { field: "retirementDate", label: EMPLOYEE_CSV_FIELD_LABELS.retirementDate, required: true },
-  { field: "retirementReason", label: EMPLOYEE_CSV_FIELD_LABELS.retirementReason, required: true },
+  { field: "retirementReason", label: EMPLOYEE_CSV_FIELD_LABELS.retirementReason, required: false },
+  { field: "remark", label: EMPLOYEE_CSV_FIELD_LABELS.remark, required: false },
 ];
+
+export const toEmployeeCsvHeaderDisplayLabel = (spec: EmployeeCsvHeaderSpec) =>
+  spec.required ? `${spec.label}（必須）` : spec.label;
 
 export const EMPLOYEE_CSV_REQUIRED_FIELDS: EmployeeCsvField[] = EMPLOYEE_CSV_HEADER_SPECS.filter((x) => x.required).map(
   (x) => x.field
 );
 
 export const EMPLOYEE_CSV_HEADER_MAP: Record<string, EmployeeCsvField> = Object.fromEntries(
-  EMPLOYEE_CSV_HEADER_SPECS.map((x) => [x.label, x.field])
+  EMPLOYEE_CSV_HEADER_SPECS.flatMap((x) => [
+    [x.label, x.field],
+    [toEmployeeCsvHeaderDisplayLabel(x), x.field],
+  ])
 ) as Record<string, EmployeeCsvField>;
 
 const buildUniqueList = (values: (string | null | undefined)[]) =>

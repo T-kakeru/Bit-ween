@@ -1,20 +1,20 @@
 import baseUsersJson from "@/shared/data/mock/users.json";
+import type { AppUserRecord, UserRole } from "@/shared/types/erModels";
 
 export type EmploymentStatus = "active" | "retired";
 
-export type UserProfile = {
-  id: string;
-  name: string;
+export type UserProfile = AppUserRecord & {
+  name?: string;
+  role?: UserRole;
   department?: string;
   team?: string;
-  role?: string;
   status?: string;
   icon?: string;
   gender?: "男性" | "女性" | "その他" | "";
-  birthDate?: string; // YYYY-MM-DD
-  joinDate?: string; // YYYY-MM-DD
+  birthDate?: string;
+  joinDate?: string;
   employmentStatus?: EmploymentStatus;
-  retireDate?: string; // YYYY-MM-DD
+  retireDate?: string;
   bio?: string;
   smallTalk?: {
     hobbies?: string[];
@@ -70,7 +70,8 @@ export const searchUsersByName = (query: string, options: SearchUsersOptions = {
 
   const scored = users
     .map((u) => {
-      const key = normalizeKey(u.name);
+      const displayName = String(u.name ?? u.email ?? "");
+      const key = normalizeKey(displayName);
       const idx = key.indexOf(q);
       const score = idx === -1 ? Number.POSITIVE_INFINITY : idx;
       return { u, score };

@@ -50,8 +50,16 @@ export const managerAddSchema = z.object({
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.genderRequired });
     }
   }),
-  birthDate: OPTIONAL_DATE,
-  joinDate: OPTIONAL_DATE,
+  birthDate: OPTIONAL_DATE.superRefine((v, ctx) => {
+    if (!v) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.birthDateRequired });
+    }
+  }),
+  joinDate: OPTIONAL_DATE.superRefine((v, ctx) => {
+    if (!v) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.joinDateRequired });
+    }
+  }),
   retireDate: OPTIONAL_DATE,
   retireReason: z.string().trim(),
   remark: z.string().trim().max(200, { message: managerAddMessages.remarkTooLong }),

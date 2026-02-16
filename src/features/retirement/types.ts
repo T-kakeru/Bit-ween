@@ -1,5 +1,4 @@
-// できるだけシンプルに（基本は string / any）
-// ※「行/列（ManagerRow / ManagerColumn）」だけは残して使えるようにしています。
+import type { EmployeeRecord } from "@/shared/types/erModels";
 
 export type ManagerColumnType = string;
 
@@ -14,11 +13,21 @@ export type ManagerRow = {
   [key: string]: any;
 };
 
-// 社員データ（Mock JSON / 一覧のソース）
-// - is_active: true=在籍中 / false=退職済
 export type Employee = {
-  id?: any;
+  id: string;
   is_active: boolean;
+  "社員ID"?: string;
+  "名前"?: string;
+  "性別"?: string;
+  "生年月日"?: string;
+  "入社日"?: string;
+  "退職日"?: string;
+  "退職理由"?: string;
+  "備考"?: string;
+  "部署"?: string;
+  "ステータス"?: string;
+  "当時のクライアント"?: string;
+  er_employee?: Partial<EmployeeRecord>;
   [key: string]: any;
 };
 

@@ -9,7 +9,8 @@ export type EmployeeCsvField =
   | "workStatus"
   | "workLocation"
   | "retirementDate"
-  | "retirementReason";
+  | "retirementReason"
+  | "remark";
 
 export type EmployeeCsvErrorField = EmployeeCsvField | "row" | "file" | "header";
 
@@ -18,15 +19,16 @@ export type EmployeeCsvRawRow = Partial<Record<EmployeeCsvField, string>>;
 export type EmployeeCsvNormalizedRow = {
   name: string;
   gender: string;
-  birthDate: string | null;
+  birthDate: string;
   employeeId: string | null;
   department: string | null;
-  joinDate: string | null;
+  joinDate: string;
   employmentStatus: string | null;
   workStatus: string;
   workLocation: string | null;
   retirementDate: string;
   retirementReason: string;
+  remark: string;
 };
 
 export type EmployeeCsvError = {

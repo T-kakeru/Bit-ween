@@ -37,6 +37,7 @@ export const mapEmployeeCsvRowsToManagerRows = (rows: EmployeeCsvNormalizedRow[]
       在籍月数: buildTenureMonthsFromJoinAndRetireDates(joinDate, retirementDate),
       ステータス: row.workStatus,
       退職理由: row.retirementReason,
+      備考: row.remark,
       当時のクライアント: row.workLocation ?? "-",
       性別: row.gender,
       生年月日: birthDate || "-",

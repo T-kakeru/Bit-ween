@@ -4,7 +4,11 @@ import FilterTabButton from "@/features/retirement/components/molecules/FilterTa
 import { GENDERS, STATUSES, getRecentPeriodKeys } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
 const ActiveTabToggle = ({ value, onChange }) => (
-  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="集計期間">
+  <div
+    className="manager-filter-tabs manager-filter-tabs--segmented analytics-filter-stack analytics-filter-stack--period"
+    role="tablist"
+    aria-label="集計期間"
+  >
     <FilterTabButton id="current" activeId={value} onSelect={onChange}>
       現在
     </FilterTabButton>
@@ -18,7 +22,11 @@ const ActiveTabToggle = ({ value, onChange }) => (
 );
 
 const SeriesModeToggle = ({ value, onChange }) => (
-  <div className="manager-filter-tabs manager-filter-tabs--segmented" role="tablist" aria-label="分析軸">
+  <div
+    className="manager-filter-tabs manager-filter-tabs--segmented analytics-filter-stack analytics-filter-stack--axis"
+    role="tablist"
+    aria-label="分析軸"
+  >
     <FilterTabButton id="reason" activeId={value} onSelect={onChange}>
       退職理由
     </FilterTabButton>
@@ -71,7 +79,7 @@ const StatusMultiSelect = ({ selected, onChange }) => {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {label}
+        <span className="multi-select-label" title={label}>{label}</span>
         <span className="multi-select-caret" aria-hidden="true">
           ▾
         </span>
@@ -139,7 +147,7 @@ const GenderMultiSelect = ({ selected, onChange }) => {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {label}
+        <span className="multi-select-label" title={label}>{label}</span>
         <span className="multi-select-caret" aria-hidden="true">
           ▾
         </span>
@@ -176,9 +184,9 @@ const ClientMultiSelect = ({ selected, options, onChange }) => {
   const safeOptions = Array.isArray(options) ? options : [];
 
   const label = useMemo(() => {
-    if (selected.length === 0) return "常駐先企業：未選択";
-    if (selected.length === safeOptions.length) return "常駐先企業：全て";
-    return `常駐先企業：${selected.length}件選択`;
+    if (selected.length === 0) return "稼働先（クライアント名）：未選択";
+    if (selected.length === safeOptions.length) return "稼働先（クライアント名）：全て";
+    return `稼働先（クライアント名）：${selected.length}件選択`;
   }, [safeOptions.length, selected]);
 
   const toggleClient = (client) => {
@@ -208,7 +216,7 @@ const ClientMultiSelect = ({ selected, options, onChange }) => {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {label}
+        <span className="multi-select-label" title={label}>{label}</span>
         <span className="multi-select-caret" aria-hidden="true">
           ▾
         </span>
@@ -284,11 +292,13 @@ const RetirementAnalyticsFilters = ({
         <SeriesModeToggle value={seriesMode} onChange={onSeriesModeChange} />
       </div>
 
-      <div className="analytics-filter">
+      <div className="analytics-filter analytics-filter--tabs analytics-filter--conditions">
         <span className="analytics-filter-label">絞り込み条件</span>
-        <StatusMultiSelect selected={statuses} onChange={onStatusesChange} />
-        <GenderMultiSelect selected={genders} onChange={onGendersChange} />
-        <ClientMultiSelect selected={clients} options={clientOptions} onChange={onClientsChange} />
+        <div className="manager-filter-tabs manager-filter-tabs--segmented analytics-filter-stack analytics-filter-condition-row">
+          <StatusMultiSelect selected={statuses} onChange={onStatusesChange} />
+          <GenderMultiSelect selected={genders} onChange={onGendersChange} />
+          <ClientMultiSelect selected={clients} options={clientOptions} onChange={onClientsChange} />
+        </div>
       </div>
 
     </div>

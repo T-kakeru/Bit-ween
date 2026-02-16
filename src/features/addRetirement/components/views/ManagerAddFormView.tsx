@@ -149,6 +149,7 @@ export const ManagerAddFormView = ({
 
             <FieldDate
               label="生年月日"
+              required
               value={form["生年月日"]}
               onChange={onChangeBirthDate}
               errorMessage={birthDateError}
@@ -180,6 +181,7 @@ export const ManagerAddFormView = ({
 
             <FieldDate
               label="入社日"
+              required
               value={form["入社日"]}
               onChange={onChangeJoinDate}
               errorMessage={joinDateError}

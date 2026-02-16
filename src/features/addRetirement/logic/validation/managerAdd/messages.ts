@@ -7,6 +7,8 @@ export const managerAddMessages = {
   nameTooShort: "名前を2文字以上で入力してください",
   nameTooLong: "名前は50文字を超えて入力できません",
   genderRequired: "性別は必須です",
+  birthDateRequired: "生年月日は必須です",
+  joinDateRequired: "入社日は必須です",
   retireDateRequired: "退職日は必須です",
   retireReasonRequired: "退職理由は必須です",
   retireReasonRequiresDate: "退職理由は、退職日を入力した場合のみ選択できます",
