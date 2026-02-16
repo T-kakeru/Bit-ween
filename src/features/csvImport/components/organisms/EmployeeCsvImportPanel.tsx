@@ -3,9 +3,10 @@ import Button from "@/shared/ui/Button";
 import TextCaption from "@/shared/ui/TextCaption";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 import type { ManagerRow } from "@/features/retirement/types";
-import { CSV_HEADER_HINTS } from "../../logic/employeeCsvConstants";
+import { EMPLOYEE_CSV_HEADER_SPECS } from "../../logic/employeeCsvConstants";
 import { mapEmployeeCsvRowsToManagerRows } from "../../logic/employeeCsvMapper";
 import useEmployeeCsvImport from "../../hooks/useEmployeeCsvImport";
+import { buildEmployeeCsvTemplateText, EMPLOYEE_CSV_TEMPLATE_FILE_NAME } from "../../logic/employeeCsvTemplate";
 import CsvFilePicker from "../molecules/CsvFilePicker";
 import CsvImportErrorList from "../molecules/CsvImportErrorList";
 
@@ -31,7 +32,7 @@ const CONFIRM_TABLE_COLUMNS: Array<{ key: keyof ManagerRow; label: string; isEll
   { key: "入社日", label: "入社日" },
   { key: "退職日", label: "退職日" },
   { key: "ステータス", label: "稼働状態" },
-  { key: "当時のクライアント", label: "当時の稼働先", isEllipsis: true },
+  { key: "当時のクライアント", label: "稼働先", isEllipsis: true },
   { key: "退職理由", label: "退職理由" },
 ];
 
@@ -88,6 +89,17 @@ const EmployeeCsvImportPanel = ({
     setStep("edit");
     setLastImported(null);
     reset();
+  };
+
+  const handleDownloadTemplate = () => {
+    const csvWithBom = buildEmployeeCsvTemplateText();
+    const blob = new Blob([csvWithBom], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = EMPLOYEE_CSV_TEMPLATE_FILE_NAME;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -257,16 +269,31 @@ const EmployeeCsvImportPanel = ({
       ) : null}
 
       <div className="manager-import-guidance">
-        <p className="manager-import-guidance-title">推奨ヘッダー（順不同）</p>
+        <p className="manager-import-guidance-title">使用可能ヘッダー（この一覧のみ／順不同）</p>
+
+        <div className="manager-import-actions">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            className="manager-import-button"
+            onClick={handleDownloadTemplate}
+            disabled={isProcessing}
+          >
+            テンプレートCSVをダウンロード
+          </Button>
+        </div>
+
         <ul className="manager-import-guidance-list">
-          {CSV_HEADER_HINTS.map((header) => (
-            <li key={header} className="manager-import-guidance-item">
-              {header}
+          {EMPLOYEE_CSV_HEADER_SPECS.map((x) => (
+            <li key={x.label} className="manager-import-guidance-item">
+              {x.label}
+              {x.required ? "（必須）" : "（任意）"}
             </li>
           ))}
         </ul>
         <p className="manager-import-guidance-note">
-          先頭0が必要な項目はExcelで文字列形式に設定してください。文字化けが起きる場合はUTF-8で保存し直してください。
+          ※ヘッダー名は完全一致のみ受け付けます（別名・揺れは不可）。先頭0が必要な項目はExcelで文字列形式に設定してください。文字化けが起きる場合はUTF-8で保存し直してください。
         </p>
       </div>
 

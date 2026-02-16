@@ -1,15 +1,15 @@
 export const managerAddMessages = {
+  isActiveRequired: "在籍状態は必須です",
   employeeIdRequired: "社員IDは必須です",
   employeeIdTooLong: "社員IDは30文字以内で入力してください",
   employeeIdDuplicate: "この社員IDは既に使用されています",
   departmentRequired: "部署は必須です",
-  emailRequired: "メールアドレスは必須です",
-  emailInvalid: "メールアドレスの形式が正しくありません",
   nameTooShort: "名前を2文字以上で入力してください",
   nameTooLong: "名前は50文字を超えて入力できません",
   genderRequired: "性別は必須です",
   retireDateRequired: "退職日は必須です",
   retireReasonRequired: "退職理由は必須です",
   retireReasonRequiresDate: "退職理由は、退職日を入力した場合のみ選択できます",
+  remarkTooLong: "備考は200文字以内で入力してください",
   workStatusRequired: "稼働状態は必須です",
 } as const;

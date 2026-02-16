@@ -21,7 +21,7 @@ type Props = {
   csvImportSection?: ReactNode;
   onScrollToCsvImport?: () => void;
 
-  isActive: boolean;
+  isActive: boolean | null;
   onChangeIsActive: (next: boolean) => void;
 
   registerName: any;
@@ -33,18 +33,18 @@ type Props = {
   genderError?: string;
 
   birthDateError?: string;
-  emailError?: string;
   joinDateError?: string;
   retireDateError?: string;
+  isActiveError?: string;
   statusError?: string;
   clientError?: string;
   reasonError?: string;
+  remarkError?: string;
 
   genderOptions: Array<ManagerRowInput["性別"]>;
   onChangeGender: (v: string) => void;
 
   onChangeBirthDate: (v: string) => void;
-  onChangeEmail: (v: string) => void;
 
   onChangeEmployeeId: (v: string) => void;
   departmentOptions: string[];
@@ -60,6 +60,7 @@ type Props = {
   onChangeStatus: (v: string) => void;
   onChangeClient: (v: string) => void;
   onChangeReason: (v: string) => void;
+  onChangeRemark: (v: string) => void;
 
   canSubmit: boolean;
   onSubmit: FormEventHandler<HTMLFormElement>;
@@ -73,25 +74,25 @@ export const ManagerAddFormView = ({
   onScrollToCsvImport,
   isActive,
   onChangeIsActive,
+  isActiveError,
   registerName,
   employeeIdError,
   departmentError,
   nameError,
   genderError,
   birthDateError,
-  emailError,
   joinDateError,
   retireDateError,
   statusError,
   clientError,
   reasonError,
+  remarkError,
   genderOptions,
   departmentOptions,
   onChangeEmployeeId,
   onChangeDepartment,
   onChangeGender,
   onChangeBirthDate,
-  onChangeEmail,
   onChangeJoinDate,
   onChangeRetireDate,
   statusOptions,
@@ -100,6 +101,7 @@ export const ManagerAddFormView = ({
   onChangeStatus,
   onChangeClient,
   onChangeReason,
+  onChangeRemark,
   canSubmit,
   onSubmit,
   onCancel,
@@ -152,21 +154,7 @@ export const ManagerAddFormView = ({
             />
           </div>
 
-          {/* 連絡先の上にグレーのライン */}
-          <Divider className="border-slate-200" />
-
-          <div className="space-y-5">
-            <FieldText
-              label="メールアドレス"
-              required
-              value={form["メールアドレス"]}
-              onChange={onChangeEmail}
-              placeholder="example@company.com"
-              errorMessage={emailError}
-            />
-          </div>
-
-          {/* 連絡先の下にグレーのライン（社員ID区切り） */}
+          {/* 基本情報の下にグレーのライン（社員ID区切り） */}
           <Divider className="border-slate-200" />
 
           <div className="space-y-5">
@@ -199,13 +187,14 @@ export const ManagerAddFormView = ({
             <FieldChipGroup
               label="在籍状態"
               required
-              value={isActive ? "在籍中" : "退職済"}
+              value={isActive === null ? "" : isActive ? "在籍中" : "退職済"}
               options={["在籍中", "退職済"]}
               onChange={(v) => onChangeIsActive(v === "在籍中")}
               allowEmpty={false}
+              errorMessage={isActiveError}
             />
 
-            {!isActive ? (
+            {isActive === false ? (
               <>
                 <FieldDate
                   label="退職日"
@@ -220,6 +209,15 @@ export const ManagerAddFormView = ({
                   options={reasonOptions}
                   onChange={onChangeReason}
                   errorMessage={reasonError}
+                />
+
+                <FieldText
+                  label="備考"
+                  value={form["備考"]}
+                  onChange={onChangeRemark}
+                  placeholder="備考を入力（200文字まで）"
+                  maxLength={200}
+                  errorMessage={remarkError}
                 />
               </>
             ) : null}
@@ -240,6 +238,7 @@ export const ManagerAddFormView = ({
               value={form["当時のクライアント"]}
               options={clientOptions}
               onChange={onChangeClient}
+              placeholder="クライアント名"
               errorMessage={clientError}
             />
           </div>

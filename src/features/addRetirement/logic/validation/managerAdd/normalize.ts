@@ -9,10 +9,10 @@ export const normalizeManagerAddValues = (values: ManagerAddFormValues): Manager
     name: String(values.name ?? "").trim(),
     gender: String(values.gender ?? "").trim(),
     birthDate: String(values.birthDate ?? "").trim(),
-    email: String(values.email ?? "").trim(),
     joinDate: String(values.joinDate ?? "").trim(),
     retireDate: String(values.retireDate ?? "").trim(),
     retireReason: String(values.retireReason ?? "").trim(),
+    remark: String((values as any).remark ?? "").trim(),
     workStatus: String(values.workStatus ?? "").trim(),
     client: String(values.client ?? "").trim(),
   };

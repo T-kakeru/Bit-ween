@@ -21,8 +21,10 @@ const formatPeriodLabel = (axis, period) => {
 };
 
 const RetirementAnalyticsDashboard = () => {
-  const [axis, setAxis] = useState("month");
+  const [activeTab, setActiveTab] = useState("current");
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   const [statuses, setStatuses] = useState([...STATUSES]);
+  const [clients, setClients] = useState([]);
   const [genders, setGenders] = useState([...GENDERS]);
   const [seriesMode, setSeriesMode] = useState("reason");
   const [selectedSeriesKey, setSelectedSeriesKey] = useState("");
@@ -35,15 +37,26 @@ const RetirementAnalyticsDashboard = () => {
     data,
     seriesKeys,
     filteredCountInWindow,
+    eligibleCountTotal,
     eligibleCountInWindow,
     filteredRowsInWindow,
-  } = useRetirementAnalyticsData({
     axis,
+    periodKeys,
+    clientOptions,
+  } = useRetirementAnalyticsData({
+    activeTab,
+    selectedYear,
     department: "ALL",
     statuses,
+    clients,
     genders,
     seriesMode,
   });
+
+  useEffect(() => {
+    if (!Array.isArray(clientOptions) || clientOptions.length === 0) return;
+    setClients((prev) => (Array.isArray(prev) && prev.length > 0 ? prev : [...clientOptions]));
+  }, [clientOptions]);
 
   // 該当者一覧に表示する行
   const detailRows = useMemo(
@@ -55,12 +68,18 @@ const RetirementAnalyticsDashboard = () => {
         seriesMode,
         period: selectedPeriod,
         seriesKey: selectedSeriesKey,
+        periodKeys,
       });
     },
-    [axis, filteredRowsInWindow, isAllSelected, selectedPeriod, selectedSeriesKey, seriesMode]
+    [axis, filteredRowsInWindow, isAllSelected, periodKeys, selectedPeriod, selectedSeriesKey, seriesMode]
   );
 
-  const windowLabel = axis === "year" ? "表示期間（直近10年）" : "表示期間（直近12ヶ月）";
+  const windowLabel =
+    activeTab === "current"
+      ? "表示期間（直近12ヶ月）"
+      : activeTab === "year"
+      ? "表示期間（直近10年）"
+      : `${selectedYear}年（1月〜12月）`;
 
   const detailTitle = isAllSelected
     ? "すべての該当者"
@@ -68,6 +87,15 @@ const RetirementAnalyticsDashboard = () => {
     ? `${selectedSeriesKey}の該当者`
     : "";
   const detailSubtitle = selectedPeriod ? `${formatPeriodLabel(axis, selectedPeriod)}の内訳` : windowLabel;
+
+  const moveToMonthViewByYear = (year) => {
+    setSelectedYear(Number(year));
+    setActiveTab("month");
+    setIsDetailOpen(false);
+    setIsAllSelected(false);
+    setSelectedSeriesKey("");
+    setSelectedPeriod("");
+  };
 
   // 
   useEffect(() => {
@@ -89,12 +117,23 @@ const RetirementAnalyticsDashboard = () => {
       </div>
 
       <RetirementAnalyticsFilters
-        axis={axis}
+        activeTab={activeTab}
+        selectedYear={selectedYear}
         statuses={statuses}
+        clients={clients}
+        clientOptions={clientOptions}
         genders={genders}
         seriesMode={seriesMode}
-        onAxisChange={setAxis}
+        onActiveTabChange={(nextTab) => {
+          setActiveTab(nextTab);
+          setIsDetailOpen(false);
+          setIsAllSelected(false);
+          setSelectedSeriesKey("");
+          setSelectedPeriod("");
+        }}
+        onYearSelect={moveToMonthViewByYear}
         onStatusesChange={setStatuses}
+        onClientsChange={setClients}
         onGendersChange={setGenders}
         onSeriesModeChange={setSeriesMode}
       />
@@ -104,6 +143,8 @@ const RetirementAnalyticsDashboard = () => {
         seriesKeys={seriesKeys}
         seriesMode={seriesMode}
         axis={axis}
+        enableYearTickClick={activeTab === "year"}
+        onYearTickClick={moveToMonthViewByYear}
         onBarClick={(seriesKey, period) => {
           if (!seriesKey) return;
           setIsAllSelected(false);
@@ -127,8 +168,9 @@ const RetirementAnalyticsDashboard = () => {
       />
 
       <div className="analytics-bottom-meta">
-        <span className="tag-pill">対象: {filteredCountInWindow}件</span>
-        <span className="tag-pill">総件数: {eligibleCountInWindow}件</span>
+        <span className="tag-pill">表示件数: {filteredCountInWindow}件</span>
+        <span className="tag-pill">該当件数: {eligibleCountInWindow}件</span>
+        <span className="tag-pill">総件数: {eligibleCountTotal}件</span>
       </div>
 
       {isDetailOpen && (isAllSelected || selectedSeriesKey) ? (

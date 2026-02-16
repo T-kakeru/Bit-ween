@@ -19,7 +19,7 @@ export const SettingsMasterDataPanel = () => {
 
       <CatalogManagerSection
         title="稼働先管理"
-        description="稼働先（クライアント）の一覧表示・追加・編集・削除を行います。"
+        description="クライアント名の一覧表示・追加・編集・削除を行います。"
         keyName="clients"
         itemLabel="稼働先"
       />

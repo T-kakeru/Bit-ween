@@ -23,7 +23,6 @@ const buildRows = (payload: ManagerRowInput & { is_active: boolean }) => {
 
   push("社員ID", payload["社員ID"]);
   push("氏名", payload["名前"]);
-  push("メールアドレス", payload["メールアドレス"]);
   push("部署", payload["部署"]);
   push("性別", payload["性別"]);
   push("生年月日", payload["生年月日"]);
@@ -32,6 +31,7 @@ const buildRows = (payload: ManagerRowInput & { is_active: boolean }) => {
 
   if (payload.is_active === false) {
     push("退職理由", payload["退職理由"]);
+    push("備考", payload["備考"]);
   }
 
   push("稼働状態", payload["ステータス"]);
@@ -55,7 +55,7 @@ export const ManagerAddConfirmView = ({ breadcrumbs, payload, onBack, onConfirm 
           <Heading level={2}>入力内容の確認</Heading>
           <TextCaption>
             {isEmployeeRegistration
-              ? "在籍中として登録されます。登録後に案内（メールアドレス・初期パスワード）を表示します。"
+              ? "在籍中として登録されます。登録後に案内（初期パスワード）を表示します。"
               : "この内容で登録します。"}
           </TextCaption>
         </div>

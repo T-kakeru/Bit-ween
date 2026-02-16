@@ -15,11 +15,11 @@ export type ManagerRowInput = {
   "名前": string;
   "性別": "男性" | "女性" | "その他" | "";
   "生年月日": string; // input: YYYY-MM-DD
-  "メールアドレス": string;
   "入社日": string; // input: YYYY-MM-DD
   "退職日": string; // input: YYYY-MM-DD
   "ステータス": string;
   "退職理由": string;
+  "備考": string;
   "当時のクライアント": string;
 };
 
@@ -40,11 +40,11 @@ const createInitialForm = (employeeId: string): ManagerRowInput => ({
   "名前": "",
   "性別": "",
   "生年月日": "",
-  "メールアドレス": "",
   "入社日": "",
   "退職日": "",
   "ステータス": "",
   "退職理由": "",
+  "備考": "",
   "当時のクライアント": "",
 });
 
@@ -67,7 +67,7 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
   }, [rows]);
 
   const [form, setForm] = useState<ManagerRowInput>(() => initialForm);
-  const [isActive, setIsActiveState] = useState<boolean>(true);
+  const [isActive, setIsActiveState] = useState<boolean | null>(null);
   const {
     register,
     handleSubmit,
@@ -80,16 +80,16 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      isActive: true,
+      isActive: null,
       employeeId: initialForm["社員ID"],
       department: initialForm["部署"],
       name: initialForm["名前"],
       gender: initialForm["性別"],
       birthDate: initialForm["生年月日"],
-      email: initialForm["メールアドレス"],
       joinDate: initialForm["入社日"],
       retireDate: initialForm["退職日"],
       retireReason: initialForm["退職理由"],
+      remark: initialForm["備考"],
       workStatus: initialForm["ステータス"],
       client: initialForm["当時のクライアント"],
     },
@@ -104,10 +104,10 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
   register("employeeId");
   register("department");
   register("birthDate");
-  register("email");
   register("joinDate");
   register("retireDate");
   register("retireReason");
+  register("remark");
   register("workStatus");
   register("client");
 
@@ -170,10 +170,11 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
     nameError: errors.name?.message,
     genderError: errors.gender?.message,
     birthDateError: errors.birthDate?.message,
-    emailError: errors.email?.message,
     joinDateError: errors.joinDate?.message,
     retireDateError: errors.retireDate?.message,
+    isActiveError: errors.isActive?.message,
     reasonError: errors.retireReason?.message,
+    remarkError: (errors as any).remark?.message,
     statusError: errors.workStatus?.message,
     clientError: errors.client?.message,
     handleSubmit,
@@ -193,10 +194,6 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
     setBirthDate: (value: string) => {
       setForm((p) => ({ ...p, "生年月日": value }));
       setValue("birthDate", value, { shouldDirty: true, shouldValidate: true });
-    },
-    setEmail: (value: string) => {
-      setForm((p) => ({ ...p, "メールアドレス": value }));
-      setValue("email", value, { shouldDirty: true, shouldValidate: true });
     },
     setJoinDate: (value: string) => {
       setForm((p) => ({ ...p, "入社日": value }));
@@ -224,6 +221,10 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
       setForm((p) => ({ ...p, "退職理由": value }));
       setValue("retireReason", value, { shouldDirty: true, shouldValidate: true });
     },
+    setRemark: (value: string) => {
+      setForm((p) => ({ ...p, "備考": value }));
+      setValue("remark", value, { shouldDirty: true, shouldValidate: true });
+    },
     setClient: (value: string) => {
       setForm((p) => ({ ...p, "当時のクライアント": value }));
       setValue("client", value, { shouldDirty: true, shouldValidate: true });
@@ -235,9 +236,10 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
 
       // 在籍中へ戻した場合は、退職項目をフォームから外す（非表示でも残っていると誤エラーになり得る）
       if (next) {
-        setForm((p) => ({ ...p, "退職日": "", "退職理由": "" }));
+        setForm((p) => ({ ...p, "退職日": "", "退職理由": "", "備考": "" }));
         setValue("retireDate", "", { shouldDirty: true, shouldValidate: true });
         setValue("retireReason", "", { shouldDirty: true, shouldValidate: true });
+        setValue("remark", "", { shouldDirty: true, shouldValidate: true });
       }
     },
   };

@@ -1,6 +1,6 @@
 import type { EmployeeCsvError, EmployeeCsvRawRow } from "../types";
 import {
-  EMPLOYEE_CSV_HEADER_ALIASES,
+  EMPLOYEE_CSV_HEADER_MAP,
   EMPLOYEE_CSV_REQUIRED_FIELDS,
   EMPLOYEE_CSV_FIELD_LABELS,
 } from "./employeeCsvConstants";
@@ -8,9 +8,7 @@ import {
 const normalizeHeaderName = (header: string) =>
   String(header ?? "")
     .replace(/^\uFEFF/, "")
-    .trim()
-    // 半角/全角スペース、タブ等の混入は無視（Excelで起きがち）
-    .replace(/[\s\u3000]+/g, "");
+    .trim();
 
 export const normalizeEmployeeCsvRows = ({
   headers,
@@ -19,11 +17,36 @@ export const normalizeEmployeeCsvRows = ({
   headers: string[];
   rows: string[][];
 }): { normalizedRows: EmployeeCsvRawRow[]; errors: EmployeeCsvError[] } => {
+  const errors: EmployeeCsvError[] = [];
+
   const headerKeys = headers.map((header) => {
     const normalizedHeader = normalizeHeaderName(header);
-    return EMPLOYEE_CSV_HEADER_ALIASES[normalizedHeader] ?? null;
+    if (!normalizedHeader) return null;
+    const mapped = EMPLOYEE_CSV_HEADER_MAP[normalizedHeader] ?? null;
+    if (!mapped) {
+      errors.push({
+        rowNumber: 0,
+        field: "header",
+        message: `許可されていないヘッダー「${String(header ?? "").trim()}」があります。テンプレートCSVのヘッダーを使用してください。`,
+      });
+      return null;
+    }
+    return mapped;
   });
-  const errors: EmployeeCsvError[] = [];
+
+  const seen = new Map<string, number>();
+  headerKeys.forEach((field, index) => {
+    if (!field) return;
+    const prevIndex = seen.get(field);
+    if (prevIndex != null) {
+      errors.push({
+        rowNumber: 0,
+        field: "header",
+        message: `${EMPLOYEE_CSV_FIELD_LABELS[field]}列が重複しています（${prevIndex + 1}列目と${index + 1}列目）。ヘッダーを修正してください。`,
+      });
+    }
+    seen.set(field, index);
+  });
 
   for (const requiredField of EMPLOYEE_CSV_REQUIRED_FIELDS) {
     if (!headerKeys.includes(requiredField)) {

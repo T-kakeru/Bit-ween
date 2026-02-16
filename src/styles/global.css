@@ -1412,6 +1412,34 @@
   margin-bottom: 8px;
 }
 
+/* アコーディオン（details/summary）対応 */
+.manager-filter-section > summary.manager-filter-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+}
+
+.manager-filter-section[open] > summary.manager-filter-section-title {
+  margin-bottom: 8px;
+}
+
+.manager-filter-section > summary.manager-filter-section-title::-webkit-details-marker {
+  display: none;
+}
+
+.manager-filter-section-chevron {
+  transform: rotate(0deg);
+  transition: transform 0.15s ease;
+}
+
+.manager-filter-section[open] .manager-filter-section-chevron {
+  transform: rotate(180deg);
+}
+
 .manager-filter-options {
   display: grid;
   gap: 8px;

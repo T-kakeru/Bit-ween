@@ -64,6 +64,7 @@ const EDIT_VALIDATION_MESSAGES = {
   retireDateInFuture: "退職日が未来の日付です（退職予定の確認が必要です）",
   retireDateOver50Years: "勤続50年以上のため入力ミスの可能性があります",
   statusTooLong: "稼働状態は20文字以内で入力してください",
+  remarkTooLong: "備考は200文字以内で入力してください",
 };
 
 const parseDate = (value) => {
@@ -140,6 +141,13 @@ export const validateEditableCell = ({ row, key, value }) => {
     const str = String(value ?? "").trim();
     if (!str) return undefined;
     if (str.length > 20) return EDIT_VALIDATION_MESSAGES.statusTooLong;
+    return undefined;
+  }
+
+  if (key === "備考") {
+    const str = String(value ?? "");
+    if (!str) return undefined;
+    if (str.length > 200) return EDIT_VALIDATION_MESSAGES.remarkTooLong;
     return undefined;
   }
 

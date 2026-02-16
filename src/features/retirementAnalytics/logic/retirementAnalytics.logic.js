@@ -10,6 +10,7 @@
 // ※ 仮定: 「退職者分析」なので、退職日/退職月/退職理由 が全て空の行（現職想定）は集計対象外
 //         ただし、退職日が欠損していても退職月や退職理由があれば対象として期間補完して集計する
 
+
 export const DEPARTMENTS = ["人事", "営業", "開発", "派遣"];
 export const STATUSES = ["待機", "稼働中", "休職中"];
 export const GENDERS = ["男性", "女性"];
@@ -70,6 +71,7 @@ export const TENURE_COLORS = {
 
 const DEFAULT_DEPARTMENT = "営業";
 const DEFAULT_STATUS = "稼働中";
+const DEFAULT_CLIENT = "未設定";
 // 「その他」を使わない要望のため、未知/空欄は既存カテゴリへ寄せる
 // 方針: unknown/空欄は「会社不信」に正規化（理由未設定＝会社への不満として扱う）
 const DEFAULT_REASON = "会社不信";
@@ -107,6 +109,16 @@ export const getRecentPeriodKeys = (axis = "month") => {
   const months = [];
   for (let offset = MONTH_WINDOW_12 - 1; offset >= 0; offset -= 1) {
     const { y, m } = addMonths(endYear, endMonth, -offset);
+    months.push(`${y}-${pad2(m)}`);
+  }
+  return months;
+};
+
+export const buildYearMonthPeriodKeys = (year) => {
+  const y = Number(year);
+  if (!Number.isFinite(y) || y <= 0) return [];
+  const months = [];
+  for (let m = 1; m <= 12; m += 1) {
     months.push(`${y}-${pad2(m)}`);
   }
   return months;
@@ -180,6 +192,17 @@ const normalizeGender = (value) => {
   return "";
 };
 
+const normalizeClient = (row) => {
+  const candidate =
+    row?.["当時のクライアント"] ??
+    row?.["稼働先"] ??
+    row?.クライアント ??
+    row?.client;
+  if (candidate == null) return DEFAULT_CLIENT;
+  const normalized = String(candidate).trim();
+  return normalized === "" ? DEFAULT_CLIENT : normalized;
+};
+
 const toNumber = (value) => {
   if (value == null || value === "") return null;
   const num = Number(value);
@@ -211,7 +234,8 @@ const toTenureBand = (months) => {
 
 export const normalizeRetirementData = (rows = []) =>
   (() => {
-    return (Array.isArray(rows) ? rows : []).map((row, index) => ({
+    const source = Array.isArray(rows) ? rows : [];
+    return source.map((row, index) => ({
       ...row,
       id: row?.id ?? index + 1,
       hasRetirementInfo: row?.is_active === false,
@@ -221,6 +245,7 @@ export const normalizeRetirementData = (rows = []) =>
       department: normalizeDepartment(row, index),
       status: normalizeStatus(row, index),
       reason: normalizeReason(row?.退職理由),
+      client: normalizeClient(row),
       gender: normalizeGender(row?.性別),
       age: toNumber(row?.年齢),
       tenureMonths: toNumber(row?.["在籍月数"]),
@@ -255,15 +280,17 @@ export const getSeriesColors = (seriesMode = "reason") =>
 
 export const filterAnalyticsRows = (
   rows = [],
-  { department = "ALL", statuses = [], gender = "", genders } = {}
+  { department = "ALL", statuses = [], clients = [], gender = "", genders } = {}
 ) => {
   const statusSet = new Set(statuses);
+  const clientSet = new Set(clients);
   const genderList = Array.isArray(genders) ? genders : gender ? [gender] : [];
   const genderSet = new Set(genderList);
   return (Array.isArray(rows) ? rows : []).filter((row) => {
     if (!row?.hasRetirementInfo) return false;
     if (department !== "ALL" && row.department !== department) return false;
     if (statusSet.size > 0 && !statusSet.has(row.status)) return false;
+    if (clientSet.size > 0 && !clientSet.has(row.client)) return false;
     if (genderSet.size > 0 && !genderSet.has(row.gender)) return false;
     return true;
   });
@@ -271,10 +298,12 @@ export const filterAnalyticsRows = (
 
 export const filterAnalyticsRowsBySelection = (
   rows = [],
-  { axis = "month", seriesMode = "reason", period, seriesKey } = {}
+  { axis = "month", seriesMode = "reason", period, seriesKey, periodKeys } = {}
 ) => {
   if (!seriesKey) return [];
-  const recentPeriodSet = new Set(getRecentPeriodKeys(axis));
+  const recentPeriodSet = new Set(
+    Array.isArray(periodKeys) && periodKeys.length > 0 ? periodKeys : getRecentPeriodKeys(axis)
+  );
   return (Array.isArray(rows) ? rows : []).filter((row) => {
     if (!row?.hasRetirementInfo) return false;
 
@@ -297,6 +326,15 @@ export const filterAnalyticsRowsBySelection = (
     if (!period) return true;
     return rowPeriod === period;
   });
+};
+
+const buildBucketsByPeriodKeys = (periodKeys, seriesKeys) => {
+  const keys = Array.isArray(periodKeys) ? periodKeys : [];
+  const buckets = new Map();
+  for (const period of keys) {
+    buckets.set(String(period), buildEmptyBucket(String(period), seriesKeys));
+  }
+  return buckets;
 };
 
 const buildRecentMonthBuckets = (seriesKeys) => {
@@ -329,13 +367,15 @@ const buildRecentYearBuckets = (seriesKeys) => {
 
 export const buildAnalyticsAggregation = (
   rows = [],
-  { axis = "month", department = "ALL", statuses = [], gender = "", genders, seriesMode = "reason" }
+  { axis = "month", department = "ALL", statuses = [], clients = [], gender = "", genders, seriesMode = "reason", periodKeys }
 ) => {
   const seriesKeys = getSeriesKeys(seriesMode);
-  const filtered = filterAnalyticsRows(rows, { department, statuses, gender, genders });
+  const filtered = filterAnalyticsRows(rows, { department, statuses, clients, gender, genders });
 
-  // 期間軸は「直近固定レンジ」を必ず出す（0件でも表示）
-  const buckets = axis === "year" ? buildRecentYearBuckets(seriesKeys) : buildRecentMonthBuckets(seriesKeys);
+  // 期間軸は「指定レンジ（0件でも表示）」を必ず出す
+  const fallbackKeys = getRecentPeriodKeys(axis);
+  const resolvedPeriodKeys = Array.isArray(periodKeys) && periodKeys.length > 0 ? periodKeys : fallbackKeys;
+  const buckets = buildBucketsByPeriodKeys(resolvedPeriodKeys, seriesKeys);
 
   let filteredCountInWindow = 0;
 
@@ -361,7 +401,7 @@ export const buildAnalyticsAggregation = (
     }
   }
 
-  const data = Array.from(buckets.values()).sort((a, b) => a.period.localeCompare(b.period));
+  const data = resolvedPeriodKeys.map((period) => buckets.get(String(period))).filter(Boolean);
 
   return {
     data,

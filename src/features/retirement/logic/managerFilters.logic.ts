@@ -46,6 +46,7 @@ export const DEFAULT_MANAGER_FILTERS: any = {
   },
   departments: {},
   reasons: {},
+  clients: {},
   detail: {
     ageMin: "",
     ageMax: "",
@@ -153,6 +154,9 @@ export const applyManagerFilters = (
     const gender = row?.["性別"] as string | undefined;
     const department = normalizeDepartmentValue(row);
     const reason = normalizeReasonValue(row?.["退職理由"] as string | undefined);
+    const client = ((row as any)?.["当時のクライアント"] ?? (row as any)?.["稼働先"] ?? (row as any)?.client) as
+      | string
+      | undefined;
     const retireDate = parseSlashDateToMs(row?.["退職日"]);
     const isActive = (row as any)?.is_active !== false;
     const isRetired = !isActive;
@@ -183,6 +187,7 @@ export const applyManagerFilters = (
 
     if (!matchMultiSelectByValue(department, filters.departments)) return false;
     if (!matchMultiSelectByValue(reason, filters.reasons)) return false;
+    if (!matchMultiSelectByValue(client ? String(client) : undefined, filters.clients)) return false;
 
     const detail = filters.detail;
     const detailAgeMin = toNumber(detail.ageMin);

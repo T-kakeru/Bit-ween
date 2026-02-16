@@ -8,7 +8,6 @@ import Button from "@/shared/ui/Button";
 
 type Props = {
   breadcrumbs: BreadcrumbItem[];
-  email: string;
   initialPassword: string;
   copyText: string;
   onDone: () => void;
@@ -16,7 +15,6 @@ type Props = {
 
 export const ManagerAddCredentialsView = ({
   breadcrumbs,
-  email,
   initialPassword,
   copyText,
   onDone,
@@ -47,10 +45,6 @@ export const ManagerAddCredentialsView = ({
         </div>
 
         <Card className="p-5 space-y-4">
-          <div className="grid grid-cols-12 gap-3">
-            <div className="col-span-4 text-sm font-semibold text-slate-600">メールアドレス</div>
-            <div className="col-span-8 text-sm text-slate-900 break-words">{email || "-"}</div>
-          </div>
           <div className="grid grid-cols-12 gap-3">
             <div className="col-span-4 text-sm font-semibold text-slate-600">初期パスワード</div>
             <div className="col-span-8 text-sm text-slate-900 break-words">{initialPassword || "-"}</div>

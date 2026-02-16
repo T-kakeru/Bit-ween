@@ -5,28 +5,32 @@ import {
   computeManagerMetrics,
   normalizeEmployeeCell,
 } from "@/features/retirement/logic/managerEmployees.logic";
-import { MANAGER_EMPLOYEE_COLUMNS } from "@/features/retirement/logic/managerEmployeeTableColumns";
+import { buildManagerEmployeeColumns } from "@/features/retirement/logic/managerEmployeeTableColumns";
 import type { ManagerColumn, ManagerRow } from "@/features/retirement/types";
 
-const COLUMNS: ManagerColumn[] = MANAGER_EMPLOYEE_COLUMNS;
-
 const useManagerEmployees = () => {
-  const employeeList = employees as any;
-  const [rows, setRows] = useState<ManagerRow[]>(() =>
-    buildManagerEmployeeRows({ employees: employeeList, columns: COLUMNS })
+  const employeeList = useMemo(() => employees as any, []);
+  const initialColumns: ManagerColumn[] = useMemo(
+    () => buildManagerEmployeeColumns(employeeList),
+    [employeeList]
   );
+  const [rows, setRows] = useState<ManagerRow[]>(() =>
+    buildManagerEmployeeRows({ employees: employeeList, columns: initialColumns })
+  );
+
+  const columns = useMemo(() => buildManagerEmployeeColumns(rows), [rows]);
 
   const metrics = useMemo(() => computeManagerMetrics(rows), [rows]);
 
   return useMemo(
     () => ({
-      columns: COLUMNS,
+      columns,
       rows,
       setRows,
       metrics,
       normalizeCell: normalizeEmployeeCell,
     }),
-    [metrics, rows]
+    [columns, metrics, rows]
   );
 };
 

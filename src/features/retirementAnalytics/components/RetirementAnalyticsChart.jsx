@@ -84,19 +84,58 @@ const extractPeriodFromBarClickArg = (arg) => {
   return "";
 };
 
+// これはｘ、ｙ軸の値をクリック可能にするためのカスタムコンポーネント
+const ClickableYearTick = ({ x, y, payload, onSelectYear }) => {
+  const value = payload?.value;
+  return (
+    <g
+      transform={`translate(${x},${y})`}
+      role="button"
+      tabIndex={0}
+      style={{ cursor: "pointer" }}
+      onClick={() => onSelectYear?.(value)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelectYear?.(value);
+        }
+      }}
+    >
+      <text x={0} y={0} dy={16} textAnchor="middle">
+        {String(value)}
+      </text>
+    </g>
+  );
+};
+
 const RetirementAnalyticsChart = ({
   data,
   seriesKeys,
   seriesMode,
   axis,
+  enableYearTickClick,
+  onYearTickClick,
   onBarClick,
   onLegendClick,
   onAllClick,
 }) => {
-  if (!data || data.length === 0) {
+  const hasAnyValue =
+    Array.isArray(data) &&
+    data.length > 0 &&
+    Array.isArray(seriesKeys) &&
+    seriesKeys.length > 0 &&
+    data.some((row) =>
+      seriesKeys.some((key) => {
+        const value = row?.[key];
+        const num = typeof value === "number" ? value : Number(value ?? 0);
+        return Number.isFinite(num) && num > 0;
+      })
+    );
+
+  if (!data || data.length === 0 || !hasAnyValue) {
     return (
       <EmptyState
-        title="表示できるデータがありません"
+        title="該当するデータがありません"
         description="フィルタ条件を見直してください。"
       />
     );
@@ -118,6 +157,11 @@ const RetirementAnalyticsChart = ({
           <XAxis
             dataKey="period"
             tickMargin={6}
+            tick={
+              enableYearTickClick && axis === "year"
+                ? (props) => <ClickableYearTick {...props} onSelectYear={onYearTickClick} />
+                : undefined
+            }
             tickFormatter={(value) => formatPeriodLabel(axis, value)}
           />
           <YAxis allowDecimals={false} />

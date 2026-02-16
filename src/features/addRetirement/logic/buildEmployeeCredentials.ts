@@ -1,7 +1,6 @@
 import type { ManagerRowInput } from "@/features/addRetirement/hooks/useManagerAddForm";
 
 export type EmployeeCredentials = {
-  email: string;
   initialPassword: string;
   copyText: string;
 };
@@ -31,7 +30,6 @@ const buildRandomString = (length: number): string => {
 };
 
 export const buildEmployeeCredentials = (payload: ManagerRowInput): EmployeeCredentials => {
-  const email = String(payload?.["メールアドレス"] ?? "").trim();
   const employeeName = String(payload?.["名前"] ?? "").trim();
   const employeeId = String(payload?.["社員ID"] ?? "").trim();
 
@@ -42,13 +40,11 @@ export const buildEmployeeCredentials = (payload: ManagerRowInput): EmployeeCred
     "",
     "アカウントを作成しました。以下の情報でログインしてください。",
     "",
-    `メールアドレス: ${email || "(未入力)"}`,
-    `初期パスワード: ${initialPassword}`,
-    "",
     `社員ID: ${employeeId || "(未入力)"}`,
+    `初期パスワード: ${initialPassword}`,
     "",
     "※初回ログイン後、パスワードの変更をお願いします。",
   ].join("\n");
 
-  return { email, initialPassword, copyText };
+  return { initialPassword, copyText };
 };

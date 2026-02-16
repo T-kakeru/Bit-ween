@@ -2,7 +2,6 @@ export type EmployeeCsvField =
   | "name"
   | "gender"
   | "birthDate"
-  | "email"
   | "employeeId"
   | "department"
   | "joinDate"
@@ -20,7 +19,6 @@ export type EmployeeCsvNormalizedRow = {
   name: string;
   gender: string;
   birthDate: string | null;
-  email: string | null;
   employeeId: string | null;
   department: string | null;
   joinDate: string | null;

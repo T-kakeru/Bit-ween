@@ -36,7 +36,7 @@ const RetirementAnalyticsDetailPanel = forwardRef(({ title, subtitle, rows, onCl
       </div>
 
       <div className="analytics-detail-meta">
-        <span className="tag-pill">対象: {totalCount}件</span>
+        <span className="tag-pill">該当件数: {totalCount}件</span>
       </div>
     </Card>
   );

@@ -48,7 +48,21 @@ const EmployeeTable = ({ columns, rows, normalizeCell, sort, onSort }) => {
           {rows.map((row) => (
             <tr key={String(row.id)}>
               {columns.map((c) => (
-                <Td key={`${row.id}-${c.key}`}>{normalizeCell(row[c.key])}</Td>
+                <Td key={`${row.id}-${c.key}`}>
+                  {c.key === "備考" ? (
+                    (() => {
+                      const v = normalizeCell(row?.[c.key]);
+                      const title = v && v !== "-" ? v : undefined;
+                      return (
+                        <span className="manager-edit-text manager-edit-text--ellipsis" title={title}>
+                          {v}
+                        </span>
+                      );
+                    })()
+                  ) : (
+                    normalizeCell(row?.[c.key])
+                  )}
+                </Td>
               ))}
             </tr>
           ))}

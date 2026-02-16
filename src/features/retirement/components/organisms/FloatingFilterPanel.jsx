@@ -19,6 +19,7 @@ const FloatingFilterPanel = ({
   onClose,
   departmentOptions,
   reasonOptions,
+  clientOptions,
 }) => {
   const nodeRef = useRef(null);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -81,6 +82,7 @@ const FloatingFilterPanel = ({
                 onReset={onReset}
                 departmentOptions={departmentOptions}
                 reasonOptions={reasonOptions}
+                clientOptions={clientOptions}
               />
             ) : (
               <ManagerDetailFilters

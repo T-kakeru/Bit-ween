@@ -20,9 +20,16 @@ const EditableCellField = ({
 
   // 編集モードでない / 編集不可 はテキスト表示
   if (!isEditing || NON_EDITABLE_KEYS.has(key)) {
-    const className =
-      key === "当時のクライアント" ? "manager-edit-text manager-edit-text--ellipsis" : "manager-edit-text";
-    return <span className={className}>{displayValue}</span>;
+    const isEllipsis = key === "当時のクライアント" || key === "備考";
+    // 編集不可のセルは、内容が長い場合に省略表示する。省略表示する場合は title 属性に全内容を入れる。
+    const className = isEllipsis ? "manager-edit-text manager-edit-text--ellipsis" : "manager-edit-text";
+    // ホバーで全内容を表示するため、displayValue が "-" でない場合にのみ title 属性を設定する
+    const title = isEllipsis && displayValue && displayValue !== "-" ? displayValue : undefined;
+    return (
+      <span className={className} title={title}>
+        {displayValue}
+      </span>
+    );
   }
 
   // セレクト（ステータス / 性別 など）
@@ -87,45 +94,40 @@ const EditableCellField = ({
   }
 
   if (key === "当時のクライアント") {
-    const rawEditableValue = toEditableValue(row?.[key], normalizeCell);
-    const trimmed = String(rawEditableValue ?? "").trim();
     const options = Array.isArray(clientOptions) ? clientOptions : [];
-    const canAdd = Boolean(onAddClientOption && trimmed && !options.includes(trimmed));
-    const listId = `client-options-${String(row?.id ?? "row")}`;
-
     return (
       <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <Input
-            className="manager-edit-input"
-            type="text"
-            list={listId}
-            value={rawEditableValue}
-            onChange={(event) => onChange(row.id, key, event.target.value)}
-            aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
-            error={Boolean(errorMessage)}
-          />
-          {onAddClientOption ? (
-            <button
-              type="button"
-              onClick={() => (canAdd ? onAddClientOption(trimmed) : undefined)}
-              disabled={!canAdd}
-              className={
-                "shrink-0 rounded-lg px-2 py-1 text-xs font-semibold transition " +
-                (canAdd
-                  ? "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-                  : "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400")
-              }
-            >
-              追加
-            </button>
-          ) : null}
-        </div>
-        <datalist id={listId}>
+        <Select
+          className="manager-edit-select"
+          value={toEditableValue(row?.[key], normalizeCell)}
+          onChange={(event) => onChange(row.id, key, event.target.value)}
+          aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
+          error={Boolean(errorMessage)}
+        >
+          <option value="">未設定</option>
           {options.map((opt) => (
-            <option key={opt} value={opt} />
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
           ))}
-        </datalist>
+        </Select>
+        {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
+      </div>
+    );
+  }
+
+  if (key === "備考") {
+    return (
+      <div className="space-y-1">
+        <Input
+          className="manager-edit-input"
+          type="text"
+          value={toEditableValue(row?.[key], normalizeCell)}
+          onChange={(event) => onChange(row.id, key, event.target.value)}
+          aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
+          error={Boolean(errorMessage)}
+          maxLength={200}
+        />
         {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
       </div>
     );

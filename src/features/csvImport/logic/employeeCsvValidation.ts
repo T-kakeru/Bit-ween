@@ -111,7 +111,6 @@ export const validateEmployeeCsvRow = ({
   const genderRaw = normalizeValue(row.gender);
   const genderValue = normalizeGender(genderRaw);
   const birthDateRaw = normalizeValue(row.birthDate);
-  const email = normalizeValue(row.email) || null;
   const employeeId = normalizeValue(row.employeeId) || null;
   const department = normalizeValue(row.department) || null;
   const joinDateRaw = normalizeValue(row.joinDate);
@@ -125,7 +124,6 @@ export const validateEmployeeCsvRow = ({
     name,
     genderRaw,
     birthDateRaw,
-    email ?? "",
     employeeId ?? "",
     department ?? "",
     joinDateRaw,
@@ -160,8 +158,8 @@ export const validateEmployeeCsvRow = ({
     errors.push(toFieldError(rowNumber, "birthDate", "生年月日が日付として認識できません。例: 1990/04/01"));
   }
 
-  if (email && !/.+@.+/.test(email)) {
-    errors.push(toFieldError(rowNumber, "email", "メールアドレスの形式が正しくありません。例: aaa@example.com"));
+  if (!department) {
+    errors.push(toFieldError(rowNumber, "department", "部署は必須です。"));
   }
 
   if (department && !hasDepartmentMaster(department)) {
@@ -215,6 +213,12 @@ export const validateEmployeeCsvRow = ({
     errors.push(toFieldError(rowNumber, "retirementDate", "退職日は必須です。"));
   } else if (!retirementDate) {
     errors.push(toFieldError(rowNumber, "retirementDate", "退職日が日付として認識できません。例: 2023/03/31"));
+  } else if (joinDate) {
+    const joinDateObj = parseDateString(joinDate);
+    const retireDateObj = parseDateString(retirementDate);
+    if (joinDateObj && retireDateObj && retireDateObj < joinDateObj) {
+      errors.push(toFieldError(rowNumber, "retirementDate", "退職日が入社日より前になっています。日付を修正してください。"));
+    }
   } else if (!allowFutureRetirementDate) {
     const today = new Date();
     const retireDateObj = parseDateString(retirementDate);
@@ -240,7 +244,6 @@ export const validateEmployeeCsvRow = ({
       name,
       gender: genderValue,
       birthDate,
-      email,
       employeeId,
       department,
       joinDate,

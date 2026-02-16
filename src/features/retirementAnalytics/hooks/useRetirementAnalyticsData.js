@@ -4,6 +4,7 @@ import {
   buildAnalyticsAggregation,
   filterAnalyticsRows,
   getRecentPeriodKeys,
+  buildYearMonthPeriodKeys,
   normalizeRetirementData,
 } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
@@ -13,15 +14,38 @@ const getRowPeriodKey = (row, axis) => {
   return axis === "year" ? String(date).slice(0, 4) : String(date).slice(0, 7);
 };
 
-const useRetirementAnalyticsData = ({ axis, department, statuses, genders, seriesMode }) => {
+const useRetirementAnalyticsData = ({ activeTab, selectedYear, department, statuses, clients, genders, seriesMode }) => {
   const normalized = useMemo(() => normalizeRetirementData(rawRetirements), []);
+
+  const clientOptions = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    for (const row of normalized) {
+      const value = row?.client;
+      if (!value) continue;
+      if (seen.has(value)) continue;
+      seen.add(value);
+      list.push(value);
+    }
+    return list;
+  }, [normalized]);
 
   const eligible = useMemo(
     () => normalized.filter((row) => Boolean(row?.hasRetirementInfo)),
     [normalized]
   );
 
-  const recentPeriodSet = useMemo(() => new Set(getRecentPeriodKeys(axis)), [axis]);
+  const axis = activeTab === "year" ? "year" : "month";
+  const periodKeys = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    if (activeTab === "current") return getRecentPeriodKeys("month");
+    if (activeTab === "month") return buildYearMonthPeriodKeys(selectedYear ?? currentYear);
+    return getRecentPeriodKeys("year");
+  }, [activeTab, selectedYear]);
+
+  const recentPeriodSet = useMemo(() => new Set(periodKeys), [periodKeys]);
 
   const eligibleRowsInWindow = useMemo(
     () => eligible.filter((row) => recentPeriodSet.has(getRowPeriodKey(row, axis))),
@@ -29,8 +53,8 @@ const useRetirementAnalyticsData = ({ axis, department, statuses, genders, serie
   );
 
   const filteredRows = useMemo(
-    () => filterAnalyticsRows(eligibleRowsInWindow, { department, statuses, genders }),
-    [department, eligibleRowsInWindow, genders, statuses]
+    () => filterAnalyticsRows(eligibleRowsInWindow, { department, statuses, clients, genders }),
+    [clients, department, eligibleRowsInWindow, genders, statuses]
   );
 
   const aggregation = useMemo(
@@ -39,19 +63,25 @@ const useRetirementAnalyticsData = ({ axis, department, statuses, genders, serie
         axis,
         department,
         statuses,
+        clients,
         genders,
         seriesMode,
+        periodKeys,
       }),
-    [axis, department, eligible, genders, seriesMode, statuses]
+    [axis, clients, department, eligible, genders, periodKeys, seriesMode, statuses]
   );
 
   return {
     normalizedCount: normalized.length,
+    eligibleCountTotal: eligible.length,
     eligibleCountInWindow: eligibleRowsInWindow.length,
     filteredRowsInWindow: filteredRows,
     data: aggregation.data,
     seriesKeys: aggregation.seriesKeys,
     filteredCountInWindow: aggregation.filteredCount,
+    axis,
+    periodKeys,
+    clientOptions,
   };
 };
 

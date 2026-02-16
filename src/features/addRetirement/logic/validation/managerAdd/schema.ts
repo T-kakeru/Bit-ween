@@ -11,7 +11,10 @@ const OPTIONAL_DATE = z
 const EMPLOYEE_ID_MAX_LENGTH = 30;
 
 export const managerAddSchema = z.object({
-  isActive: z.boolean(),
+  isActive: z
+    .boolean()
+    .nullable()
+    .refine((v) => v !== null, { message: managerAddMessages.isActiveRequired }),
   employeeId: z
     .string()
     .trim()
@@ -48,20 +51,10 @@ export const managerAddSchema = z.object({
     }
   }),
   birthDate: OPTIONAL_DATE,
-  email: z
-    .string()
-    .trim()
-    .superRefine((v, ctx) => {
-      if (!v) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.emailRequired });
-        return;
-      }
-      const ok = z.string().email().safeParse(v).success;
-      if (!ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.emailInvalid });
-    }),
   joinDate: OPTIONAL_DATE,
   retireDate: OPTIONAL_DATE,
   retireReason: z.string().trim(),
+  remark: z.string().trim().max(200, { message: managerAddMessages.remarkTooLong }),
   workStatus: z.string().trim().superRefine((v, ctx) => {
     if (!v) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: managerAddMessages.workStatusRequired });
@@ -125,4 +118,17 @@ export const managerAddSchema = z.object({
   }
 });
 
-export type ManagerAddFormValues = z.infer<typeof managerAddSchema>;
+export type ManagerAddFormValues = {
+  isActive: boolean | null;
+  employeeId: string;
+  department: string;
+  name: string;
+  gender: string;
+  birthDate: string;
+  joinDate: string;
+  retireDate: string;
+  retireReason: string;
+  remark: string;
+  workStatus: string;
+  client: string;
+};

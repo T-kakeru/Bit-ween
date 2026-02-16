@@ -15,7 +15,7 @@ import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
 
 const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
-  const { filters, filteredRows, toggleGroup, updateDetail, resetFilters, departmentOptions, reasonOptions } =
+  const { filters, filteredRows, toggleGroup, updateDetail, resetFilters, departmentOptions, reasonOptions, clientOptions } =
     useManagerFilters(searchedRows);
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -32,6 +32,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         onReset={resetFilters}
         departmentOptions={departmentOptions}
         reasonOptions={reasonOptions}
+        clientOptions={clientOptions}
         onClose={() => setIsFilterOpen(false)}
       />
 

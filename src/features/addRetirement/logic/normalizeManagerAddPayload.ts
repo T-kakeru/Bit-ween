@@ -18,10 +18,10 @@ export const normalizeManagerAddPayload = (
     "名前": normalizedValues.name,
     "性別": normalizedValues.gender as ManagerRowInput["性別"],
     "生年月日": normalizedValues.birthDate,
-    "メールアドレス": normalizedValues.email,
     "入社日": normalizedValues.joinDate,
     "退職日": normalizedValues.retireDate,
     "退職理由": normalizedValues.retireReason,
+    "備考": normalizedValues.remark,
     "ステータス": normalizedValues.workStatus,
     "当時のクライアント": normalizedValues.client,
   };

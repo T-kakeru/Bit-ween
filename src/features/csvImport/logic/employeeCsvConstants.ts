@@ -8,7 +8,6 @@ export const EMPLOYEE_CSV_FIELD_LABELS: Record<EmployeeCsvField, string> = {
   name: "氏名",
   gender: "性別",
   birthDate: "生年月日",
-  email: "メールアドレス",
   employeeId: "社員ID",
   department: "部署",
   joinDate: "入社日",
@@ -19,32 +18,34 @@ export const EMPLOYEE_CSV_FIELD_LABELS: Record<EmployeeCsvField, string> = {
   retirementReason: "退職理由",
 };
 
-export const EMPLOYEE_CSV_REQUIRED_FIELDS: EmployeeCsvField[] = [
-  "name",
-  "gender",
-  "joinDate",
-  "workStatus",
-  "retirementDate",
-  "retirementReason",
+export type EmployeeCsvHeaderSpec = {
+  field: EmployeeCsvField;
+  label: string;
+  required: boolean;
+};
+
+// この一覧にあるヘッダー名のみ許可（別名・揺れは許可しない）
+export const EMPLOYEE_CSV_HEADER_SPECS: EmployeeCsvHeaderSpec[] = [
+  { field: "name", label: EMPLOYEE_CSV_FIELD_LABELS.name, required: true },
+  { field: "gender", label: EMPLOYEE_CSV_FIELD_LABELS.gender, required: true },
+  { field: "birthDate", label: EMPLOYEE_CSV_FIELD_LABELS.birthDate, required: false },
+  { field: "employeeId", label: EMPLOYEE_CSV_FIELD_LABELS.employeeId, required: false },
+  { field: "department", label: EMPLOYEE_CSV_FIELD_LABELS.department, required: true },
+  { field: "joinDate", label: EMPLOYEE_CSV_FIELD_LABELS.joinDate, required: true },
+  { field: "employmentStatus", label: EMPLOYEE_CSV_FIELD_LABELS.employmentStatus, required: false },
+  { field: "workStatus", label: EMPLOYEE_CSV_FIELD_LABELS.workStatus, required: true },
+  { field: "workLocation", label: EMPLOYEE_CSV_FIELD_LABELS.workLocation, required: false },
+  { field: "retirementDate", label: EMPLOYEE_CSV_FIELD_LABELS.retirementDate, required: true },
+  { field: "retirementReason", label: EMPLOYEE_CSV_FIELD_LABELS.retirementReason, required: true },
 ];
 
-export const EMPLOYEE_CSV_HEADER_ALIASES: Record<string, EmployeeCsvField> = {
-  氏名: "name",
-  名前: "name",
-  性別: "gender",
-  生年月日: "birthDate",
-  メールアドレス: "email",
-  社員ID: "employeeId",
-  部署: "department",
-  入社日: "joinDate",
-  在籍状態: "employmentStatus",
-  稼働状態: "workStatus",
-  ステータス: "workStatus",
-  稼働先: "workLocation",
-  当時のクライアント: "workLocation",
-  退職日: "retirementDate",
-  退職理由: "retirementReason",
-};
+export const EMPLOYEE_CSV_REQUIRED_FIELDS: EmployeeCsvField[] = EMPLOYEE_CSV_HEADER_SPECS.filter((x) => x.required).map(
+  (x) => x.field
+);
+
+export const EMPLOYEE_CSV_HEADER_MAP: Record<string, EmployeeCsvField> = Object.fromEntries(
+  EMPLOYEE_CSV_HEADER_SPECS.map((x) => [x.label, x.field])
+) as Record<string, EmployeeCsvField>;
 
 const buildUniqueList = (values: (string | null | undefined)[]) =>
   Array.from(new Set(values.filter((value): value is string => Boolean(value))));
@@ -110,16 +111,5 @@ export const EMPLOYMENT_STATUS_MASTER = ["在籍中", "退職済"];
 export const GENDER_MASTER = ["男性", "女性", "その他"];
 
 export const CSV_HEADER_HINTS = [
-  "氏名",
-  "性別",
-  "生年月日",
-  "メールアドレス",
-  "社員ID",
-  "部署",
-  "入社日",
-  "在籍状態",
-  "稼働状態",
-  "稼働先",
-  "退職日",
-  "退職理由",
+  ...EMPLOYEE_CSV_HEADER_SPECS.map((x) => x.label),
 ];

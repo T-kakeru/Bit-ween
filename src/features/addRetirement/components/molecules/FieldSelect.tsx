@@ -5,6 +5,7 @@ type FieldSelectProps = BaseFieldProps & {
   value: string;
   options: string[];
   onChange: (v: string) => void;
+  placeholder?: string;
   errorMessage?: string;
   disabled?: boolean;
 };
@@ -16,6 +17,7 @@ export const FieldSelect = ({
   onChange,
   helper,
   required,
+  placeholder,
   errorMessage,
   disabled,
 }: FieldSelectProps) => {
@@ -31,7 +33,7 @@ export const FieldSelect = ({
             (disabled ? "cursor-not-allowed bg-slate-50 text-slate-400" : "")
           }
         >
-          <option value="">選択してください</option>
+          <option value="">{placeholder ?? "選択してください"}</option>
           {options.map((opt) => (
             <option key={opt} value={opt}>
               {opt}

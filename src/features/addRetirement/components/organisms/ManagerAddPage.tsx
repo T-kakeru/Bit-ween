@@ -50,10 +50,11 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		nameError,
 		genderError,
 		birthDateError,
-		emailError,
 		joinDateError,
 		retireDateError,
+		isActiveError,
 		reasonError,
+		remarkError,
 		statusError,
 		clientError,
 		handleSubmit,
@@ -61,12 +62,12 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		setDepartment,
 		setGender,
 		setBirthDate,
-		setEmail,
 		setJoinDate,
 		setRetireDate,
 		setStatus,
 		setClient,
 		setReason,
+		setRemark,
 		isActive,
 		setIsActive,
 	} = useManagerAddForm({ columns, rows });
@@ -154,7 +155,6 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 		return (
 			<ManagerAddCredentialsView
 				breadcrumbs={breadcrumbs}
-				email={credentials.email}
 				initialPassword={credentials.initialPassword}
 				copyText={credentials.copyText}
 				onDone={onCancel}
@@ -179,10 +179,11 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 			nameError={nameError}
 			genderError={genderError}
 			birthDateError={birthDateError}
-			emailError={emailError}
 			joinDateError={joinDateError}
 			retireDateError={retireDateError}
+			isActiveError={isActiveError}
 			reasonError={reasonError}
+			remarkError={remarkError}
 			statusError={statusError}
 			clientError={clientError}
 			genderOptions={GENDER_OPTIONS}
@@ -194,12 +195,12 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 			onChangeDepartment={setDepartment}
 			onChangeGender={(v) => setGender(v as ManagerRowInput["性別"])}
 			onChangeBirthDate={setBirthDate}
-			onChangeEmail={setEmail}
 			onChangeJoinDate={setJoinDate}
 			onChangeRetireDate={setRetireDate}
 			onChangeStatus={setStatus}
 			onChangeClient={setClient}
 			onChangeReason={setReason}
+			onChangeRemark={setRemark}
 			onChangeIsActive={setIsActive}
 			canSubmit={canSave}
 			onSubmit={onSubmit}

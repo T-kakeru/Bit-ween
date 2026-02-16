@@ -43,7 +43,6 @@ export const mapEmployeeCsvRowsToManagerRows = (rows: EmployeeCsvNormalizedRow[]
       年齢: buildAgeFromBirthDate(birthDate),
       社員ID: row.employeeId ?? "",
       部署: row.department ?? "",
-      メールアドレス: row.email ?? "",
       is_active: isActive,
     } satisfies ManagerRow;
   });
