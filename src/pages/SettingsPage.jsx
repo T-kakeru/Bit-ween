@@ -2,12 +2,11 @@ import { useMemo, useState } from "react";
 import settingsData from "@/shared/data/mock/settings.json";
 import ProfileEditPage from "./ProfileEditPage";
 import Heading from "@/shared/ui/Heading";
-import Divider from "@/shared/ui/Divider";
 import Card from "@/shared/ui/Card";
 import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
 import TextCaption from "@/shared/ui/TextCaption";
 import { SettingsMasterDataPanel } from "@/features/settings/components/organisms/SettingsMasterDataPanel";
+import SystemUsersManager from "@/features/systemUsers/components/organisms/SystemUsersManager";
 
 // pages: 画面単位の状態（画面遷移/表示分岐）を統合する
 const SettingsPage = () => {
@@ -15,16 +14,6 @@ const SettingsPage = () => {
 
   const initial = useMemo(() => settingsData, []);
   const [settings, setSettings] = useState(initial);
-
-  const toggle = (path) => (event) => {
-    const checked = event.target.checked;
-    setSettings((prev) => {
-      const next = structuredClone(prev);
-      const [group, key] = path.split(".");
-      next[group][key] = checked;
-      return next;
-    });
-  };
 
   if (view === "profile") {
     return (
@@ -53,6 +42,22 @@ const SettingsPage = () => {
     );
   }
 
+  if (view === "systemUsers") {
+    return (
+      <section className="screen settings-screen">
+        <div className="settings-section-head">
+          <Heading level={2}>システム利用者管理</Heading>
+        </div>
+        <SystemUsersManager
+          companyId="company-default"
+          currentRole="admin"
+          canStartRegister={false}
+          onDone={() => setView("root")}
+        />
+      </section>
+    );
+  }
+
   const heroName = settings.profile?.name ?? settings.account?.name;
   const heroSubtitle =
     [settings.profile?.team, settings.profile?.department].filter(Boolean).join(" / ") ||
@@ -76,6 +81,21 @@ const SettingsPage = () => {
 
       <SettingsMasterDataPanel />
 
+      <div className="mt-4" />
+
+      <Card className="settings-panel">
+        <div className="settings-row">
+          <div>
+            <p className="settings-title">システム利用者管理</p>
+            <TextCaption>利用者（users）の一覧・登録・編集・削除を行います。</TextCaption>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setView("systemUsers")}>
+            管理する
+          </Button>
+        </div>
+      </Card>
+
+      {/* //フェーズ２
       <div className="settings-section-head">
         <Heading level={2}>通知設定</Heading>
       </div>
@@ -116,6 +136,7 @@ const SettingsPage = () => {
           </label>
         </div>
       </Card>
+      */}
     </section>
   );
 };

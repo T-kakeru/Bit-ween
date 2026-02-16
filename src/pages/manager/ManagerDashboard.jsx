@@ -13,7 +13,7 @@ import Icon from "@/shared/ui/Icon";
 import EditableEmployeeTable from "@/features/retirement/components/organisms/EditableEmployeeTable";
 import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
 
-const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
+const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen, onUserRegisterOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
   const { filters, filteredRows, toggleGroup, updateDetail, resetFilters, departmentOptions, reasonOptions, clientOptions } =
     useManagerFilters(searchedRows);
@@ -43,6 +43,10 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
 
         <div className="flex items-center gap-2">
           <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns?.map((c) => c.key)} />
+          <Button type="button" variant="outline" className="manager-action-button" onClick={onUserRegisterOpen}>
+            <Icon className="manager-edit-icon" src="/img/icon_file_add.png" alt="" />
+            ユーザー登録
+          </Button>
           <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
             <Icon className="manager-edit-icon" src="/img/icon_file_add.png" alt="" />
             分析データの追加

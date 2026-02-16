@@ -8,6 +8,7 @@ type Props = {
 	rows: Array<Record<string, any>>;
 	onCancel: () => void;
 	onSave: (input: Record<string, any>) => void;
+	enableCsvImport?: boolean;
 };
 
 // pages: ページ枠（配置/ページタイトルなど）だけを持つ

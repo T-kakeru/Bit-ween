@@ -119,17 +119,18 @@ export const ManagerAddFormView = ({
         <Heading level={2}>新規従業員登録</Heading>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="md"
-              onClick={onScrollToCsvImport}
-              disabled={!onScrollToCsvImport}
-            >
-              まとめて登録 (CSV)
-            </Button>
-          </div>
+          {onScrollToCsvImport ? (
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                onClick={onScrollToCsvImport}
+              >
+                まとめて登録 (CSV)
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-8">

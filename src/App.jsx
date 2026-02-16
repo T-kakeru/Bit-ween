@@ -9,6 +9,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ManagerPage from "./pages/ManagerPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import NotFoundPanel from "@/shared/components/NotFoundPanel";
 import useArticleEntryParentInfo from "./features/articles/hooks/useArticleEntryParentInfo";
 import useSavedArticlesState from "@/features/articles/hooks/useSavedArticlesState";
 // 画面に必要なテストデータ（API未接続時の表示用）
@@ -21,16 +22,17 @@ function App() {
     { label: "退職者分析", icon: "/img/icon_manager.png" },
     { label: "社員情報一覧", icon: "/img/icon_data.png" },
     { label: "設定", icon: "/img/icon_settings.png" },
-    { label: "ユーザー画面", icon: "/img/icon_home.png" },
+    //フェーズ２: ユーザーユースケースへのメニュー導線を再検討後に表示
+    // { label: "ユーザー画面", icon: "/img/icon_home.png" },
   ];
 
   // 現在選択されているタブ
   const [activeNav, setActiveNav] = useState("ホーム");
   const [adminNav, setAdminNav] = useState("退職者分析");
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pageTitleOverride, setPageTitleOverride] = useState(null);
-  const { articleEntry, articleScreenKey, resetArticleEntry, openArticles, openArticlesWithFilter } =
+  const { articleEntry, articleScreenKey, resetArticleEntry, openArticlesWithFilter } =
     useArticleEntryParentInfo({ setActiveNav, setIsSidebarOpen });
   const user = {
     name: "山田 一郎",
@@ -49,11 +51,6 @@ function App() {
   const handleNavChange = (nav) => {
     setPageTitleOverride(null);
     if (isAdminMode) {
-      if (nav === "ユーザー画面") {
-        setIsAdminMode(false);
-        setIsSidebarOpen(false);
-        return;
-      }
       setAdminNav(nav);
       setIsSidebarOpen(false);
     } else {
@@ -123,6 +120,13 @@ function App() {
       if (adminNav === "設定") {
         return <SettingsPage />;
       }
+
+      return (
+        <NotFoundPanel
+          onBack={() => setAdminNav("設定")}
+          backLabel="設定へ戻る"
+        />
+      );
     }
 
     if (activeNav === "ホーム") {
@@ -145,16 +149,20 @@ function App() {
       return <SettingsPage />;
     }
 
-    return (
-      <ArticlesPage
-        key={articleScreenKey}
-        initialFilterId={articleEntry.filterId}
-        hideFilterUI={articleEntry.hideFilterUI}
-        breadcrumbLabel={articleEntry.breadcrumbLabel}
-        onNavigateHome={handleOpenHome}
-        savedArticles={savedArticles}
-      />
-    );
+    if (activeNav === "記事") {
+      return (
+        <ArticlesPage
+          key={articleScreenKey}
+          initialFilterId={articleEntry.filterId}
+          hideFilterUI={articleEntry.hideFilterUI}
+          breadcrumbLabel={articleEntry.breadcrumbLabel}
+          onNavigateHome={handleOpenHome}
+          savedArticles={savedArticles}
+        />
+      );
+    }
+
+    return <NotFoundPanel onBack={handleOpenHome} backLabel="ホームへ戻る" />;
   };
 
   return (

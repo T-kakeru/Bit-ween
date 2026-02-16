@@ -20,6 +20,7 @@ type Props = {
 	rows: Array<Record<string, any>>;
 	onCancel: () => void;
 	onSave: (input: Record<string, any>) => void;
+	enableCsvImport?: boolean;
 };
 
 const GENDER_OPTIONS: Array<ManagerRowInput["性別"]> = ["男性", "女性", "その他"];
@@ -28,7 +29,7 @@ type Step = "form" | "confirm" | "credentials";
 
 // organisms: 機能コンテナ（Hooks/Logic を統合し、Viewへpropsで渡す）
 
-const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
+const ManagerAddPage = ({ columns, rows, onCancel, onSave, enableCsvImport = true }: Props) => {
 	const [step, setStep] = useState<Step>("form");
 	const [pendingPayload, setPendingPayload] = useState<ManagerAddPayload | null>(null);
 	const [credentials, setCredentials] = useState<EmployeeCredentials | null>(null);
@@ -167,11 +168,13 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave }: Props) => {
 			breadcrumbs={breadcrumbs}
 			form={form}
 			csvImportSection={
-				<div ref={csvImportAnchorRef}>
-					<EmployeeCsvImportPanel onImportRows={handleImportRows} onAfterImport={handleAfterCsvImport} />
-				</div>
+				enableCsvImport ? (
+					<div ref={csvImportAnchorRef}>
+						<EmployeeCsvImportPanel onImportRows={handleImportRows} onAfterImport={handleAfterCsvImport} />
+					</div>
+				) : undefined
 			}
-			onScrollToCsvImport={handleScrollToCsvImport}
+			onScrollToCsvImport={enableCsvImport ? handleScrollToCsvImport : undefined}
 			isActive={isActive}
 			registerName={registerName}
 			employeeIdError={employeeIdError}
