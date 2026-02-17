@@ -93,16 +93,18 @@ const StatusMultiSelect = ({ selected, onChange }) => {
             クリア
           </Button>
         </div>
-        {STATUSES.map((status) => (
-          <label key={status} className="multi-select-option">
-            <input
-              type="checkbox"
-              checked={selected.includes(status)}
-              onChange={() => toggleStatus(status)}
-            />
-            <span>{status}</span>
-          </label>
-        ))}
+        <div className="multi-select-options-grid">
+          {STATUSES.map((status) => (
+            <label key={status} className="multi-select-option">
+              <input
+                type="checkbox"
+                checked={selected.includes(status)}
+                onChange={() => toggleStatus(status)}
+              />
+              <span>{status}</span>
+            </label>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -162,16 +164,18 @@ const GenderMultiSelect = ({ selected, onChange }) => {
             クリア
           </Button>
         </div>
-        {GENDERS.map((gender) => (
-          <label key={gender} className="multi-select-option">
-            <input
-              type="checkbox"
-              checked={selected.includes(gender)}
-              onChange={() => toggleGender(gender)}
-            />
-            <span>{gender}</span>
-          </label>
-        ))}
+        <div className="multi-select-options-grid">
+          {GENDERS.map((gender) => (
+            <label key={gender} className="multi-select-option">
+              <input
+                type="checkbox"
+                checked={selected.includes(gender)}
+                onChange={() => toggleGender(gender)}
+              />
+              <span>{gender}</span>
+            </label>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -184,9 +188,9 @@ const ClientMultiSelect = ({ selected, options, onChange }) => {
   const safeOptions = Array.isArray(options) ? options : [];
 
   const label = useMemo(() => {
-    if (selected.length === 0) return "稼働先（クライアント名）：未選択";
-    if (selected.length === safeOptions.length) return "稼働先（クライアント名）：全て";
-    return `稼働先（クライアント名）：${selected.length}件選択`;
+    if (selected.length === 0) return "稼働先：未選択";
+    if (selected.length === safeOptions.length) return "稼働先：全て";
+    return `稼働先：${selected.length}件選択`;
   }, [safeOptions.length, selected]);
 
   const toggleClient = (client) => {
@@ -222,7 +226,7 @@ const ClientMultiSelect = ({ selected, options, onChange }) => {
         </span>
       </Button>
 
-      <div className={isOpen ? "multi-select-menu is-open" : "multi-select-menu"} role="listbox">
+      <div className={isOpen ? "multi-select-menu multi-select-menu--chunk10 is-open" : "multi-select-menu multi-select-menu--chunk10"} role="listbox">
         <div className="multi-select-actions">
           <Button type="button" variant="outline" size="sm" onClick={() => onChange([...safeOptions])}>
             全選択
@@ -231,12 +235,14 @@ const ClientMultiSelect = ({ selected, options, onChange }) => {
             クリア
           </Button>
         </div>
-        {safeOptions.map((client) => (
-          <label key={client} className="multi-select-option">
-            <input type="checkbox" checked={selected.includes(client)} onChange={() => toggleClient(client)} />
-            <span>{client}</span>
-          </label>
-        ))}
+        <div className="multi-select-options-grid">
+          {safeOptions.map((client) => (
+            <label key={client} className="multi-select-option">
+              <input type="checkbox" checked={selected.includes(client)} onChange={() => toggleClient(client)} />
+              <span>{client}</span>
+            </label>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -264,27 +270,6 @@ const RetirementAnalyticsFilters = ({
       <div className="analytics-filter analytics-filter--tabs">
         <span className="analytics-filter-label">集計期間</span>
         <ActiveTabToggle value={activeTab} onChange={onActiveTabChange} />
-
-        {activeTab === "month" ? (
-          <div
-            className="manager-filter-tabs manager-filter-tabs--segmented"
-            role="group"
-            aria-label="年選択"
-          >
-            {recentYears.map((year) => (
-              <Button
-                key={year}
-                type="button"
-                variant="outline"
-                size="sm"
-                className={`manager-filter-tab ${String(selectedYear) === String(year) ? "is-active" : ""}`}
-                onClick={() => onYearSelect?.(year)}
-              >
-                {year}
-              </Button>
-            ))}
-          </div>
-        ) : null}
       </div>
 
       <div className="analytics-filter analytics-filter--tabs">
@@ -299,6 +284,31 @@ const RetirementAnalyticsFilters = ({
           <GenderMultiSelect selected={genders} onChange={onGendersChange} />
           <ClientMultiSelect selected={clients} options={clientOptions} onChange={onClientsChange} />
         </div>
+
+        {activeTab === "month" ? (
+          <div className="analytics-year-axis-wrap">
+            <span className="analytics-filter-label">年軸</span>
+            <div
+              className="manager-filter-tabs manager-filter-tabs--segmented analytics-year-axis"
+              role="group"
+              aria-label="年選択"
+            >
+              {recentYears.map((year) => (
+                <Button
+                  key={year}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={`manager-filter-tab ${String(selectedYear) === String(year) ? "is-active" : ""}`}
+                  aria-pressed={String(selectedYear) === String(year)}
+                  onClick={() => onYearSelect?.(year)}
+                >
+                  {year}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
 
     </div>

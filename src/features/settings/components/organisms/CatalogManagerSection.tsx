@@ -287,7 +287,13 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                         <Button type="button" variant="outline" size="sm" onClick={() => handleSaveEdit(item.id)}>
                           保存
                         </Button>
-                        <Button type="button" variant="outline" size="sm" onClick={cancelEdit}>
+                        <Button
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          className="settings-cancel-button"
+                          onClick={cancelEdit}
+                        >
                           キャンセル
                         </Button>
                       </>

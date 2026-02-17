@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import EmptyState from "@/shared/components/EmptyState";
+import Button from "@/shared/ui/Button";
 import { getSeriesColors } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
 const formatPeriodLabel = (axis, period) => {
@@ -55,17 +56,23 @@ const LegendContent = ({ payload, onItemClick, onAllClick }) => {
   return (
     <ul className="analytics-legend" role="list">
       <li key="__all__" className="analytics-legend-item">
-        <button type="button" onClick={() => onAllClick?.()}>
+        <Button type="button" variant="outline" size="sm" className="analytics-legend-button" onClick={() => onAllClick?.()}>
           <span className="analytics-legend-dot" style={{ background: "#0ea5e9" }} />
           <span className="analytics-legend-label">すべて</span>
-        </button>
+        </Button>
       </li>
       {payload.map((entry) => (
         <li key={entry.value} className="analytics-legend-item">
-          <button type="button" onClick={() => onItemClick?.(entry.value)}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="analytics-legend-button"
+            onClick={() => onItemClick?.(entry.value)}
+          >
             <span className="analytics-legend-dot" style={{ background: entry.color }} />
             <span className="analytics-legend-label">{entry.value}</span>
-          </button>
+          </Button>
         </li>
       ))}
     </ul>

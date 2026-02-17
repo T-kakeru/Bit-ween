@@ -6,7 +6,9 @@
   "profile": {
     "name": "山田 一郎",
     "department": "プロダクト推進部",
-    "role": "マネージャー",
+    "email": "yamada.ichiro@bitween.local",
+    "password": "Password@123",
+    "role": "管理者",
     "team": "Bit-ween",
     "status": "オンライン",
     "avatar": "",

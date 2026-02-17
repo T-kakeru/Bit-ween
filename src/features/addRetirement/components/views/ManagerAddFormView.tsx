@@ -247,7 +247,7 @@ export const ManagerAddFormView = ({
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="danger" className="settings-cancel-button" onClick={onCancel}>
               キャンセル
             </Button>
             <Button type="submit" disabled={!canSubmit}>

@@ -85,7 +85,7 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
           <TextCaption>名前と基本情報、自己紹介を編集できます。</TextCaption>
         </div>
         <div className="profile-edit-actions">
-          <Button type="button" variant="outline" onClick={handleCancel}>
+          <Button type="button" variant="danger" className="settings-cancel-button" onClick={handleCancel}>
             キャンセル
           </Button>
           <Button

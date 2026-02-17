@@ -34,3 +34,77 @@
 .root[type="radio"]:checked {
   transform: scale(1.08);
 }
+
+.root[type="file"] {
+  padding: var(--space-6) var(--space-10);
+  font-size: var(--font-size-sm);
+}
+
+.root[type="file"]::file-selector-button,
+.root[type="file"]::-webkit-file-upload-button {
+  --file-accent-rgb: 14, 165, 233;
+  margin-right: 10px;
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    conic-gradient(
+      from 180deg,
+      rgba(var(--file-accent-rgb), 0.95) 0deg,
+      rgba(var(--file-accent-rgb), 0.7) 70deg,
+      rgba(var(--file-accent-rgb), 0.3) 170deg,
+      rgba(var(--file-accent-rgb), 0.1) 200deg,
+      rgba(var(--file-accent-rgb), 0.1) 360deg
+    ) border-box;
+  box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.22), 0 6px 14px rgba(148, 163, 184, 0.18),
+    0 16px 30px -18px rgba(30, 64, 175, 0.38);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+
+.root[type="file"]:hover::file-selector-button,
+.root[type="file"]:focus-visible::file-selector-button,
+.root[type="file"]:hover::-webkit-file-upload-button,
+.root[type="file"]:focus-visible::-webkit-file-upload-button {
+  background:
+    linear-gradient(#eff6ff, #eff6ff) padding-box,
+    conic-gradient(
+      from 180deg,
+      rgba(14, 165, 233, 0.95) 0deg,
+      rgba(14, 165, 233, 0.7) 70deg,
+      rgba(14, 165, 233, 0.3) 170deg,
+      rgba(14, 165, 233, 0.1) 200deg,
+      rgba(14, 165, 233, 0.1) 360deg
+    ) border-box;
+  box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.28), 0 10px 20px rgba(148, 163, 184, 0.2),
+    0 20px 36px -18px rgba(59, 130, 246, 0.42);
+}
+
+.root[type="file"]:active::file-selector-button,
+.root[type="file"]:active::-webkit-file-upload-button {
+  background:
+    linear-gradient(#1c80d7, #1c80d7) padding-box,
+    conic-gradient(
+      from 180deg,
+      rgba(14, 165, 233, 0.95) 0deg,
+      rgba(14, 165, 233, 0.7) 70deg,
+      rgba(14, 165, 233, 0.3) 170deg,
+      rgba(14, 165, 233, 0.1) 200deg,
+      rgba(14, 165, 233, 0.1) 360deg
+    ) border-box;
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.28), 0 10px 22px rgba(37, 99, 235, 0.32);
+}
+
+.root[type="file"]:disabled::file-selector-button,
+.root[type="file"]:disabled::-webkit-file-upload-button {
+  border: 1px solid #e5e7eb;
+  background: #e5e7eb;
+  color: #9ca3af;
+  box-shadow: none;
+  cursor: not-allowed;
+}

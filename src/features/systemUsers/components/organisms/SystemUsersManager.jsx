@@ -5,6 +5,7 @@ import TextCaption from "@/shared/ui/TextCaption";
 import Icon from "@/shared/ui/Icon";
 import Input from "@/shared/ui/Input";
 import Select from "@/shared/ui/Select";
+import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 import { useSystemUsersCrud } from "@/features/systemUsers/hooks/useSystemUsersCrud";
 
 const emptyCreateForm = {
@@ -13,6 +14,20 @@ const emptyCreateForm = {
 };
 
 const toText = (value) => String(value ?? "").trim();
+
+const toSortableUserName = (systemUser) =>
+  toText(systemUser?.display_name || systemUser?.employee_name || systemUser?.email);
+
+const toSortableValue = (systemUser, key) => {
+  if (key === "display_name") return toSortableUserName(systemUser).toLowerCase();
+  if (key === "email") return toText(systemUser?.email).toLowerCase();
+  if (key === "role") return toText(systemUser?.role).toLowerCase();
+  if (key === "employee_id") return toText(systemUser?.employee_id);
+  if (key === "last_login_at") return Date.parse(toText(systemUser?.last_login_at) || "") || 0;
+  if (key === "is_enabled") return Boolean(systemUser?.is_enabled) ? 1 : 0;
+  if (key === "updated_at") return Date.parse(toText(systemUser?.updated_at) || "") || 0;
+  return toText(systemUser?.[key]);
+};
 
 const formatLastLogin = (value) => {
   const raw = toText(value);
@@ -49,14 +64,48 @@ const SystemUsersManager = ({
   const [createForm, setCreateForm] = useState(emptyCreateForm);
   const [isTableEditing, setIsTableEditing] = useState(false);
   const [editRows, setEditRows] = useState({});
+  const [sort, setSort] = useState({ key: "updated_at", direction: "desc" });
 
   const sortedSystemUsers = useMemo(() => {
+    const directionFactor = sort?.direction === "desc" ? -1 : 1;
+    const key = sort?.key || "updated_at";
+
     return [...users].sort((a, b) => {
-      const aTime = Date.parse(a?.updated_at || "") || 0;
-      const bTime = Date.parse(b?.updated_at || "") || 0;
-      return bTime - aTime;
+      const aValue = toSortableValue(a, key);
+      const bValue = toSortableValue(b, key);
+      if (aValue === bValue) return 0;
+      return aValue > bValue ? directionFactor : -directionFactor;
     });
-  }, [users]);
+  }, [users, sort]);
+
+  const toggleSort = (key) => {
+    setSort((prev) => {
+      if (prev?.key === key) {
+        return {
+          key,
+          direction: prev.direction === "asc" ? "desc" : "asc",
+        };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const getSortIcon = (key) => {
+    if (!sort || sort.key !== key) return null;
+    if (sort.direction === "asc") return "▲";
+    if (sort.direction === "desc") return "▼";
+    return null;
+  };
+
+  const getAriaSort = (key) => {
+    if (!sort || sort.key !== key || !sort.direction) return "none";
+    return sort.direction === "asc" ? "ascending" : "descending";
+  };
+
+  const getHeaderClass = (key) => {
+    if (!sort || sort.key !== key || !sort.direction) return "manager-th";
+    return sort.direction === "asc" ? "manager-th is-sorted-asc" : "manager-th is-sorted-desc";
+  };
 
   const resetCreate = () => {
     setError("");
@@ -187,14 +236,20 @@ const SystemUsersManager = ({
               <>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="danger"
                   size="md"
-                  className="settings-action-button settings-cancel-button"
+                  className="settings-action-button settings-cancel-button system-users-top-action-button"
                   onClick={cancelTableEdit}
                 >
                   キャンセル
                 </Button>
-                <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={saveTableEdit}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  className="settings-action-button system-users-top-action-button"
+                  onClick={saveTableEdit}
+                >
                   保存
                 </Button>
               </>
@@ -222,7 +277,7 @@ const SystemUsersManager = ({
               disabled={isTableEditing}
             >
               <Icon className="manager-edit-icon" src="/img/default.png" alt="" />
-              利用者を追加
+              利用者を登録
             </Button>
           ) : null}
           {typeof onDone === "function" ? (
@@ -263,7 +318,7 @@ const SystemUsersManager = ({
               </Select>
             </div>
             <div className="mt-3 flex justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" className="settings-cancel-button" onClick={closeCreate}>
+              <Button type="button" variant="danger" size="sm" className="settings-cancel-button" onClick={closeCreate}>
                 キャンセル
               </Button>
               <Button
@@ -285,17 +340,95 @@ const SystemUsersManager = ({
               <TextCaption>登録されている利用者はいません。</TextCaption>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <table className="min-w-full border-collapse bg-white text-sm">
-                <thead className="bg-white">
+            <TableContainer className="manager-table-wrap" role="region" aria-label="システム利用者一覧">
+              <Table className="manager-table system-users-table">
+                <thead>
                   <tr>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">利用者名</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">メールアドレス</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">権限</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">紐付け社員ID</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">最終ログイン</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">ステータス</th>
-                    <th className="px-3 py-2 text-right font-semibold text-slate-700">操作</th>
+                    <Th scope="col" className={getHeaderClass("display_name")} aria-sort={getAriaSort("display_name")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={sort?.key === "display_name" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+                        onClick={() => toggleSort("display_name")}
+                        disabled={isTableEditing}
+                        aria-disabled={isTableEditing}
+                      >
+                        <span className="manager-sort-label">利用者名</span>
+                        {getSortIcon("display_name") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("display_name")}</span> : null}
+                      </Button>
+                    </Th>
+                    <Th scope="col" className={getHeaderClass("email")} aria-sort={getAriaSort("email")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={sort?.key === "email" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+                        onClick={() => toggleSort("email")}
+                        disabled={isTableEditing}
+                        aria-disabled={isTableEditing}
+                      >
+                        <span className="manager-sort-label">メールアドレス</span>
+                        {getSortIcon("email") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("email")}</span> : null}
+                      </Button>
+                    </Th>
+                    <Th scope="col" className={getHeaderClass("role")} aria-sort={getAriaSort("role")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={sort?.key === "role" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+                        onClick={() => toggleSort("role")}
+                        disabled={isTableEditing}
+                        aria-disabled={isTableEditing}
+                      >
+                        <span className="manager-sort-label">権限</span>
+                        {getSortIcon("role") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("role")}</span> : null}
+                      </Button>
+                    </Th>
+                    <Th scope="col" className={getHeaderClass("employee_id")} aria-sort={getAriaSort("employee_id")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={sort?.key === "employee_id" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+                        onClick={() => toggleSort("employee_id")}
+                        disabled={isTableEditing}
+                        aria-disabled={isTableEditing}
+                      >
+                        <span className="manager-sort-label">紐付け社員ID</span>
+                        {getSortIcon("employee_id") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("employee_id")}</span> : null}
+                      </Button>
+                    </Th>
+                    <Th scope="col" className={getHeaderClass("last_login_at")} aria-sort={getAriaSort("last_login_at")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={sort?.key === "last_login_at" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+                        onClick={() => toggleSort("last_login_at")}
+                        disabled={isTableEditing}
+                        aria-disabled={isTableEditing}
+                      >
+                        <span className="manager-sort-label">最終ログイン</span>
+                        {getSortIcon("last_login_at") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("last_login_at")}</span> : null}
+                      </Button>
+                    </Th>
+                    <Th scope="col" className={getHeaderClass("is_enabled")} aria-sort={getAriaSort("is_enabled")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={sort?.key === "is_enabled" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+                        onClick={() => toggleSort("is_enabled")}
+                        disabled={isTableEditing}
+                        aria-disabled={isTableEditing}
+                      >
+                        <span className="manager-sort-label">ステータス</span>
+                        {getSortIcon("is_enabled") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("is_enabled")}</span> : null}
+                      </Button>
+                    </Th>
+                    <Th scope="col" className="manager-th system-users-th-actions">操作</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -307,8 +440,8 @@ const SystemUsersManager = ({
                     const statusEnabled = isTableEditing ? Boolean(draft.is_enabled) : Boolean(systemUser.is_enabled);
 
                     return (
-                      <tr key={systemUser.id} className="border-t border-slate-200 align-top">
-                        <td className="px-3 py-2">
+                      <tr key={systemUser.id}>
+                        <Td>
                           {isTableEditing ? (
                             <Input
                               type="text"
@@ -321,9 +454,9 @@ const SystemUsersManager = ({
                               {toText(systemUser.display_name || systemUser.employee_name || systemUser.email)}
                             </span>
                           )}
-                        </td>
+                        </Td>
 
-                        <td className="px-3 py-2">
+                        <Td>
                           {isTableEditing ? (
                             <Input
                               type="text"
@@ -334,9 +467,9 @@ const SystemUsersManager = ({
                           ) : (
                             <span className="text-slate-800">{systemUser.email}</span>
                           )}
-                        </td>
+                        </Td>
 
-                        <td className="px-3 py-2">
+                        <Td>
                           {isTableEditing ? (
                             <Select
                               value={roleValue}
@@ -348,9 +481,9 @@ const SystemUsersManager = ({
                           ) : (
                             <span className="text-sm font-medium text-slate-700">{roleLabel}</span>
                           )}
-                        </td>
+                        </Td>
 
-                        <td className="px-3 py-2 text-slate-700">
+                        <Td className="text-slate-700">
                           {isTableEditing ? (
                             <Input
                               type="text"
@@ -361,13 +494,13 @@ const SystemUsersManager = ({
                           ) : (
                             toText(systemUser.employee_id) || "-"
                           )}
-                        </td>
-                        <td className="px-3 py-2 text-slate-700">{formatLastLogin(systemUser.last_login_at)}</td>
+                        </Td>
+                        <Td className="text-slate-700">{formatLastLogin(systemUser.last_login_at)}</Td>
 
-                        <td className="px-3 py-2 system-users-status-cell">
+                        <Td className="system-users-status-cell">
                           {isTableEditing ? (
                             <div className="inline-flex items-center gap-2">
-                              <label className="switch">
+                              <label className="switch system-users-switch">
                                 <input
                                   type="checkbox"
                                   checked={statusEnabled}
@@ -381,7 +514,7 @@ const SystemUsersManager = ({
                               </label>
                               <span
                                 className={`text-xs font-semibold system-users-status-text ${
-                                  statusEnabled ? "text-emerald-700" : "text-slate-500"
+                                  statusEnabled ? "system-users-status-text--enabled" : "system-users-status-text--disabled"
                                 }`}
                               >
                                 {statusEnabled ? "有効" : "停止"}
@@ -390,15 +523,15 @@ const SystemUsersManager = ({
                           ) : (
                             <span
                               className={`text-xs font-semibold system-users-status-text ${
-                                statusEnabled ? "text-emerald-700" : "text-slate-500"
+                                statusEnabled ? "system-users-status-text--enabled" : "system-users-status-text--disabled"
                               }`}
                             >
                               {statusEnabled ? "有効" : "停止"}
                             </span>
                           )}
-                        </td>
+                        </Td>
 
-                        <td className="px-3 py-2 text-right system-users-actions-cell">
+                        <Td className="system-users-actions-cell">
                           {isTableEditing && canEdit ? (
                             <div className="inline-flex items-center gap-2 system-users-row-actions">
                               <Button
@@ -438,13 +571,13 @@ const SystemUsersManager = ({
                           ) : (
                             <span className="text-slate-400">-</span>
                           )}
-                        </td>
+                        </Td>
                       </tr>
                     );
                   })}
                 </tbody>
-              </table>
-            </div>
+              </Table>
+            </TableContainer>
           )}
 
           {!canEdit ? (

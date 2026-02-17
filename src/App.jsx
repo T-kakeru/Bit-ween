@@ -10,14 +10,31 @@ import SettingsPage from "./pages/SettingsPage";
 import ManagerPage from "./pages/ManagerPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
 import SystemUsersPage from "./pages/SystemUsersPage";
+import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ComingSoonPage from "./pages/ComingSoonPage";
+import SessionExpiredPage from "./pages/SessionExpiredPage";
 import NotFoundPanel from "@/shared/components/NotFoundPanel";
 import useArticleEntryParentInfo from "./features/articles/hooks/useArticleEntryParentInfo";
 import useSavedArticlesState from "@/features/articles/hooks/useSavedArticlesState";
+import { useAuth } from "@/features/auth/context/AuthContext";
 // 画面に必要なテストデータ（API未接続時の表示用）
 import navItems from "@/shared/data/mock/navItems.json";
 
+const AUTH_PATHS = ["/login", "/forgot-password", "/reset-password"];
+
+const normalizeAuthPath = (path) => (AUTH_PATHS.includes(path) ? path : "/login");
+
 function App() {
+  const { isLoggedIn } = useAuth();
   const savedArticles = useSavedArticlesState();
+  const [authPath, setAuthPath] = useState(() =>
+    typeof window === "undefined" ? "/login" : normalizeAuthPath(window.location.pathname)
+  );
+  const [appPath, setAppPath] = useState(() =>
+    typeof window === "undefined" ? "/" : window.location.pathname
+  );
 
   const adminNavItems = [
     { type: "section", label: "業務" },
@@ -41,7 +58,7 @@ function App() {
     useArticleEntryParentInfo({ setActiveNav, setIsSidebarOpen });
   const user = {
     name: "山田 一郎",
-    role: "マネージャー",
+    role: "管理者",
     team: "Bit-ween",
     department: "プロダクト推進部",
     status: "オンライン",
@@ -100,6 +117,96 @@ function App() {
     window.addEventListener("app:page-title", handler);
     return () => window.removeEventListener("app:page-title", handler);
   }, []);
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (typeof window === "undefined") return;
+      setAppPath(window.location.pathname);
+      setAuthPath(normalizeAuthPath(window.location.pathname));
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (!isLoggedIn) {
+      setAppPath(window.location.pathname);
+      setAuthPath(normalizeAuthPath(window.location.pathname));
+      return;
+    }
+
+    if (AUTH_PATHS.includes(window.location.pathname)) {
+      window.history.replaceState({}, "", "/");
+      setAppPath("/");
+    }
+  }, [isLoggedIn]);
+
+  const navigateAuth = (path) => {
+    if (typeof window === "undefined") return;
+    const normalized = normalizeAuthPath(path);
+    if (window.location.pathname !== normalized) {
+      window.history.pushState({}, "", normalized);
+    }
+    setAppPath(normalized);
+    setAuthPath(normalized);
+  };
+
+  if (!isLoggedIn) {
+    if (!AUTH_PATHS.includes(appPath)) {
+      return (
+        <SessionExpiredPage
+          onGoLogin={() => navigateAuth("/login")}
+          onBack={() => {
+            if (typeof window === "undefined") return;
+            if (window.history.length > 1) {
+              window.history.back();
+              return;
+            }
+            navigateAuth("/login");
+          }}
+        />
+      );
+    }
+
+    if (authPath === "/forgot-password") {
+      return <ForgotPasswordPage onBackToLogin={() => navigateAuth("/login")} />;
+    }
+
+    if (authPath === "/reset-password") {
+      return <ResetPasswordPage onBackToLogin={() => navigateAuth("/login")} />;
+    }
+
+    return (
+      <LoginPage
+        onNavigateForgotPassword={() => navigateAuth("/forgot-password")}
+        onLoginSuccess={() => {
+          if (typeof window !== "undefined") {
+            window.history.replaceState({}, "", "/");
+          }
+          setAppPath("/");
+        }}
+      />
+    );
+  }
+
+  if (appPath === "/coming-soon") {
+    return (
+      <ComingSoonPage
+        onBack={() => {
+          if (typeof window === "undefined") return;
+          if (window.history.length > 1) {
+            window.history.back();
+            return;
+          }
+          window.history.replaceState({}, "", "/settings");
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }}
+      />
+    );
+  }
 
 
   const handleOpenSettings = () => {

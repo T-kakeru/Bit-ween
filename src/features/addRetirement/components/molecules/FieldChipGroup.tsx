@@ -1,4 +1,5 @@
 import { useId } from "react";
+import Button from "@/shared/ui/Button";
 import type { BaseFieldProps } from "./FieldShell";
 import { FieldShell } from "./FieldShell";
 
@@ -30,29 +31,22 @@ export const FieldChipGroup = ({
   return (
     <FieldShell label={label} helper={helper} required={required}>
       <div className="space-y-1">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={label}>
           {items.map((item) => {
             const checked = value === item.value;
             return (
-              <label
+              <Button
                 key={`${groupName}-${item.label}`}
-                className={
-                  "inline-flex cursor-pointer items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition focus-within:ring-2 focus-within:ring-[color:var(--color-brand)] focus-within:ring-offset-2 focus-within:ring-offset-white " +
-                  (checked
-                    ? "border-[color:var(--color-brand)] bg-[color:var(--color-accent-bg)] text-slate-900 shadow-sm"
-                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
-                }
+                type="button"
+                variant="outline"
+                size="sm"
+                role="radio"
+                aria-checked={checked}
+                aria-pressed={checked}
+                onClick={() => onChange(item.value)}
               >
-                <input
-                  type="radio"
-                  name={groupName}
-                  value={item.value}
-                  checked={checked}
-                  onChange={() => onChange(item.value)}
-                  className="sr-only"
-                />
                 {item.label}
-              </label>
+              </Button>
             );
           })}
         </div>

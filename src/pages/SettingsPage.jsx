@@ -1,18 +1,20 @@
 import { useMemo, useState } from "react";
 import settingsData from "@/shared/data/mock/settings.json";
+import departmentsData from "@/shared/data/mock/departments.json";
 import Heading from "@/shared/ui/Heading";
 import Card from "@/shared/ui/Card";
 import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
 import { SettingsMasterDataPanel } from "@/features/settings/components/organisms/SettingsMasterDataPanel";
+import { useAuth } from "@/features/auth/context/AuthContext";
 
 // pages: 画面単位の状態（画面遷移/表示分岐）を統合する
 const SettingsPage = () => {
+  const { logout } = useAuth();
   const initial = useMemo(() => settingsData, []);
   const [settings, setSettings] = useState(initial);
   const [isProfileEditing, setIsProfileEditing] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const [profileDraft, setProfileDraft] = useState(() => ({
     name: settings.profile?.name ?? settings.account?.name ?? "",
@@ -25,6 +27,18 @@ const SettingsPage = () => {
   const profileDepartment = settings.profile?.department ?? "";
   const profileEmail = settings.profile?.email ?? "";
   const profilePassword = settings.profile?.password ?? "Password@123";
+  const profileRole = settings.profile?.role ?? settings.account?.role ?? "一般";
+  const toMaskedPassword = (value) => {
+    const raw = String(value ?? "");
+    if (!raw) return "-";
+    return "＊".repeat(raw.length);
+  };
+  const departmentOptions = useMemo(() => {
+    const base = Array.isArray(departmentsData) ? departmentsData.map((item) => String(item?.name ?? "").trim()).filter(Boolean) : [];
+    const current = String(isProfileEditing ? profileDraft.department : profileDepartment).trim();
+    const merged = current && !base.includes(current) ? [current, ...base] : base;
+    return Array.from(new Set(merged));
+  }, [isProfileEditing, profileDepartment, profileDraft.department]);
 
   const startProfileEdit = () => {
     setProfileDraft({
@@ -34,7 +48,6 @@ const SettingsPage = () => {
       password: profilePassword,
     });
     setProfileMessage("");
-    setIsPasswordVisible(false);
     setIsProfileEditing(true);
   };
 
@@ -46,7 +59,6 @@ const SettingsPage = () => {
       password: profilePassword,
     });
     setProfileMessage("");
-    setIsPasswordVisible(false);
     setIsProfileEditing(false);
   };
 
@@ -79,7 +91,6 @@ const SettingsPage = () => {
     });
 
     setProfileMessage("プロフィールを保存しました");
-    setIsPasswordVisible(false);
     setIsProfileEditing(false);
   };
 
@@ -91,13 +102,60 @@ const SettingsPage = () => {
     if (profileMessage) setProfileMessage("");
   };
 
-  const handleResetPassword = () => {
-    setProfileDraft((prev) => ({
+  const handleRequestEmailChange = () => {
+    const currentEmail = isProfileEditing ? profileDraft.email : profileEmail;
+    const nextEmail = window.prompt("新しいメールアドレスを入力してください", currentEmail ?? "");
+    if (nextEmail == null) return;
+
+    const normalized = String(nextEmail).trim();
+    if (!normalized) {
+      setProfileMessage("メールアドレスが未入力です");
+      return;
+    }
+
+    if (isProfileEditing) {
+      setProfileDraft((prev) => ({ ...prev, email: normalized }));
+      setProfileMessage("メールアドレスを更新しました。保存で確定してください");
+      return;
+    }
+
+    setSettings((prev) => ({
       ...prev,
-      password: "Password@123",
+      profile: {
+        ...(prev.profile ?? {}),
+        email: normalized,
+      },
     }));
+    setProfileDraft((prev) => ({ ...prev, email: normalized }));
+    setProfileMessage("メールアドレスを更新しました");
+  };
+
+  const handleResetPassword = () => {
+    const resetValue = "Password@123";
+    if (isProfileEditing) {
+      setProfileDraft((prev) => ({
+        ...prev,
+        password: resetValue,
+      }));
+      setProfileMessage("パスワードをリセットしました。保存で確定してください");
+      return;
+    }
+
+    setSettings((prev) => ({
+      ...prev,
+      profile: {
+        ...(prev.profile ?? {}),
+        password: resetValue,
+      },
+    }));
+    setProfileDraft((prev) => ({ ...prev, password: resetValue }));
     setProfileMessage("パスワードをリセットしました");
-    setIsPasswordVisible(false);
+  };
+
+  const handleOpenComingSoon = () => {
+    if (typeof window === "undefined") return;
+    window.history.pushState({}, "", "/coming-soon");
+    window.dispatchEvent(new PopStateEvent("popstate"));
   };
 
   return (
@@ -115,7 +173,7 @@ const SettingsPage = () => {
                 <>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="danger"
                     size="md"
                     className="settings-action-button settings-cancel-button"
                     onClick={cancelProfileEdit}
@@ -127,9 +185,11 @@ const SettingsPage = () => {
                   </Button>
                 </>
               ) : (
-                <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={startProfileEdit}>
-                  編集
-                </Button>
+                <>
+                  <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={startProfileEdit}>
+                    編集
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -148,53 +208,55 @@ const SettingsPage = () => {
                   />
                 </label>
 
-                <label className="settings-field">
-                  <span className="settings-field-label">メールアドレス</span>
-                  <input
-                    type="email"
-                    value={profileDraft.email}
-                    onChange={(e) => handleProfileDraftChange("email", e.target.value)}
-                    className="settings-text-input"
-                    placeholder="メールアドレス"
-                  />
-                </label>
+                <div className="settings-field">
+                  <span className="settings-field-label">権限</span>
+                  <input type="text" value={profileRole} className="settings-text-input settings-text-input--readonly" readOnly />
+                </div>
 
                 <label className="settings-field">
                   <span className="settings-field-label">部署</span>
-                  <input
-                    type="text"
+                  <select
                     value={profileDraft.department}
                     onChange={(e) => handleProfileDraftChange("department", e.target.value)}
                     className="settings-text-input"
-                    placeholder="部署"
-                  />
+                  >
+                    {departmentOptions.map((departmentName) => (
+                      <option key={departmentName} value={departmentName}>
+                        {departmentName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="settings-field">
+                  <span className="settings-field-label">メールアドレス</span>
+                  <div className="settings-inline-action-row">
+                    <TextCaption className="settings-inline-plain-value">{profileDraft.email || "-"}</TextCaption>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="md"
+                      className="settings-action-button"
+                      onClick={handleRequestEmailChange}
+                    >
+                      メールアドレスを変更
+                    </Button>
+                  </div>
                 </label>
 
                 <div className="settings-field">
                   <span className="settings-field-label">パスワード</span>
                   <div className="settings-password-row">
-                    <div className="settings-password-input-wrap">
-                      <input
-                        type={isPasswordVisible ? "text" : "password"}
-                        value={profileDraft.password}
-                        onChange={(e) => handleProfileDraftChange("password", e.target.value)}
-                        className="settings-text-input"
-                        placeholder="パスワード"
-                        autoComplete="new-password"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="settings-password-toggle"
-                        onClick={() => setIsPasswordVisible((prev) => !prev)}
-                        aria-label={isPasswordVisible ? "パスワードを隠す" : "パスワードを表示"}
-                        title={isPasswordVisible ? "隠す" : "表示"}
-                      >
-                        {isPasswordVisible ? "🙈" : "👁"}
-                      </Button>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={handleResetPassword}>
+                    <TextCaption className="settings-inline-plain-value settings-inline-plain-value--muted">
+                      {toMaskedPassword(profileDraft.password)}
+                    </TextCaption>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="md"
+                      className="settings-action-button"
+                      onClick={handleResetPassword}
+                    >
                       パスワードをリセット
                     </Button>
                   </div>
@@ -208,8 +270,8 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="settings-profile-preview">
-                  <span className="settings-field-label">メールアドレス</span>
-                  <TextCaption>{profileEmail || "-"}</TextCaption>
+                  <span className="settings-field-label">権限</span>
+                  <TextCaption>{profileRole || "-"}</TextCaption>
                 </div>
 
                 <div className="settings-profile-preview">
@@ -218,20 +280,40 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="settings-profile-preview">
+                  <span className="settings-field-label">メールアドレス</span>
+                  <div className="settings-inline-action-row">
+                    <TextCaption className="settings-inline-plain-value">{profileEmail || "-"}</TextCaption>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="md"
+                      className="settings-action-button"
+                      onClick={handleRequestEmailChange}
+                    >
+                      メールアドレスを変更
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="settings-profile-preview">
                   <span className="settings-field-label">パスワード</span>
-                  <TextCaption>********</TextCaption>
+                  <div className="settings-password-row">
+                    <TextCaption className="settings-inline-plain-value settings-inline-plain-value--muted">
+                      {toMaskedPassword(profilePassword)}
+                    </TextCaption>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="md"
+                      className="settings-action-button"
+                      onClick={handleResetPassword}
+                    >
+                      パスワードをリセット
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
-
-            <div className="settings-profile-preview">
-              <TextCaption>{isProfileEditing ? profileDraft.name || "-" : profileName || "-"}</TextCaption>
-              <TextCaption>
-                {isProfileEditing
-                  ? [profileDraft.email, profileDraft.department].filter(Boolean).join(" / ") || "メールアドレス・部署未設定"
-                  : [profileEmail, profileDepartment].filter(Boolean).join(" / ") || "メールアドレス・部署未設定"}
-              </TextCaption>
-            </div>
 
             {profileMessage ? <p className="text-xs text-emerald-700">{profileMessage}</p> : null}
           </div>
@@ -239,6 +321,60 @@ const SettingsPage = () => {
 
         <SettingsMasterDataPanel />
       </div>
+
+      <Card className="settings-panel settings-menu-card settings-support-card">
+        <div className="settings-section-head">
+          <Heading level={2}>サポート・その他</Heading>
+        </div>
+
+        <div className="settings-support-grid">
+          <div className="settings-support-block">
+            <p className="settings-row-title">ドキュメント</p>
+            <div className="settings-support-links">
+              <a
+                className="settings-support-link"
+                href="https://www.notion.so/help"
+                target="_blank"
+                rel="noreferrer"
+              >
+                利用マニュアル
+              </a>
+              <a
+                className="settings-support-link"
+                href="https://policies.google.com/privacy?hl=ja"
+                target="_blank"
+                rel="noreferrer"
+              >
+                プライバシーポリシー
+              </a>
+            </div>
+          </div>
+
+          <div className="settings-support-block">
+            <p className="settings-row-title">システム</p>
+            <div className="settings-support-actions">
+              <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
+                お問い合わせ
+              </Button>
+              <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
+                操作ログ管理
+              </Button>
+              <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
+                更新履歴
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                size="md"
+                className="settings-action-button settings-cancel-button"
+                onClick={logout}
+              >
+                ログアウト
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* //フェーズ２
       <div className="settings-section-head">

@@ -2,9 +2,11 @@
   {
     "id": "u_yamada_ichiro",
     "name": "山田 一郎",
+    "email": "yamada.ichiro@bitween.com",
+    "password": "Password@123",
     "department": "プロダクト推進部",
     "team": "Bit-ween",
-    "role": "マネージャー",
+    "role": "管理者",
     "status": "オンライン",
     "icon": "/img/sampleimg.png",
     "gender": "男性",
@@ -20,6 +22,7 @@
   {
     "id": "u_sato_jiro",
     "name": "佐藤 次郎",
+    "email": "sato.jiro@bitween.com",
     "department": "IT営業部",
     "team": "Bit-ween",
     "role": "メンバー",

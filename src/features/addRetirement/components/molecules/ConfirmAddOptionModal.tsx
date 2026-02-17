@@ -29,7 +29,7 @@ const ConfirmAddOptionModal = ({ isOpen, label, value, onCancel, onConfirm }: Pr
         </div>
 
         <div className="manager-modal-actions">
-          <Button type="button" variant="ghost" className="manager-cancel-button" onClick={onCancel}>
+          <Button type="button" variant="danger" className="manager-cancel-button" onClick={onCancel}>
             キャンセル
           </Button>
           <Button type="button" variant="primary" className="manager-save-button" onClick={onConfirm}>
