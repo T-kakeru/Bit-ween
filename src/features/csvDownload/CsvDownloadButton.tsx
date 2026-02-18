@@ -62,11 +62,14 @@ const downloadCsv = (rows: ManagerRow[], fileName: string, columns?: string[]) =
 };
 
 type CsvDownloadButtonProps = {
-  rows: ManagerRow[];
+  rows?: ManagerRow[];
   columns?: string[];
   fileName?: string;
   label?: string;
   className?: string;
+  onClick?: () => void;
+  iconSrc?: string;
+  showIcon?: boolean;
 };
 
 const CsvDownloadButton = ({
@@ -75,16 +78,28 @@ const CsvDownloadButton = ({
   fileName = DEFAULT_FILE_NAME,
   label = "ダウンロード",
   className = "",
+  onClick,
+  iconSrc = "/img/icon_csv.png",
+  showIcon = true,
 }: CsvDownloadButtonProps) => {
+  const handleClick = () => {
+    if (typeof onClick === "function") {
+      onClick();
+      return;
+    }
+
+    downloadCsv(rows ?? [], fileName, columns);
+  };
+
   return (
     <Button
       type="button"
       variant="outline"
       size="md"
       className={`manager-action-button ${className}`}
-      onClick={() => downloadCsv(rows ?? [], fileName, columns)}
+      onClick={handleClick}
     >
-      <Icon className="manager-edit-icon" src="/img/icon_csv.png" alt="" />
+      {showIcon ? <Icon className="manager-edit-icon" src={iconSrc} alt="" /> : null}
       <span>{label}</span>
     </Button>
   );

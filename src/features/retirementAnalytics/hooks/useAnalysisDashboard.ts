@@ -96,7 +96,7 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
     return [
       {
         id: "filtered" as const,
-        title: "表示項目数",
+        title: "表示人数",
         total: filteredRows.length,
         data: buildDonutSeriesData({ rows: filteredRows, seriesMode, seriesColors, displayedSeriesKeys }),
       },
@@ -108,7 +108,7 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
       },
       {
         id: "eligible-total" as const,
-        title: "全社員数",
+        title: "全社員",
         total: totalRows.length,
         data: buildDonutSeriesData({ rows: totalRows, seriesMode, seriesColors, displayedSeriesKeys }),
       },

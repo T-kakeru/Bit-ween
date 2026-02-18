@@ -16,9 +16,9 @@ export interface EmployeeRow {
 export const DEFAULT_SERIES_COLOR = "#cbd5e1";
 
 export const DEFAULT_SCOPE_LABELS: Record<SelectionScope, string> = {
-  "eligible-total": "全社員数",
+  "eligible-total": "全社員",
   "eligible-window": "該当人数",
-  filtered: "表示項目数",
+  filtered: "表示人数",
 };
 
 type PeriodParts = {

@@ -1,17 +1,13 @@
 import { useMemo, useState } from "react";
 import Card from "@/shared/ui/Card";
 import Button from "@/shared/ui/Button";
+import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
 import Icon from "@/shared/ui/Icon";
 import Input from "@/shared/ui/Input";
 import Select from "@/shared/ui/Select";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 import { useSystemUsersCrud } from "@/features/systemUsers/hooks/useSystemUsersCrud";
-
-const emptyCreateForm = {
-  email: "",
-  role: "general",
-};
 
 const toText = (value) => String(value ?? "").trim();
 
@@ -52,16 +48,13 @@ const SystemUsersManager = ({
   currentRole = "admin",
   canStartRegister = true,
   onDone,
-  onRequestEmployeeRegister,
+  onStartRegister,
 }) => {
   const canEdit = currentRole === "admin";
-  const { users, createUser, updateUser, removeUser, setSystemUserEnabled, resetSystemUserPassword } = useSystemUsersCrud({ companyId });
+  const { users, updateUser, removeUser, setSystemUserEnabled, resetSystemUserPassword } = useSystemUsersCrud({ companyId });
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const [createForm, setCreateForm] = useState(emptyCreateForm);
   const [isTableEditing, setIsTableEditing] = useState(false);
   const [editRows, setEditRows] = useState({});
   const [sort, setSort] = useState({ key: "updated_at", direction: "desc" });
@@ -105,58 +98,6 @@ const SystemUsersManager = ({
   const getHeaderClass = (key) => {
     if (!sort || sort.key !== key || !sort.direction) return "manager-th";
     return sort.direction === "asc" ? "manager-th is-sorted-asc" : "manager-th is-sorted-desc";
-  };
-
-  const resetCreate = () => {
-    setError("");
-    setSuccess("");
-    setCreateForm(emptyCreateForm);
-  };
-
-  const openCreate = () => {
-    resetCreate();
-    setIsCreateOpen(true);
-  };
-
-  const closeCreate = () => {
-    setIsCreateOpen(false);
-    resetCreate();
-  };
-
-  const handleCreate = () => {
-    const email = String(createForm.email || "").trim();
-    const role = String(createForm.role || "").trim().toLowerCase();
-    if (!email) {
-      setError("メールアドレスは必須です");
-      return;
-    }
-    if (role !== "admin" && role !== "general") {
-      setError("権限は admin または general を選択してください");
-      return;
-    }
-
-    setError("");
-
-    if (typeof onRequestEmployeeRegister === "function") {
-      onRequestEmployeeRegister({ email, role });
-      return;
-    }
-
-    const result = createUser({
-      email,
-      role,
-      employeeCode: "",
-      employeeName: "",
-      displayName: email.split("@")[0],
-    });
-
-    if (!result.ok) {
-      setError(result.message);
-      return;
-    }
-
-    setSuccess("利用者を作成しました");
-    closeCreate();
   };
 
   const beginTableEdit = () => {
@@ -226,6 +167,7 @@ const SystemUsersManager = ({
     <Card className="settings-panel">
       <div className="settings-row">
         <div>
+          <Heading level={2}>システム利用者管理</Heading>
           <TextCaption>分析対象の社員（Employee）と、ログインする利用者（SystemUser）を分離して管理します。</TextCaption>
           <TextCaption className="mt-1">登録数: {sortedSystemUsers.length}</TextCaption>
         </div>
@@ -273,7 +215,7 @@ const SystemUsersManager = ({
               variant="outline"
               size="md"
               className="settings-action-button system-users-top-action-button"
-              onClick={openCreate}
+              onClick={onStartRegister}
               disabled={isTableEditing}
             >
               <Icon className="manager-edit-icon" src="/img/default.png" alt="" />
@@ -291,48 +233,6 @@ const SystemUsersManager = ({
       <div className="px-6 pb-5">
         {success ? <p className="mt-2 text-xs text-emerald-700">{success}</p> : null}
         {error ? <p className="mt-2 text-xs text-rose-600">{error}</p> : null}
-
-        {isCreateOpen ? (
-          <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
-            <p className="text-sm font-semibold text-slate-900">利用者追加</p>
-            <TextCaption className="mt-1">メール入力後、必要に応じて社員登録フローへ進めます。</TextCaption>
-            <div className="mt-3 grid grid-cols-1 gap-2">
-              <Input
-                type="text"
-                value={createForm.email}
-                onChange={(e) => {
-                  setCreateForm((prev) => ({ ...prev, email: e.target.value }));
-                  if (error) setError("");
-                }}
-                placeholder="email（必須）"
-              />
-              <Select
-                value={createForm.role}
-                onChange={(e) => {
-                  setCreateForm((prev) => ({ ...prev, role: e.target.value }));
-                  if (error) setError("");
-                }}
-              >
-                <option value="general">general（一般）</option>
-                <option value="admin">admin（管理者）</option>
-              </Select>
-            </div>
-            <div className="mt-3 flex justify-end gap-2">
-              <Button type="button" variant="danger" size="sm" className="settings-cancel-button" onClick={closeCreate}>
-                キャンセル
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                className="settings-action-button"
-                onClick={handleCreate}
-              >
-                追加
-              </Button>
-            </div>
-          </div>
-        ) : null}
 
         <div className="mt-4 space-y-2">
           {sortedSystemUsers.length === 0 ? (
@@ -396,7 +296,7 @@ const SystemUsersManager = ({
                         disabled={isTableEditing}
                         aria-disabled={isTableEditing}
                       >
-                        <span className="manager-sort-label">紐付け社員ID</span>
+                        <span className="manager-sort-label">社員ID</span>
                         {getSortIcon("employee_id") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("employee_id")}</span> : null}
                       </Button>
                     </Th>
@@ -429,7 +329,21 @@ const SystemUsersManager = ({
                       </Button>
                     </Th>
                     <Th scope="col" className="manager-th system-users-th-actions">
-                      <span className="system-users-th-action-label">操作</span>
+                      {canEdit ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="system-users-th-action-button"
+                          onClick={beginTableEdit}
+                          disabled={isTableEditing}
+                          aria-disabled={isTableEditing}
+                        >
+                          操作
+                        </Button>
+                      ) : (
+                        <span className="system-users-th-action-label">操作</span>
+                      )}
                     </Th>
                   </tr>
                 </thead>

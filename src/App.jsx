@@ -219,24 +219,9 @@ function App() {
     setIsSidebarOpen(false);
   };
 
-  const handleRequestEmployeeRegisterFromSystemUsers = (payload) => {
-    const email = String(payload?.email ?? "").trim();
-    const role = String(payload?.role ?? "general").trim().toLowerCase();
-    try {
-      window.dispatchEvent(
-        new CustomEvent("systemUsers:startIntegratedRegister", {
-          detail: {
-            email,
-            role: role === "admin" ? "admin" : "general",
-          },
-        })
-      );
-    } catch (e) {
-      // ignore
-    }
-    setAdminNav("社員情報一覧");
-    setIsSidebarOpen(false);
-  };
+  const shouldHideAdminPageTitle =
+    isAdminMode &&
+    ["退職者分析", "社員情報一覧", "設定", "利用者管理"].includes(adminNav);
 
   const renderNavContent = () => {
     if (isAdminMode) {
@@ -253,11 +238,7 @@ function App() {
       }
 
       if (adminNav === "利用者管理") {
-        return (
-          <SystemUsersPage
-            onRequestEmployeeRegister={handleRequestEmployeeRegisterFromSystemUsers}
-          />
-        );
+        return <SystemUsersPage />;
       }
 
       return (
@@ -324,8 +305,10 @@ function App() {
       isSidebarOpen={isSidebarOpen}
       onOverlayClick={() => setIsSidebarOpen(false)}
       pageTitle={
-        pageTitleOverride ??
-        (isAdminMode ? (adminNav === "利用者管理" ? "システム利用者管理" : adminNav) : activeNav)
+        shouldHideAdminPageTitle
+          ? null
+          : pageTitleOverride ??
+            (isAdminMode ? (adminNav === "利用者管理" ? "システム利用者管理" : adminNav) : activeNav)
       }
     >
       {renderNavContent()}

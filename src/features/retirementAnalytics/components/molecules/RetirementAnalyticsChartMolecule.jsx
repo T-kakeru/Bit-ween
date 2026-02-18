@@ -130,13 +130,18 @@ const RetirementAnalyticsChartMolecule = ({
 
   const [hoveredSeriesKey, setHoveredSeriesKey] = useState("");
   const isYearTickMode = enableYearTickClick && axis === "year";
+  const yAxisUpperBound = (dataMax) => {
+    const safeMax = Number.isFinite(dataMax) ? dataMax : 0;
+    const paddedMax = Math.ceil(safeMax * 1.4);
+    return Math.max(4, paddedMax);
+  };
 
   return (
     <div className="analytics-chart">
       <ResponsiveContainer width="100%" height={isYearTickMode ? 340 : 320}>
         <BarChart
           data={data}
-          margin={{ top: 24, right: 18, left: 6, bottom: isYearTickMode ? 16 : 4 }}
+          margin={{ top: 30, right: 18, left: 6, bottom: isYearTickMode ? 6 : 0 }}
           barCategoryGap={12}
           barGap={6}
           maxBarSize={34}
@@ -152,7 +157,7 @@ const RetirementAnalyticsChartMolecule = ({
             }
             tickFormatter={(value) => formatPeriodLabel(axis, value)}
           />
-          <YAxis allowDecimals={false} />
+          <YAxis allowDecimals={false} domain={[0, yAxisUpperBound]} tickCount={6} />
           <Tooltip
             cursor={false}
             content={

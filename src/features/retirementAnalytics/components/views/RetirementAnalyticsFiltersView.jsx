@@ -62,6 +62,19 @@ const buildClientLabel = (selected, options) => {
     return `稼働先：${selected.length}件選択`;
 };
 
+const PERIOD_LABELS = {
+  current: "現在",
+  month: "月",
+  year: "年",
+};
+
+const AXIS_LABELS = {
+  reason: "退職理由",
+  department: "部署",
+  age: "年齢",
+  tenure: "在籍月数",
+};
+
 const RetirementAnalyticsFiltersView = ({
   activeTab,
   selectedYear,
@@ -87,6 +100,50 @@ const RetirementAnalyticsFiltersView = ({
   const genderOptions = GENDERS;
   const safeClientOptions = useMemo(() => (Array.isArray(clientOptions) ? clientOptions : []), [clientOptions]);
 
+  const selectedSummaryChips = useMemo(() => {
+    const chips = [];
+
+    const periodLabel = PERIOD_LABELS[activeTab] ?? "現在";
+    const axisLabel = AXIS_LABELS[seriesMode] ?? "退職理由";
+
+    chips.push(`集計期間：${periodLabel}`);
+    chips.push(`分析軸：${axisLabel}`);
+
+    if (activeTab === "month" && selectedYear) {
+      chips.push(`年軸：${selectedYear}`);
+    }
+
+    const safeStatuses = Array.isArray(statuses) ? statuses : [];
+    const safeGenders = Array.isArray(genders) ? genders : [];
+    const safeClients = Array.isArray(clients) ? clients : [];
+
+    if (safeStatuses.length !== STATUSES.length) {
+      chips.push(
+        safeStatuses.length === 0
+          ? "稼働状態：未選択"
+          : `稼働状態：${safeStatuses.length}件選択`
+      );
+    }
+
+    if (safeGenders.length !== GENDERS.length) {
+      chips.push(
+        safeGenders.length === 0
+          ? "性別：未選択"
+          : `性別：${safeGenders.join("/")}`
+      );
+    }
+
+    if (safeClientOptions.length > 0 && safeClients.length !== safeClientOptions.length) {
+      chips.push(
+        safeClients.length === 0
+          ? "稼働先：未選択"
+          : `稼働先：${safeClients.length}件選択`
+      );
+    }
+
+    return chips;
+  }, [activeTab, seriesMode, selectedYear, statuses, genders, clients, safeClientOptions]);
+
   return (
     <div className={`analytics-filters-accordion ${isFilterOpen ? "is-open" : ""}`}>
       <button
@@ -95,9 +152,17 @@ const RetirementAnalyticsFiltersView = ({
         aria-expanded={isFilterOpen}
         onClick={() => setIsFilterOpen((prev) => !prev)}
       >
-        <div className="analytics-filter-accordion-top">
-          <span className="analytics-filter-label">条件</span>
-          <span className="analytics-filter-condition-chip">条件</span>
+        <div className="analytics-filters-trigger-main">
+          <span className="analytics-filter-label analytics-filter-label--strong">分析条件</span>
+          {!isFilterOpen ? (
+            <div className="analytics-filter-selected-summary" aria-label="現在の分析条件">
+              {selectedSummaryChips.map((chip) => (
+                <span key={chip} className="analytics-filter-selected-chip">
+                  {chip}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
         <span className="analytics-filter-accordion-caret" aria-hidden="true">▾</span>
       </button>
@@ -137,32 +202,32 @@ const RetirementAnalyticsFiltersView = ({
                 menuClassName="multi-select-menu multi-select-menu--chunk10"
               />
             </div>
-
-            {activeTab === "month" ? (
-              <div className="analytics-year-axis-wrap">
-                <span className="analytics-filter-label">年軸</span>
-                <div
-                  className="manager-filter-tabs manager-filter-tabs--segmented analytics-year-axis"
-                  role="group"
-                  aria-label="年選択"
-                >
-                  {recentYears.map((year) => (
-                    <Button
-                      key={year}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className={`manager-filter-tab ${String(selectedYear) === String(year) ? "is-active" : ""}`}
-                      aria-pressed={String(selectedYear) === String(year)}
-                      onClick={() => onYearSelect?.(year)}
-                    >
-                      {year}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </section>
+
+          {activeTab === "month" ? (
+            <section className="analytics-filter analytics-filter-block analytics-filter--tabs analytics-filter--year-axis">
+              <span className="analytics-filter-label">年軸</span>
+              <div
+                className="analytics-year-axis-wrap"
+                role="group"
+                aria-label="年選択"
+              >
+                {recentYears.map((year) => (
+                  <Button
+                    key={year}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`manager-filter-tab ${String(selectedYear) === String(year) ? "is-active" : ""}`}
+                    aria-pressed={String(selectedYear) === String(year)}
+                    onClick={() => onYearSelect?.(year)}
+                  >
+                    {year}
+                  </Button>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       </div>
     </div>

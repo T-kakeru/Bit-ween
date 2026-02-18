@@ -1,5 +1,5 @@
-import Input from "@/shared/ui/Input";
-import type { ChangeEvent } from "react";
+import Button from "@/shared/ui/Button";
+import { useRef } from "react";
 
 type CsvFilePickerProps = {
   fileName: string | null;
@@ -9,20 +9,34 @@ type CsvFilePickerProps = {
 };
 
 const CsvFilePicker = ({ fileName, inputKey, disabled = false, onFileChange }: CsvFilePickerProps) => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   return (
-    <label className="manager-import-file">
-      <span className="manager-import-file-label">CSVを選択</span>
-      <Input
+    <div className="manager-import-file" role="group" aria-label="CSVファイル選択">
+      <span className="manager-import-file-label">CSVファイルをアップロード</span>
+      <input
+        ref={fileInputRef}
+        className="manager-import-file-input"
         key={inputKey}
         type="file"
         accept=".csv,text/csv"
         disabled={disabled}
-        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+        onChange={(event) =>
           onFileChange(event.currentTarget.files?.[0] ?? null)
         }
       />
+      <Button
+        type="button"
+        variant="outline"
+        size="md"
+        className="manager-import-button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={disabled}
+      >
+        CSVファイルをアップロード
+      </Button>
       <span className="manager-import-file-name">{fileName ?? "未選択"}</span>
-    </label>
+    </div>
   );
 };
 

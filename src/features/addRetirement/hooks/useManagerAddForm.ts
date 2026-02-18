@@ -32,6 +32,8 @@ export type ManagerColumn = {
 type UseManagerAddFormArgs = {
   columns: ManagerColumn[];
   rows: Array<Record<string, any>>;
+  initialFormData?: Partial<ManagerRowInput>;
+  initialIsActive?: boolean | null;
 };
 
 const createInitialForm = (employeeId: string): ManagerRowInput => ({
@@ -48,13 +50,26 @@ const createInitialForm = (employeeId: string): ManagerRowInput => ({
   "当時のクライアント": "",
 });
 
-const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
+const useManagerAddForm = ({
+  columns,
+  rows,
+  initialFormData,
+  initialIsActive = null,
+}: UseManagerAddFormArgs) => {
   const initialEmployeeId = useMemo(
     () => buildNextEmployeeIdByJoinYear({ rows, joinDate: "", today: new Date(), preferHyphen: true }),
     [rows]
   );
-  const initialForm = useMemo(() => createInitialForm(initialEmployeeId), [initialEmployeeId]);
-  const initialEmployeeIdRef = useRef(initialEmployeeId);
+  const initialForm = useMemo(() => {
+    const base = createInitialForm(initialEmployeeId);
+    if (!initialFormData) return base;
+    return {
+      ...base,
+      ...initialFormData,
+      "社員ID": String(initialFormData["社員ID"] ?? base["社員ID"]),
+    };
+  }, [initialEmployeeId, initialFormData]);
+  const initialEmployeeIdRef = useRef(initialForm["社員ID"]);
 
   const existingEmployeeIdSet = useMemo(() => {
     const set = new Set<string>();
@@ -67,7 +82,7 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
   }, [rows]);
 
   const [form, setForm] = useState<ManagerRowInput>(() => initialForm);
-  const [isActive, setIsActiveState] = useState<boolean | null>(null);
+  const [isActive, setIsActiveState] = useState<boolean | null>(initialIsActive);
   const {
     register,
     handleSubmit,
@@ -80,7 +95,7 @@ const useManagerAddForm = ({ columns, rows }: UseManagerAddFormArgs) => {
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      isActive: null,
+      isActive: initialIsActive,
       employeeId: initialForm["社員ID"],
       department: initialForm["部署"],
       name: initialForm["名前"],

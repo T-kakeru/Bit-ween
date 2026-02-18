@@ -25,3 +25,7 @@
   padding: var(--space-10) var(--space-10);
   font-size: 13px;
 }
+
+.tdNoData {
+  text-align: center;
+}

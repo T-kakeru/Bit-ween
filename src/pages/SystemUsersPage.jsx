@@ -1,18 +1,26 @@
-import Heading from "@/shared/ui/Heading";
+import { useState } from "react";
 import SystemUsersManager from "@/features/systemUsers/components/organisms/SystemUsersManager";
+import SystemUserRegistrationWizard from "@/features/systemUsers/components/organisms/SystemUserRegistrationWizard";
 
-const SystemUsersPage = ({ onRequestEmployeeRegister }) => {
+const SystemUsersPage = () => {
+  const [mode, setMode] = useState("list");
+
   return (
     <section className="screen settings-screen">
-      <div className="settings-section-head">
-        <Heading level={2}>システム利用者管理</Heading>
-      </div>
-      <SystemUsersManager
-        companyId="company-default"
-        currentRole="admin"
-        canStartRegister
-        onRequestEmployeeRegister={onRequestEmployeeRegister}
-      />
+      {mode === "list" ? (
+        <SystemUsersManager
+          companyId="company-default"
+          currentRole="admin"
+          canStartRegister
+          onStartRegister={() => setMode("wizard")}
+        />
+      ) : (
+        <SystemUserRegistrationWizard
+          companyId="company-default"
+          onCancel={() => setMode("list")}
+          onCompleted={() => setMode("list")}
+        />
+      )}
     </section>
   );
 };

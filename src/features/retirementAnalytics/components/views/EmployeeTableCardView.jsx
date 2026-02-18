@@ -16,13 +16,13 @@ const EmployeeTableCardView = ({ rows, subtitle }) => {
     <Card className="analytics-layout-card analytics-table-card">
       <div className="analytics-detail-header">
         <div>
-          <Heading level={3}>該当者一覧</Heading>
+          <Heading level={3}>対象社員リスト</Heading>
           <TextCaption className="analytics-detail-subtitle">{subtitle}</TextCaption>
         </div>
         <CsvDownloadButton rows={sortedRows} columns={MANAGER_EMPLOYEE_COLUMNS.map((column) => column.key)} />
       </div>
 
-      <div className="analytics-detail-table" role="region" aria-label="該当者一覧">
+      <div className="analytics-detail-table" role="region" aria-label="対象社員リスト">
         <EmployeeTable
           columns={MANAGER_EMPLOYEE_COLUMNS}
           rows={sortedRows}

@@ -1,4 +1,5 @@
 import Card from "@/shared/ui/Card";
+import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
 import RetirementAnalyticsFiltersView from "@/features/retirementAnalytics/components/views/RetirementAnalyticsFiltersView";
 import AnalyticsSeriesSelector from "@/features/retirementAnalytics/components/molecules/AnalyticsSeriesSelector";
@@ -26,6 +27,7 @@ const FilterCardView = ({
   return (
     <Card className="analytics-layout-card analytics-filter-card">
       <div className="analytics-card-header">
+        <Heading level={3}>退職者の分析条件</Heading>
         <TextCaption className="analytics-note">
           表と同じ退職日/退職月を元に集計します。バーや凡例を押すと、同じ絞り込み条件で「該当者一覧」を更新します。
         </TextCaption>

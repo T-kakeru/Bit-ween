@@ -26,14 +26,19 @@ const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel, isS
           <Button
             type="button"
             variant="primary"
-            className="manager-save-button"
+            className="manager-save-button manager-action-button"
             onClick={onSaveRequest}
             disabled={isSaveDisabled}
             aria-disabled={isSaveDisabled}
           >
             保存
           </Button>
-          <Button type="button" variant="danger" className="manager-cancel-button" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="danger"
+            className="manager-cancel-button settings-cancel-button manager-action-button"
+            onClick={onCancel}
+          >
             キャンセル
           </Button>
         </>

@@ -11,8 +11,8 @@ const AnalyticsSeriesSelector = ({
   const isTwoRows = safeSeriesButtons.length > 5;
 
   return (
-    <div className="analytics-series-selector">
-      <span className="analytics-filter-label">表示系列</span>
+    <div className="analytics-series-selector analytics-series-selector-card">
+      <span className="analytics-filter-label analytics-filter-label--strong">分析軸：表示系列</span>
       <div
         className={
           isTwoRows
@@ -20,7 +20,7 @@ const AnalyticsSeriesSelector = ({
             : "manager-filter-tabs manager-filter-tabs--segmented analytics-series-buttons"
         }
         role="group"
-        aria-label="表示系列"
+        aria-label="分析軸：表示系列"
       >
         <Button
           type="button"

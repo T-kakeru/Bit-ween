@@ -12,6 +12,7 @@ import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
 import EditableEmployeeTable from "@/features/retirement/components/organisms/EditableEmployeeTable";
 import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
+import Card from "@/shared/ui/Card";
 
 const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
@@ -36,43 +37,43 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         onClose={() => setIsFilterOpen(false)}
       />
 
-      <div className="manager-header">
-        <>
-          <Heading level={2} className="manager-title" aria-hidden="true" />
-        </>
-      </div>
+      <Card className="manager-shell-card">
+        <div className="manager-card-title-wrap">
+          <Heading level={2} className="manager-card-title">社員情報管理</Heading>
+        </div>
 
-      <div className="manager-metrics">
-        <MetricCard label="総人数" value={metrics.total} />
-        <MetricCard label="現職" value={metrics.active} />
-        <MetricCard label="退職" value={metrics.resigned} />
-      </div>
+        <div className="manager-metrics">
+          <MetricCard label="総人数" value={metrics.total} />
+          <MetricCard label="現職" value={metrics.active} />
+          <MetricCard label="退職" value={metrics.resigned} />
+        </div>
 
-      <EditableEmployeeTable
-        columns={columns}
-        rows={sortedRows}
-        normalizeCell={normalizeCell}
-        sort={sort}
-        onSort={toggleSort}
-        isFilterOpen={isFilterOpen}
-        onToggleFilter={() => setIsFilterOpen((prev) => !prev)}
-        onSaveRows={saveRows}
-        leadingContent={<EmployeeSearchPanel query={query} onChange={setQuery} />}
-        trailingContent={
-          <div className="ml-auto flex items-center gap-2">
-            <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns?.map((c) => c.key)} />
-            <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
-              <Icon className="manager-edit-icon" src="/img/icon_file_add.png" alt="" />
-              分析データの追加
-            </Button>
-          </div>
-        }
-        onVisibleRowsChange={(visible) => setVisibleRowsForCsv(visible)}
-      />
+        <EditableEmployeeTable
+          columns={columns}
+          rows={sortedRows}
+          normalizeCell={normalizeCell}
+          sort={sort}
+          onSort={toggleSort}
+          isFilterOpen={isFilterOpen}
+          onToggleFilter={() => setIsFilterOpen((prev) => !prev)}
+          onSaveRows={saveRows}
+          leadingContent={<EmployeeSearchPanel query={query} onChange={setQuery} />}
+          trailingContent={
+            <div className="ml-auto flex items-center gap-2">
+              <CsvDownloadButton rows={visibleRowsForCsv ?? sortedRows} columns={columns?.map((c) => c.key)} />
+              <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
+                <Icon className="manager-edit-icon" src="/img/icon_file_add.png" alt="" />
+                分析データの追加
+              </Button>
+            </div>
+          }
+          onVisibleRowsChange={(visible) => setVisibleRowsForCsv(visible)}
+        />
 
-      <TextCaption className="manager-footnote">
-        ここは土台（表示）に集中：次ステップで絞り込み・並び替え・ページングを追加します。
-      </TextCaption>
+        <TextCaption className="manager-footnote">
+          ここは土台（表示）に集中：次ステップで絞り込み・並び替え・ページングを追加します。
+        </TextCaption>
+      </Card>
     </section>
   );
 };

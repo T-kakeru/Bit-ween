@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import Button from "@/shared/ui/Button";
+import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 import type { ManagerRow } from "@/features/retirement/types";
@@ -14,6 +15,7 @@ type EmployeeCsvImportPanelProps = {
   onImportRows: (rows: ManagerRow[]) => void;
   allowFutureRetirementDate?: boolean;
   onAfterImport?: () => void;
+  title?: string;
 };
 
 type Step = "edit" | "confirm" | "success";
@@ -40,6 +42,7 @@ const EmployeeCsvImportPanel = ({
   onImportRows,
   allowFutureRetirementDate = false,
   onAfterImport,
+  title = "従業員CSVインポート",
 }: EmployeeCsvImportPanelProps) => {
   const [step, setStep] = useState<Step>("edit");
   const [lastImported, setLastImported] = useState<LastImported | null>(null);
@@ -106,13 +109,15 @@ const EmployeeCsvImportPanel = ({
     <section className="manager-import-panel">
       <div className="manager-import-header">
         <div>
-          <h3 className="manager-import-title">従業員CSVインポート</h3>
+          <Heading level={2} className="manager-import-title">
+            {title}
+          </Heading>
           <TextCaption className="manager-import-help">
             Excelで編集したCSVをアップロードし、全行を検証してから取り込みます。
           </TextCaption>
         </div>
 
-        <div className="manager-import-actions">
+        <div className="manager-import-actions manager-import-actions--stacked">
           <CsvFilePicker
             fileName={fileName}
             inputKey={inputKey}
@@ -124,27 +129,29 @@ const EmployeeCsvImportPanel = ({
             }}
           />
 
-          <Button
-            type="button"
-            variant="primary"
-            size="md"
-            className="manager-import-button"
-            onClick={handleGoConfirm}
-            disabled={!canImport || isProcessing}
-          >
-            取り込み
-          </Button>
+          <div className="manager-import-actions-row">
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              className="manager-import-button"
+              onClick={handleGoConfirm}
+              disabled={!canImport || isProcessing}
+            >
+              取り込み
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            className="manager-import-button"
-            onClick={handleClear}
-            disabled={isProcessing}
-          >
-            クリア
-          </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="md"
+              className="manager-import-button settings-cancel-button"
+              onClick={handleClear}
+              disabled={isProcessing}
+            >
+              クリア
+            </Button>
+          </div>
         </div>
       </div>
 

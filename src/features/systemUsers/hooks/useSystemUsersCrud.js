@@ -105,7 +105,7 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
     });
   };
 
-  const createUser = ({ email, role, employeeCode, employeeName, displayName }) => {
+  const createUser = ({ email, role, employeeCode, employeeName, displayName, analysisProfile }) => {
     const normalizedEmail = toEmail(email);
     const normalizedRole = toText(role).toLowerCase();
 
@@ -127,6 +127,7 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
       role: normalizedRole,
       employee_name: toText(employeeName),
       display_name: toText(displayName || employeeName || normalizedEmail.split("@")[0]),
+      analysis_profile: analysisProfile && typeof analysisProfile === "object" ? analysisProfile : undefined,
       is_enabled: true,
       last_login_at: "",
       created_at: nowIso(),

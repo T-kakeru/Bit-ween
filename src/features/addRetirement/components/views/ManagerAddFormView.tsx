@@ -1,6 +1,7 @@
 ﻿import type { FormEventHandler, ReactNode } from "react";
 import Divider from "@/shared/ui/Divider";
 import Button from "@/shared/ui/Button";
+import Card from "@/shared/ui/Card";
 import Breadcrumb, { type BreadcrumbItem } from "@/shared/components/Breadcrumb";
 import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
@@ -19,7 +20,6 @@ type Props = {
   form: ManagerRowInput;
 
   csvImportSection?: ReactNode;
-  onScrollToCsvImport?: () => void;
 
   isActive: boolean | null;
   onChangeIsActive: (next: boolean) => void;
@@ -63,6 +63,9 @@ type Props = {
   onChangeRemark: (v: string) => void;
 
   canSubmit: boolean;
+  submitLabel?: string;
+  title?: string;
+  showCancelButton?: boolean;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onCancel: () => void;
 };
@@ -71,7 +74,6 @@ export const ManagerAddFormView = ({
   breadcrumbs,
   form,
   csvImportSection,
-  onScrollToCsvImport,
   isActive,
   onChangeIsActive,
   isActiveError,
@@ -103,39 +105,35 @@ export const ManagerAddFormView = ({
   onChangeReason,
   onChangeRemark,
   canSubmit,
+  submitLabel = "確認へ進む",
+  title = "分析データの追加",
+  showCancelButton = true,
   onSubmit,
   onCancel,
 }: Props) => {
+  const hasCsvImportSection = Boolean(csvImportSection);
+
   return (
-    <section className="screen manager-screen">
-      <div className="mx-auto w-full max-w-2xl px-4 py-6">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="mb-1">
-              <Breadcrumb items={breadcrumbs} />
+    <section className={`screen manager-screen ${hasCsvImportSection ? "" : "manager-screen--embedded"}`}>
+      <div
+        className={`mx-auto w-full manager-add-layout-shell ${
+          hasCsvImportSection ? "max-w-6xl px-4 py-6" : "max-w-none px-0 py-0 manager-add-layout-shell--single"
+        }`}
+      >
+        <div className={`manager-add-split-layout ${hasCsvImportSection ? "" : "manager-add-split-layout--single"}`}>
+          <Card className="manager-add-form-card">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Heading level={2}>{title}</Heading>
+                <div className="mt-1">
+                  <Breadcrumb items={breadcrumbs} />
+                </div>
+              </div>
             </div>
 
-
-        <Heading level={2}>新規従業員登録</Heading>
-          </div>
-
-          {onScrollToCsvImport ? (
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                onClick={onScrollToCsvImport}
-              >
-                まとめて登録 (CSV)
-              </Button>
-            </div>
-          ) : null}
-        </div>
-
-        <form onSubmit={onSubmit} className="mt-6 space-y-8">
-          <div className="space-y-5">
-            <NameField label="氏名" register={registerName} errorMessage={nameError} required />
+            <form onSubmit={onSubmit} className="mt-6 space-y-8">
+            <div className="space-y-5">
+              <NameField label="氏名" register={registerName} errorMessage={nameError} required />
 
             <FieldChipGroup
               label="性別"
@@ -154,109 +152,117 @@ export const ManagerAddFormView = ({
               onChange={onChangeBirthDate}
               errorMessage={birthDateError}
             />
-          </div>
+            </div>
 
-          {/* 基本情報の下にグレーのライン（社員ID区切り） */}
-          <Divider className="border-slate-200" />
-
-          <div className="space-y-5">
-            <FieldText
-              label="社員ID"
-              required
-              value={form["社員ID"]}
-              onChange={onChangeEmployeeId}
-              placeholder="社員IDを入力"
-              errorMessage={employeeIdError}
-              maxLength={30}
-            />
-
-            <FieldSelect
-              label="部署"
-              required
-              value={form["部署"]}
-              options={departmentOptions}
-              onChange={onChangeDepartment}
-              errorMessage={departmentError}
-            />
-
-            <FieldDate
-              label="入社日"
-              required
-              value={form["入社日"]}
-              onChange={onChangeJoinDate}
-              errorMessage={joinDateError}
-            />
-
-            <FieldChipGroup
-              label="在籍状態"
-              required
-              value={isActive === null ? "" : isActive ? "在籍中" : "退職済"}
-              options={["在籍中", "退職済"]}
-              onChange={(v) => onChangeIsActive(v === "在籍中")}
-              allowEmpty={false}
-              errorMessage={isActiveError}
-            />
-
-            {isActive === false ? (
-              <>
-                <FieldDate
-                  label="退職日"
-                  value={form["退職日"]}
-                  onChange={onChangeRetireDate}
-                  errorMessage={retireDateError}
-                />
-                <FieldSelect
-                  label="退職理由"
-                  required
-                  value={form["退職理由"]}
-                  options={reasonOptions}
-                  onChange={onChangeReason}
-                  errorMessage={reasonError}
-                />
-
-                <FieldText
-                  label="備考"
-                  value={form["備考"]}
-                  onChange={onChangeRemark}
-                  placeholder="備考を入力（200文字まで）"
-                  maxLength={200}
-                  errorMessage={remarkError}
-                />
-              </>
-            ) : null}
-
+            {/* 基本情報の下にグレーのライン（社員ID区切り） */}
             <Divider className="border-slate-200" />
 
-            <FieldSelect
-              label="稼働状態"
-              required
-              value={form["ステータス"]}
-              options={statusOptions}
-              onChange={onChangeStatus}
-              errorMessage={statusError}
-            />
+            <div className="space-y-5">
+              <FieldText
+                label="社員ID"
+                required
+                value={form["社員ID"]}
+                onChange={onChangeEmployeeId}
+                placeholder="社員IDを入力"
+                errorMessage={employeeIdError}
+                maxLength={30}
+              />
 
-            <FieldSelect
-              label="稼働先"
-              value={form["当時のクライアント"]}
-              options={clientOptions}
-              onChange={onChangeClient}
-              placeholder="クライアント名"
-              errorMessage={clientError}
-            />
-          </div>
+              <FieldSelect
+                label="部署"
+                required
+                value={form["部署"]}
+                options={departmentOptions}
+                onChange={onChangeDepartment}
+                errorMessage={departmentError}
+              />
 
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Button type="button" variant="danger" className="settings-cancel-button" onClick={onCancel}>
-              キャンセル
-            </Button>
-            <Button type="submit" disabled={!canSubmit}>
-              確認へ進む
-            </Button>
-          </div>
-        </form>
+              <FieldDate
+                label="入社日"
+                required
+                value={form["入社日"]}
+                onChange={onChangeJoinDate}
+                errorMessage={joinDateError}
+              />
 
-        {csvImportSection ? <div className="mt-10">{csvImportSection}</div> : null}
+              <FieldChipGroup
+                label="在籍状態"
+                required
+                value={isActive === null ? "" : isActive ? "在籍中" : "退職済"}
+                options={["在籍中", "退職済"]}
+                onChange={(v) => onChangeIsActive(v === "在籍中")}
+                allowEmpty={false}
+                errorMessage={isActiveError}
+              />
+
+              {isActive === false ? (
+                <>
+                  <FieldDate
+                    label="退職日"
+                    value={form["退職日"]}
+                    onChange={onChangeRetireDate}
+                    errorMessage={retireDateError}
+                  />
+                  <FieldSelect
+                    label="退職理由"
+                    required
+                    value={form["退職理由"]}
+                    options={reasonOptions}
+                    onChange={onChangeReason}
+                    errorMessage={reasonError}
+                  />
+
+                  <FieldText
+                    label="備考"
+                    value={form["備考"]}
+                    onChange={onChangeRemark}
+                    placeholder="備考を入力（200文字まで）"
+                    maxLength={200}
+                    errorMessage={remarkError}
+                  />
+                </>
+              ) : null}
+
+              <Divider className="border-slate-200" />
+
+              <FieldSelect
+                label="稼働状態"
+                required
+                value={form["ステータス"]}
+                options={statusOptions}
+                onChange={onChangeStatus}
+                errorMessage={statusError}
+              />
+
+              <FieldSelect
+                label="稼働先"
+                value={form["当時のクライアント"]}
+                options={clientOptions}
+                onChange={onChangeClient}
+                placeholder="クライアント名"
+                errorMessage={clientError}
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              {showCancelButton ? (
+                <Button type="button" variant="danger" className="settings-cancel-button" onClick={onCancel}>
+                  キャンセル
+                </Button>
+              ) : null}
+              <Button type="submit" disabled={!canSubmit}>
+                {submitLabel}
+              </Button>
+            </div>
+            </form>
+          </Card>
+
+          {csvImportSection ? (
+            <Card className="manager-add-form-card manager-add-csv-card">
+              <div className="manager-add-csv-card-wrap">{csvImportSection}</div>
+            </Card>
+          ) : null}
+        </div>
       </div>
     </section>
   );
