@@ -277,6 +277,16 @@ export const getSeriesColors = (seriesMode = "reason") =>
     : seriesMode === "tenure"
     ? TENURE_COLORS
     : REASON_COLORS;
+    
+// seriesMode に応じて部署/年齢/在籍期間/退職理由のいずれかを返す
+export const resolveRowSeriesKey = (row, seriesMode = "reason") =>
+  seriesMode === "department"
+    ? row?.department
+    : seriesMode === "age"
+    ? toAgeBand(row?.age)
+    : seriesMode === "tenure"
+    ? toTenureBand(row?.tenureMonths)
+    : row?.reason;
 
 export const filterAnalyticsRows = (
   rows = [],

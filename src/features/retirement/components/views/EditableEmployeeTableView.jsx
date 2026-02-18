@@ -17,6 +17,7 @@ const EditableEmployeeTableView = ({
   isFilterOpen,
   onToggleFilter,
   leadingContent,
+  trailingContent,
 
   // edit
   isEditing,
@@ -76,6 +77,7 @@ const EditableEmployeeTableView = ({
           isSaveDisabled={Boolean(isSaveDisabled)}
           onCancel={onCancel}
         />
+        {trailingContent}
       </div>
 
       <div className="manager-table-meta">

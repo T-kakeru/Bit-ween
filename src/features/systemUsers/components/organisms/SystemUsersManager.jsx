@@ -428,7 +428,9 @@ const SystemUsersManager = ({
                         {getSortIcon("is_enabled") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("is_enabled")}</span> : null}
                       </Button>
                     </Th>
-                    <Th scope="col" className="manager-th system-users-th-actions">操作</Th>
+                    <Th scope="col" className="manager-th system-users-th-actions">
+                      <span className="system-users-th-action-label">操作</span>
+                    </Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -568,9 +570,7 @@ const SystemUsersManager = ({
                                 </span>
                               </Button>
                             </div>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
+                          ) : <span className="system-users-action-placeholder">-</span>}
                         </Td>
                       </tr>
                     );

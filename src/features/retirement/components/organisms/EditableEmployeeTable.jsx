@@ -15,6 +15,7 @@ const EditableEmployeeTable = ({
   onToggleFilter,
   onSaveRows,
   leadingContent,
+  trailingContent,
   onVisibleRowsChange,
 }) => {
   const {
@@ -50,6 +51,7 @@ const EditableEmployeeTable = ({
       isFilterOpen={isFilterOpen}
       onToggleFilter={onToggleFilter}
       leadingContent={leadingContent}
+      trailingContent={trailingContent}
       isEditing={isEditing}
       visibleRows={visibleRows}
       originalRowMap={originalRowMap}

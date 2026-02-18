@@ -1,9 +1,9 @@
-import RetirementAnalyticsDashboard from "@/features/retirementAnalytics/components/RetirementAnalyticsDashboard";
+import RetirementAnalyticsDashboardOrganism from "@/features/retirementAnalytics/components/organisms/RetirementAnalyticsDashboardOrganism";
 
 const AdminAnalyticsPage = () => {
   return (
-    <section className="screen admin-screen">
-      <RetirementAnalyticsDashboard />
+    <section className="screen admin-screen admin-screen--analytics">
+      <RetirementAnalyticsDashboardOrganism />
     </section>
   );
 };

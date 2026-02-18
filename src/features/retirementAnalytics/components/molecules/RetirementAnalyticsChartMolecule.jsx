@@ -3,7 +3,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   Rectangle,
   ResponsiveContainer,
   Tooltip,
@@ -11,7 +10,6 @@ import {
   YAxis,
 } from "recharts";
 import EmptyState from "@/shared/components/EmptyState";
-import Button from "@/shared/ui/Button";
 import { getSeriesColors } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 
 const formatPeriodLabel = (axis, period) => {
@@ -51,37 +49,8 @@ const AnalyticsTooltip = ({ active, payload, label, seriesKeys, seriesMode, axis
   );
 };
 
-const LegendContent = ({ payload, onItemClick, onAllClick }) => {
-  if (!payload || payload.length === 0) return null;
-  return (
-    <ul className="analytics-legend" role="list">
-      <li key="__all__" className="analytics-legend-item">
-        <Button type="button" variant="outline" size="sm" className="analytics-legend-button" onClick={() => onAllClick?.()}>
-          <span className="analytics-legend-dot" style={{ background: "#0ea5e9" }} />
-          <span className="analytics-legend-label">すべて</span>
-        </Button>
-      </li>
-      {payload.map((entry) => (
-        <li key={entry.value} className="analytics-legend-item">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="analytics-legend-button"
-            onClick={() => onItemClick?.(entry.value)}
-          >
-            <span className="analytics-legend-dot" style={{ background: entry.color }} />
-            <span className="analytics-legend-label">{entry.value}</span>
-          </Button>
-        </li>
-      ))}
-    </ul>
-  );
-};
-
 const extractPeriodFromBarClickArg = (arg) => {
   if (!arg) return "";
-  // Recharts の onClick 引数はケースによって形が違うため、多段で吸収する
   const direct = arg?.payload?.period;
   if (direct) return direct;
   const nested = arg?.tooltipPayload?.[0]?.payload?.period;
@@ -91,7 +60,6 @@ const extractPeriodFromBarClickArg = (arg) => {
   return "";
 };
 
-// これはｘ、ｙ軸の値をクリック可能にするためのカスタムコンポーネント
 const ClickableYearTick = ({ x, y, payload, onSelectYear }) => {
   const value = payload?.value;
   const label = String(value ?? "");
@@ -129,7 +97,7 @@ const ClickableYearTick = ({ x, y, payload, onSelectYear }) => {
   );
 };
 
-const RetirementAnalyticsChart = ({
+const RetirementAnalyticsChartMolecule = ({
   data,
   seriesKeys,
   seriesMode,
@@ -137,8 +105,6 @@ const RetirementAnalyticsChart = ({
   enableYearTickClick,
   onYearTickClick,
   onBarClick,
-  onLegendClick,
-  onAllClick,
 }) => {
   const hasAnyValue =
     Array.isArray(data) &&
@@ -170,7 +136,7 @@ const RetirementAnalyticsChart = ({
       <ResponsiveContainer width="100%" height={isYearTickMode ? 340 : 320}>
         <BarChart
           data={data}
-          margin={{ top: 8, right: 18, left: 6, bottom: isYearTickMode ? 24 : 8 }}
+          margin={{ top: 24, right: 18, left: 6, bottom: isYearTickMode ? 16 : 4 }}
           barCategoryGap={12}
           barGap={6}
           maxBarSize={34}
@@ -196,11 +162,6 @@ const RetirementAnalyticsChart = ({
                 axis={axis}
               />
             }
-          />
-          <Legend
-            content={(props) => (
-              <LegendContent {...props} onItemClick={onLegendClick} onAllClick={onAllClick} />
-            )}
           />
           {seriesKeys.map((key) => (
             <Bar
@@ -237,4 +198,4 @@ const RetirementAnalyticsChart = ({
   );
 };
 
-export default RetirementAnalyticsChart;
+export default RetirementAnalyticsChartMolecule;

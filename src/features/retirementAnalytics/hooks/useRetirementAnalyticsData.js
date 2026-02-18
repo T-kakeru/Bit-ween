@@ -75,6 +75,8 @@ const useRetirementAnalyticsData = ({ activeTab, selectedYear, department, statu
     normalizedCount: normalized.length,
     eligibleCountTotal: eligible.length,
     eligibleCountInWindow: eligibleRowsInWindow.length,
+    eligibleRowsTotal: eligible,
+    eligibleRowsInWindow,// これは軸の期間内に退職した人全員。フィルタリング前の状態
     filteredRowsInWindow: filteredRows,
     data: aggregation.data,
     seriesKeys: aggregation.seriesKeys,
