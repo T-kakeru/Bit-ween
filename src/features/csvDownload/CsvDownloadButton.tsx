@@ -1,6 +1,7 @@
 import Button from "@/shared/ui/Button";
-import Icon from "@/shared/ui/Icon";
+import { ClipboardCopy } from "lucide-react";
 import type { ManagerRow } from "@/features/retirement/types";
+import type { ReactNode } from "react";
 
 const DEFAULT_FILE_NAME = "manager_list.csv";
 
@@ -68,8 +69,10 @@ type CsvDownloadButtonProps = {
   label?: string;
   className?: string;
   onClick?: () => void;
-  iconSrc?: string;
   showIcon?: boolean;
+  iconNode?: ReactNode;
+  iconOnly?: boolean;
+  ariaLabel?: string;
 };
 
 const CsvDownloadButton = ({
@@ -79,8 +82,10 @@ const CsvDownloadButton = ({
   label = "ダウンロード",
   className = "",
   onClick,
-  iconSrc = "/img/icon_csv.png",
   showIcon = true,
+  iconNode,
+  iconOnly = false,
+  ariaLabel,
 }: CsvDownloadButtonProps) => {
   const handleClick = () => {
     if (typeof onClick === "function") {
@@ -96,11 +101,13 @@ const CsvDownloadButton = ({
       type="button"
       variant="outline"
       size="md"
-      className={`manager-action-button ${className}`}
+      className={`manager-action-button ${iconOnly ? "manager-icon-only-button" : ""} ${className}`}
       onClick={handleClick}
+      aria-label={ariaLabel ?? label}
+      title={ariaLabel ?? label}
     >
-      {showIcon ? <Icon className="manager-edit-icon" src={iconSrc} alt="" /> : null}
-      <span>{label}</span>
+      {iconNode ? iconNode : showIcon ? <ClipboardCopy className="manager-edit-icon" aria-hidden="true" /> : null}
+      {iconOnly ? null : <span>{label}</span>}
     </Button>
   );
 };

@@ -75,6 +75,14 @@
   border-radius: 0;
 }
 
+:global(.nav-icon.nav-icon--system-users) {
+  --ui-icon-size: calc(var(--ui-icon-size-menu, 60px) * 0.8);
+}
+
+:global(img.nav-icon.nav-icon--system-users) {
+  --ui-icon-size: calc(var(--ui-icon-size-menu, 60px) * 0.8);
+}
+
 :global(.manager-search-icon),
 :global(.manager-filter-icon),
 :global(.sidebar-search-icon) {

@@ -164,7 +164,7 @@ const SettingsPage = () => {
         <Card className="settings-panel settings-menu-card settings-profile-card">
           <div className="settings-menu-card-head">
             <div className="settings-card-title-wrap">
-              <Heading level={2}>プロフィール管理</Heading>
+              <Heading level={2} className="manager-card-title">プロフィール管理</Heading>
               <TextCaption>編集を押すとプロフィール情報を更新できます。</TextCaption>
             </div>
 
@@ -324,7 +324,7 @@ const SettingsPage = () => {
 
       <Card className="settings-panel settings-menu-card settings-support-card">
         <div className="settings-section-head">
-          <Heading level={2}>サポート・その他</Heading>
+          <Heading level={2} className="manager-card-title">サポート・その他</Heading>
         </div>
 
         <div className="settings-support-grid">

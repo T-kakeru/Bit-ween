@@ -1,7 +1,8 @@
 import Card from "@/shared/ui/Card";
 import Heading from "@/shared/ui/Heading";
-import CsvDownloadButton from "@/features/csvDownload/CsvDownloadButton";
+import Button from "@/shared/ui/Button";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { MoveDiagonal, Minimize2 } from "lucide-react";
 import SummaryDonutCenter from "@/features/retirementAnalytics/components/molecules/SummaryDonutCenter";
 import SummaryDonutMiniCenter from "@/features/retirementAnalytics/components/molecules/SummaryDonutMiniCenter";
 
@@ -55,12 +56,20 @@ const SummaryPieCardView = ({
       <Card className="analytics-layout-card analytics-pie-card analytics-pie-row-card transition-all duration-300">
         <div className="analytics-card-title-row">
           <Heading level={3}>データの構成比</Heading>
-          <CsvDownloadButton
-            label={isChartMaximized ? "グラフの最小化" : "グラフの最大化"}
-            className="analytics-toggle-button"
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            className="analytics-toggle-button analytics-icon-only-button"
+            aria-label={isChartMaximized ? "グラフを最小化" : "グラフを最大化"}
             onClick={onToggleMaximize}
-            iconSrc="/img/icon_data.png"
-          />
+          >
+            {isChartMaximized ? (
+              <Minimize2 className="manager-edit-icon" size={16} aria-hidden="true" />
+            ) : (
+              <MoveDiagonal className="manager-edit-icon" size={16} aria-hidden="true" />
+            )}
+          </Button>
         </div>
 
         <div className="analytics-pie-triple-grid" aria-label="概要ドーナツ（3グラフ）">
@@ -112,12 +121,20 @@ const SummaryPieCardView = ({
     <Card className={`analytics-layout-card analytics-pie-card transition-all duration-300 ${hiddenClass}`} aria-hidden={isChartMaximized}>
       <div className="analytics-card-title-row">
         <Heading level={3}>データの構成比</Heading>
-        <CsvDownloadButton
-          label={isChartMaximized ? "グラフの最小化" : "グラフの最大化"}
-          className="analytics-toggle-button"
+        <Button
+          type="button"
+          variant="outline"
+          size="md"
+          className="analytics-toggle-button analytics-icon-only-button"
+          aria-label={isChartMaximized ? "グラフを最小化" : "グラフを最大化"}
           onClick={onToggleMaximize}
-          iconSrc="/img/icon_data.png"
-        />
+        >
+          {isChartMaximized ? (
+            <Minimize2 className="manager-edit-icon" size={16} aria-hidden="true" />
+          ) : (
+            <MoveDiagonal className="manager-edit-icon" size={16} aria-hidden="true" />
+          )}
+        </Button>
       </div>
 
       <div className="analytics-pie-single" aria-label="概要ドーナツチャート">

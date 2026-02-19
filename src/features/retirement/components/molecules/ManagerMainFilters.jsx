@@ -1,13 +1,17 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import FilterCheckbox from "@/features/retirement/components/molecules/FilterCheckbox";
 import Button from "@/shared/ui/Button";
 
 const FilterAccordionSection = ({ title, children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <details className="manager-filter-section">
+    <details className="manager-filter-section" onToggle={(event) => setIsOpen(event.currentTarget.open)}>
       <summary className="manager-filter-section-title">
         <span>{title}</span>
         <span className="manager-filter-section-chevron" aria-hidden="true">
-          ▾
+          {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </span>
       </summary>
       <div className="manager-filter-options">{children}</div>

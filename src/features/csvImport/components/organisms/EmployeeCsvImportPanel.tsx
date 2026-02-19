@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import Button from "@/shared/ui/Button";
+import Card from "@/shared/ui/Card";
 import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
+import { ClipboardCopy } from "lucide-react";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 import type { ManagerRow } from "@/features/retirement/types";
 import { EMPLOYEE_CSV_HEADER_SPECS } from "../../logic/employeeCsvConstants";
@@ -112,15 +114,20 @@ const EmployeeCsvImportPanel = ({
           <Heading level={2} className="manager-import-title">
             {title}
           </Heading>
-          <TextCaption className="manager-import-help">
-            Excelで編集したCSVをアップロードし、全行を検証してから取り込みます。
-          </TextCaption>
         </div>
+      </div>
 
+      <Card className="manager-import-sub-card manager-import-upload-box">
+        <Heading level={3} className="manager-import-section-title">CSVファイルをアップロード</Heading>
+        <TextCaption className="manager-import-help manager-import-help--in-card">
+          Excelで編集したCSVをアップロードし、全行を検証してから取り込みます。
+        </TextCaption>
         <div className="manager-import-actions manager-import-actions--stacked">
           <CsvFilePicker
             fileName={fileName}
             inputKey={inputKey}
+            buttonLabel="アップロード"
+            iconOnly
             disabled={isProcessing}
             onFileChange={(file: File | null) => {
               setStep("edit");
@@ -153,7 +160,13 @@ const EmployeeCsvImportPanel = ({
             </Button>
           </div>
         </div>
-      </div>
+
+        <div className="manager-import-summary">
+          <TextCaption>
+            読み込み行数: {rowCount}件 / 取り込み可能: {validRows.length}件
+          </TextCaption>
+        </div>
+      </Card>
 
       {step === "confirm" ? (
         <div className="manager-import-confirm">
@@ -275,19 +288,21 @@ const EmployeeCsvImportPanel = ({
         </div>
       ) : null}
 
-      <div className="manager-import-guidance">
-        <p className="manager-import-guidance-title">使用可能ヘッダー（この一覧のみ／順不同）</p>
+      <Card className="manager-import-sub-card manager-import-guidance manager-import-download-box">
+        <Heading level={3} className="manager-import-guidance-title">テンプレートCSVをダウンロード</Heading>
 
         <div className="manager-import-actions">
           <Button
             type="button"
             variant="outline"
             size="md"
-            className="manager-import-button"
+            className="manager-import-button manager-icon-only-button"
             onClick={handleDownloadTemplate}
             disabled={isProcessing}
+            aria-label="テンプレートCSVをダウンロード"
+            title="テンプレートCSVをダウンロード"
           >
-            テンプレートCSVをダウンロード
+            <ClipboardCopy className="manager-edit-icon" aria-hidden="true" />
           </Button>
         </div>
 
@@ -302,13 +317,7 @@ const EmployeeCsvImportPanel = ({
         <p className="manager-import-guidance-note">
           ※ヘッダー名は完全一致のみ受け付けます（別名・揺れは不可）。先頭0が必要な項目はExcelで文字列形式に設定してください。文字化けが起きる場合はUTF-8で保存し直してください。
         </p>
-      </div>
-
-      <div className="manager-import-summary">
-        <TextCaption>
-          読み込み行数: {rowCount}件 / 取り込み可能: {validRows.length}件
-        </TextCaption>
-      </div>
+      </Card>
 
       <CsvImportErrorList
         errors={errors}

@@ -30,6 +30,19 @@
     transform 0.12s ease;
 }
 
+.button :global(svg) {
+  width: 1.25em;
+  height: 1.25em;
+  color: currentColor;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.button :global(svg.manager-edit-icon) {
+  color: var(--manager-react-icon-color, currentColor);
+  stroke: var(--manager-react-icon-color, currentColor);
+}
+
 .button:hover {
   filter: none;
   transform: none;

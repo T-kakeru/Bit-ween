@@ -1,5 +1,5 @@
 import Button from "@/shared/ui/Button";
-import Icon from "@/shared/ui/Icon";
+import { ClipboardPenLine } from "lucide-react";
 
 // 編集モード切り替えボタン群（molecule）
 const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel, isSaveDisabled = false }) => {
@@ -17,7 +17,7 @@ const EditModeControls = ({ isEditing, onEditStart, onSaveRequest, onCancel, isS
         className={(isEditing ? "manager-edit-button is-editing" : "manager-edit-button") + " manager-action-button"}
         onClick={handleToggleEditing}
       >
-        <Icon className="manager-edit-icon" src="/img/icon_edit.png" alt="" />
+        <ClipboardPenLine className="manager-edit-icon" size={16} aria-hidden="true" />
         {isEditing ? "編集中" : "編集"}
       </Button>
 

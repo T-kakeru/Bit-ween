@@ -5,6 +5,7 @@ import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
 import Input from "@/shared/ui/Input";
 import Spinner from "@/shared/ui/Spinner";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useLoginForm } from "@/features/auth/hooks/useLoginForm";
 import AuthScreenLayout from "@/features/auth/components/AuthScreenLayout";
@@ -70,11 +71,35 @@ const LoginPage = ({ onNavigateForgotPassword, onLoginSuccess }) => {
                 variant="outline"
                 size="sm"
                 className="settings-password-toggle"
-                onClick={() => setIsPasswordVisible((prev) => !prev)}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  setIsPasswordVisible(true);
+                }}
+                onMouseUp={() => setIsPasswordVisible(false)}
+                onMouseLeave={() => setIsPasswordVisible(false)}
+                onTouchStart={(event) => {
+                  event.preventDefault();
+                  setIsPasswordVisible(true);
+                }}
+                onTouchEnd={() => setIsPasswordVisible(false)}
+                onTouchCancel={() => setIsPasswordVisible(false)}
+                onKeyDown={(event) => {
+                  if (event.key === " " || event.key === "Enter") {
+                    event.preventDefault();
+                    setIsPasswordVisible(true);
+                  }
+                }}
+                onKeyUp={(event) => {
+                  if (event.key === " " || event.key === "Enter") {
+                    event.preventDefault();
+                    setIsPasswordVisible(false);
+                  }
+                }}
+                onBlur={() => setIsPasswordVisible(false)}
                 aria-label={isPasswordVisible ? "パスワードを隠す" : "パスワードを表示"}
                 title={isPasswordVisible ? "隠す" : "表示"}
               >
-                {isPasswordVisible ? "🙈" : "👁"}
+                {isPasswordVisible ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
               </Button>
             </div>
             {errors.password?.message ? <p className="text-xs text-rose-600">{errors.password.message}</p> : null}

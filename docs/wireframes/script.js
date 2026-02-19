@@ -3134,7 +3134,7 @@
 				detailEmpty.hidden = true;
 				return;
 			}
-			// フィルタ条件に一致しない社員は表示しない
+			// 分析条件・詳細に一致しない社員は表示しない
 			if (!applyFiltersToEmployee(emp)) {
 				state.adminSelectedPersonId = '';
 				detailTitle.textContent = 'まずは上の表から社員を選択してください。';

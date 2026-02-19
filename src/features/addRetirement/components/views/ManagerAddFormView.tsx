@@ -18,6 +18,7 @@ import {
 type Props = {
   breadcrumbs: BreadcrumbItem[];
   form: ManagerRowInput;
+  hideBreadcrumbs?: boolean;
 
   csvImportSection?: ReactNode;
 
@@ -66,6 +67,7 @@ type Props = {
   submitLabel?: string;
   title?: string;
   showCancelButton?: boolean;
+  cancelLabel?: string;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onCancel: () => void;
 };
@@ -73,6 +75,7 @@ type Props = {
 export const ManagerAddFormView = ({
   breadcrumbs,
   form,
+  hideBreadcrumbs = false,
   csvImportSection,
   isActive,
   onChangeIsActive,
@@ -108,6 +111,7 @@ export const ManagerAddFormView = ({
   submitLabel = "確認へ進む",
   title = "分析データの追加",
   showCancelButton = true,
+  cancelLabel = "キャンセル",
   onSubmit,
   onCancel,
 }: Props) => {
@@ -125,9 +129,11 @@ export const ManagerAddFormView = ({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <Heading level={2}>{title}</Heading>
-                <div className="mt-1">
-                  <Breadcrumb items={breadcrumbs} />
-                </div>
+                {!hideBreadcrumbs && breadcrumbs.length > 0 ? (
+                  <div className="mt-1">
+                    <Breadcrumb items={breadcrumbs} />
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -247,7 +253,7 @@ export const ManagerAddFormView = ({
             <div className="flex items-center justify-end gap-3 pt-2">
               {showCancelButton ? (
                 <Button type="button" variant="danger" className="settings-cancel-button" onClick={onCancel}>
-                  キャンセル
+                  {cancelLabel}
                 </Button>
               ) : null}
               <Button type="submit" disabled={!canSubmit}>

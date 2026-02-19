@@ -141,7 +141,7 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
           <Card className="settings-panel">
             <div className="settings-row">
               <div>
-                <Heading level={2}>利用者の登録１</Heading>
+                <Heading level={2} className="manager-card-title">利用者の登録１</Heading>
                 <TextCaption>利用者一覧と分離した登録フローです。</TextCaption>
                 <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
               </div>
@@ -173,7 +173,7 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
         <Card className="settings-panel">
           <div className="settings-row">
             <div>
-              <Heading level={2}>利用者の登録１</Heading>
+              <Heading level={2} className="manager-card-title">利用者の登録１</Heading>
               <TextCaption>利用者一覧と分離した登録フローです。</TextCaption>
               <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
             </div>
@@ -196,7 +196,7 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
         <Card className="settings-panel">
           <div className="settings-row">
             <div>
-              <Heading level={2}>利用者の登録１</Heading>
+              <Heading level={2} className="manager-card-title">利用者の登録１</Heading>
               <TextCaption>利用者一覧と分離した登録フローです。</TextCaption>
               <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
             </div>

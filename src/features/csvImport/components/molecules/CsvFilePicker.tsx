@@ -1,19 +1,28 @@
 import Button from "@/shared/ui/Button";
+import { ClipboardPaste } from "lucide-react";
 import { useRef } from "react";
 
 type CsvFilePickerProps = {
   fileName: string | null;
   inputKey: number;
+  buttonLabel?: string;
   disabled?: boolean;
+  iconOnly?: boolean;
   onFileChange: (file: File | null) => void;
 };
 
-const CsvFilePicker = ({ fileName, inputKey, disabled = false, onFileChange }: CsvFilePickerProps) => {
+const CsvFilePicker = ({
+  fileName,
+  inputKey,
+  buttonLabel = "CSVファイルをアップロード",
+  disabled = false,
+  iconOnly = false,
+  onFileChange,
+}: CsvFilePickerProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <div className="manager-import-file" role="group" aria-label="CSVファイル選択">
-      <span className="manager-import-file-label">CSVファイルをアップロード</span>
       <input
         ref={fileInputRef}
         className="manager-import-file-input"
@@ -29,11 +38,14 @@ const CsvFilePicker = ({ fileName, inputKey, disabled = false, onFileChange }: C
         type="button"
         variant="outline"
         size="md"
-        className="manager-import-button"
+        className={`manager-import-button ${iconOnly ? "manager-icon-only-button" : ""}`}
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
+        aria-label={buttonLabel}
+        title={buttonLabel}
       >
-        CSVファイルをアップロード
+        <ClipboardPaste className="manager-edit-icon" aria-hidden="true" />
+        {iconOnly ? null : buttonLabel}
       </Button>
       <span className="manager-import-file-name">{fileName ?? "未選択"}</span>
     </div>

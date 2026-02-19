@@ -27,7 +27,12 @@ const AppSidebar = ({ navItems, activeNav, onNavChange, menuTitle = "メニュ�
               className={item.label === activeNav ? "nav-item active" : "nav-item"}
               onClick={() => onNavChange(item.label)}
             >
-              <Icon className="nav-icon" name={item.icon} />
+              <span className="nav-icon-frame" aria-hidden="true">
+                <Icon
+                  className={item.label === "利用者管理" ? "nav-icon nav-icon--system-users" : "nav-icon"}
+                  name={item.icon}
+                />
+              </span>
               <span className="nav-item-text">
                 <span className="nav-item-label">{item.label}</span>
               </span>

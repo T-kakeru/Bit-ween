@@ -3,7 +3,7 @@ import Card from "@/shared/ui/Card";
 import Button from "@/shared/ui/Button";
 import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
-import Icon from "@/shared/ui/Icon";
+import { UserPen, UserPlus } from "lucide-react";
 import Input from "@/shared/ui/Input";
 import Select from "@/shared/ui/Select";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
@@ -167,7 +167,7 @@ const SystemUsersManager = ({
     <Card className="settings-panel">
       <div className="settings-row">
         <div>
-          <Heading level={2}>システム利用者管理</Heading>
+          <Heading level={2} className="manager-card-title">システム利用者管理</Heading>
           <TextCaption>分析対象の社員（Employee）と、ログインする利用者（SystemUser）を分離して管理します。</TextCaption>
           <TextCaption className="mt-1">登録数: {sortedSystemUsers.length}</TextCaption>
         </div>
@@ -203,7 +203,7 @@ const SystemUsersManager = ({
                 className="settings-action-button system-users-top-action-button"
                 onClick={beginTableEdit}
               >
-                <Icon className="manager-edit-icon" src="/img/icon_edit.png" alt="" />
+                <UserPen className="manager-edit-icon" size={16} aria-hidden="true" />
                 編集
               </Button>
             )
@@ -218,7 +218,7 @@ const SystemUsersManager = ({
               onClick={onStartRegister}
               disabled={isTableEditing}
             >
-              <Icon className="manager-edit-icon" src="/img/default.png" alt="" />
+              <UserPlus className="manager-edit-icon" size={16} aria-hidden="true" />
               利用者を登録
             </Button>
           ) : null}

@@ -7,17 +7,11 @@ import { ManagerAddFormView } from "@/features/addRetirement/components/views/Ma
 
 const GENDER_OPTIONS = ["男性", "女性", "その他"];
 
+const EMPTY_BREADCRUMBS = [];
+
 const SystemUserWizardAnalysisStep = ({ initialPayload, onBack, onNext, submitLabel = "確認へ進む" }) => {
   const { columns, rows } = useManagerEmployees();
   const { departmentOptions, statusOptions, reasonOptions, clientOptions } = useManagerAddOptionLists();
-  const breadcrumbs = useMemo(
-    () => [
-      { label: "利用者管理", onClick: onBack },
-      { label: "一括登録" },
-    ],
-    [onBack]
-  );
-
   const initialFormData = useMemo(() => {
     if (!initialPayload) return undefined;
     return {
@@ -79,7 +73,8 @@ const SystemUserWizardAnalysisStep = ({ initialPayload, onBack, onNext, submitLa
 
   return (
     <ManagerAddFormView
-      breadcrumbs={breadcrumbs}
+      breadcrumbs={EMPTY_BREADCRUMBS}
+      hideBreadcrumbs
       title="利用者の登録２"
       form={form}
       csvImportSection={undefined}
@@ -115,7 +110,8 @@ const SystemUserWizardAnalysisStep = ({ initialPayload, onBack, onNext, submitLa
       onChangeIsActive={setIsActive}
       canSubmit={canSave}
       submitLabel={submitLabel}
-      showCancelButton={false}
+      showCancelButton
+      cancelLabel="キャンセル"
       onSubmit={onSubmit}
       onCancel={onBack}
     />

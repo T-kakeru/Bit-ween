@@ -123,7 +123,7 @@ const RetirementAnalyticsChartMolecule = ({
     return (
       <EmptyState
         title="該当するデータがありません"
-        description="フィルタ条件を見直してください。"
+        description="分析条件・詳細を見直してください。"
       />
     );
   }

@@ -3,7 +3,6 @@ import EditModeControls from "@/features/retirement/components/molecules/EditMod
 import ConfirmChangesModal from "@/features/retirement/components/molecules/ConfirmChangesModal";
 import { isCellChanged } from "@/features/retirement/logic/employeeEdit.logic";
 import Button from "@/shared/ui/Button";
-import Icon from "@/shared/ui/Icon";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 
 // - toolbar + table + confirm modal
@@ -17,6 +16,7 @@ const EditableEmployeeTableView = ({
   isFilterOpen,
   onToggleFilter,
   leadingContent,
+  filterSummaryChips,
   trailingContent,
 
   // edit
@@ -58,18 +58,32 @@ const EditableEmployeeTableView = ({
 
   return (
     <div className="manager-table-area">
-      <div className="manager-table-toolbar">
-        {leadingContent}
-        <Button
-          type="button"
-          variant="outline"
-          className={isFilterOpen ? "manager-filter-button is-open" : "manager-filter-button"}
-          onClick={onToggleFilter}
-        >
-          <Icon className="manager-filter-icon" src="/img/icon_data.png" alt="" />
-          絞り込み
-        </Button>
+      <div className="manager-filter-subcard">
+        <div className="manager-filter-toolbar">
+          {leadingContent}
+          <Button
+            type="button"
+            variant="outline"
+            className={isFilterOpen ? "manager-filter-button is-open" : "manager-filter-button"}
+            onClick={onToggleFilter}
+          >
+            絞り込み
+          </Button>
+        </div>
 
+        {Array.isArray(filterSummaryChips) && filterSummaryChips.length > 0 ? (
+          <div className="manager-filter-selected-summary" aria-label="適用中の絞り込み条件">
+            {filterSummaryChips.map((chip, index) => (
+              <span key={`${chip}-${index}`} className="manager-filter-selected-chip">
+                {chip}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="manager-table-action-row">
+        {trailingContent}
         <EditModeControls
           isEditing={isEditing}
           onEditStart={onEditStart}
@@ -77,11 +91,6 @@ const EditableEmployeeTableView = ({
           isSaveDisabled={Boolean(isSaveDisabled)}
           onCancel={onCancel}
         />
-        {trailingContent}
-      </div>
-
-      <div className="manager-table-meta">
-        <span className="tag-pill">表示: {visibleRows.length}件</span>
       </div>
 
       <TableContainer className="manager-table-wrap" role="region" aria-label="社員一覧">

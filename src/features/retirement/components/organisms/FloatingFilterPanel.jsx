@@ -3,6 +3,7 @@ import Draggable from "react-draggable";
 import FilterTabButton from "@/features/retirement/components/molecules/FilterTabButton";
 import ManagerMainFilters from "@/features/retirement/components/molecules/ManagerMainFilters";
 import ManagerDetailFilters from "@/features/retirement/components/molecules/ManagerDetailFilters";
+import EmployeeSearchPanel from "@/features/retirement/components/organisms/EmployeeSearchPanel";
 import Button from "@/shared/ui/Button";
 
 // ドラッグ可能なフィルターパネル
@@ -13,6 +14,8 @@ import Button from "@/shared/ui/Button";
 const FloatingFilterPanel = ({
   isOpen,
   filters,
+  searchQuery,
+  onSearchChange,
   onToggleGroup,
   onUpdateDetail,
   onReset,
@@ -76,14 +79,19 @@ const FloatingFilterPanel = ({
             </div>
 
             {activeTab === "main" ? (
-              <ManagerMainFilters
-                filters={filters}
-                onToggleGroup={onToggleGroup}
-                onReset={onReset}
-                departmentOptions={departmentOptions}
-                reasonOptions={reasonOptions}
-                clientOptions={clientOptions}
-              />
+              <>
+                <div className="manager-float-search">
+                  <EmployeeSearchPanel query={searchQuery} onChange={onSearchChange} />
+                </div>
+                <ManagerMainFilters
+                  filters={filters}
+                  onToggleGroup={onToggleGroup}
+                  onReset={onReset}
+                  departmentOptions={departmentOptions}
+                  reasonOptions={reasonOptions}
+                  clientOptions={clientOptions}
+                />
+              </>
             ) : (
               <ManagerDetailFilters
                 filters={filters}
