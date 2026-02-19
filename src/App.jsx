@@ -39,10 +39,10 @@ function App() {
   const adminNavItems = [
     { type: "section", label: "業務" },
     { label: "退職者分析", icon: "/img/icon_manager.png" },
-    { label: "社員情報一覧", icon: "/img/icon_data.png" },
+    { label: "社員情報管理", icon: "/img/icon_data.png" },
     { type: "divider", label: "divider-business" },
     { type: "section", label: "システム管理" },
-    { label: "利用者管理", icon: "/img/default.png" },
+    { label: "アカウント管理", icon: "/img/default.png" },
     { label: "設定", icon: "/img/icon_settings.png" },
     //フェーズ２: ユーザーユースケースへのメニュー導線を再検討後に表示
     // { label: "ユーザー画面", icon: "/img/icon_home.png" },
@@ -221,7 +221,7 @@ function App() {
 
   const shouldHideAdminPageTitle =
     isAdminMode &&
-    ["退職者分析", "社員情報一覧", "設定", "利用者管理"].includes(adminNav);
+    ["退職者分析", "社員情報管理", "設定", "アカウント管理"].includes(adminNav);
 
   const renderNavContent = () => {
     if (isAdminMode) {
@@ -229,7 +229,7 @@ function App() {
         return <AdminAnalyticsPage />;
       }
 
-      if (adminNav === "社員情報一覧") {
+      if (adminNav === "社員情報管理") {
         return <ManagerPage />;
       }
 
@@ -237,7 +237,7 @@ function App() {
         return <SettingsPage />;
       }
 
-      if (adminNav === "利用者管理") {
+      if (adminNav === "アカウント管理") {
         return <SystemUsersPage />;
       }
 
@@ -308,7 +308,7 @@ function App() {
         shouldHideAdminPageTitle
           ? null
           : pageTitleOverride ??
-            (isAdminMode ? (adminNav === "利用者管理" ? "システム利用者管理" : adminNav) : activeNav)
+            (isAdminMode ? (adminNav === "アカウント管理" ? "アカウント管理" : adminNav) : activeNav)// アカウントif削除可能
       }
     >
       {renderNavContent()}

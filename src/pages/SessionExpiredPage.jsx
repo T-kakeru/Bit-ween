@@ -8,7 +8,7 @@ const SessionExpiredPage = ({ onGoLogin, onBack }) => {
     <section className="screen settings-screen">
       <Card className="settings-panel max-w-[560px] w-full mx-auto">
         <div className="settings-card-title-wrap">
-          <Heading level={2}>セッションの有効期限が切れました</Heading>
+          <Heading level={3}>セッションの有効期限が切れました</Heading>
           <TextCaption>
             安全のためログイン状態が解除されました。お手数ですが、もう一度ログインしてください。
           </TextCaption>

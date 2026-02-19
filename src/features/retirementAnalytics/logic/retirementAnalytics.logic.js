@@ -13,6 +13,7 @@
 
 export const DEPARTMENTS = ["人事", "営業", "開発", "派遣"];
 export const STATUSES = ["待機", "稼働中", "休職中"];
+export const UNKNOWN_SERIES_LABEL = "未選択";
 export const GENDERS = ["男性", "女性"];
 export const REASONS = [
   "キャリアアップ",
@@ -48,6 +49,13 @@ export const DEPARTMENT_COLORS = {
   営業: "#7ccba2",
   開発: "#f0a35e",
   派遣: "#9b8df2",
+  未選択: "#d1d5db",
+};
+export const STATUS_COLORS = {
+  待機: "#7aa2f7",
+  稼働中: "#7ccba2",
+  休職中: "#f0a35e",
+  未選択: "#d1d5db",
 };
 export const AGE_COLORS = {
   "20未満": "#7aa2f7",
@@ -69,8 +77,8 @@ export const TENURE_COLORS = {
   "42ヶ月以上": "#d1d5db",
 };
 
-const DEFAULT_DEPARTMENT = "営業";
-const DEFAULT_STATUS = "稼働中";
+const DEFAULT_DEPARTMENT = UNKNOWN_SERIES_LABEL;
+const DEFAULT_STATUS = UNKNOWN_SERIES_LABEL;
 const DEFAULT_CLIENT = "未設定";
 // 「その他」を使わない要望のため、未知/空欄は既存カテゴリへ寄せる
 // 方針: unknown/空欄は「会社不信」に正規化（理由未設定＝会社への不満として扱う）
@@ -158,21 +166,19 @@ const normalizeOriginalDate = (retirementDate, retirementMonth) => {
   );
 };
 
-const normalizeDepartment = (row, index) => {
+const normalizeDepartment = (row) => {
   const candidate = row?.部署 ?? row?.部門 ?? row?.department;
   if (DEPARTMENT_SET.has(candidate)) return candidate;
   const fallback = row?.ステータス;
   if (DEPARTMENT_SET.has(fallback)) return fallback;
-  // 欠損データは均等に割り当て（データ整備の責務をここに集約）
-  return DEPARTMENTS[index % DEPARTMENTS.length] ?? DEFAULT_DEPARTMENT;
+  return DEFAULT_DEPARTMENT;
 };
 
-const normalizeStatus = (row, index) => {
+const normalizeStatus = (row) => {
   const candidate = row?.ステータス ?? row?.status;
   if (STATUS_SET.has(candidate)) return candidate;
   if (DEPARTMENT_SET.has(candidate)) return DEFAULT_STATUS;
-  // 欠損データは均等に割り当て（休職中を含める）
-  return STATUSES[index % STATUSES.length] ?? DEFAULT_STATUS;
+  return DEFAULT_STATUS;
 };
 
 const normalizeReason = (value) => {
@@ -242,8 +248,8 @@ export const normalizeRetirementData = (rows = []) =>
       // 年集計は「元の年月（正規化後）」を使う
       retirementDateOriginal: normalizeOriginalDate(row?.退職日, row?.退職月),
       retirementDate: normalizeDate(row?.退職日, row?.退職月),
-      department: normalizeDepartment(row, index),
-      status: normalizeStatus(row, index),
+      department: normalizeDepartment(row),
+      status: normalizeStatus(row),
       reason: normalizeReason(row?.退職理由),
       client: normalizeClient(row),
       gender: normalizeGender(row?.性別),
@@ -262,7 +268,9 @@ const buildEmptyBucket = (period, reasons) => {
 
 export const getSeriesKeys = (seriesMode = "reason") =>
   seriesMode === "department"
-    ? DEPARTMENTS
+    ? [...DEPARTMENTS, UNKNOWN_SERIES_LABEL]
+    : seriesMode === "status"
+    ? [...STATUSES, UNKNOWN_SERIES_LABEL]
     : seriesMode === "age"
     ? AGE_BANDS
     : seriesMode === "tenure"
@@ -272,16 +280,20 @@ export const getSeriesKeys = (seriesMode = "reason") =>
 export const getSeriesColors = (seriesMode = "reason") =>
   seriesMode === "department"
     ? DEPARTMENT_COLORS
+    : seriesMode === "status"
+    ? STATUS_COLORS
     : seriesMode === "age"
     ? AGE_COLORS
     : seriesMode === "tenure"
     ? TENURE_COLORS
     : REASON_COLORS;
-    
-// seriesMode に応じて部署/年齢/在籍期間/退職理由のいずれかを返す
+
+// seriesMode に応じて部署/稼働状態/年齢/在籍期間/退職理由のいずれかを返す
 export const resolveRowSeriesKey = (row, seriesMode = "reason") =>
   seriesMode === "department"
     ? row?.department
+    : seriesMode === "status"
+    ? row?.status
     : seriesMode === "age"
     ? toAgeBand(row?.age)
     : seriesMode === "tenure"
@@ -296,10 +308,12 @@ export const filterAnalyticsRows = (
   const clientSet = new Set(clients);
   const genderList = Array.isArray(genders) ? genders : gender ? [gender] : [];
   const genderSet = new Set(genderList);
+  const hasAllKnownStatuses = STATUSES.every((status) => statusSet.has(status));
+
   return (Array.isArray(rows) ? rows : []).filter((row) => {
     if (!row?.hasRetirementInfo) return false;
     if (department !== "ALL" && row.department !== department) return false;
-    if (statusSet.size > 0 && !statusSet.has(row.status)) return false;
+    if (statusSet.size > 0 && !hasAllKnownStatuses && !statusSet.has(row.status)) return false;
     if (clientSet.size > 0 && !clientSet.has(row.client)) return false;
     if (genderSet.size > 0 && !genderSet.has(row.gender)) return false;
     return true;

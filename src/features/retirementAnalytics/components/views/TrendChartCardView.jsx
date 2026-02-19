@@ -8,6 +8,7 @@ const TrendChartCardView = ({
   seriesKeys,
   seriesMode,
   axis,
+  isChartMaximized,
   enableYearTickClick,
   onYearTickClick,
   onBarClick,
@@ -28,6 +29,7 @@ const TrendChartCardView = ({
         seriesKeys={seriesKeys}
         seriesMode={seriesMode}
         axis={axis}
+        isChartMaximized={isChartMaximized}
         enableYearTickClick={enableYearTickClick}
         onYearTickClick={onYearTickClick}
         onBarClick={onBarClick}

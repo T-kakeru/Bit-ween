@@ -1,6 +1,7 @@
 import EditableCellField from "@/features/retirement/components/molecules/EditableCellField";
 import EditModeControls from "@/features/retirement/components/molecules/EditModeControls";
 import ConfirmChangesModal from "@/features/retirement/components/molecules/ConfirmChangesModal";
+import ManagerSubCard from "@/features/retirement/components/molecules/ManagerSubCard";
 import { isCellChanged } from "@/features/retirement/logic/employeeEdit.logic";
 import Button from "@/shared/ui/Button";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
@@ -58,7 +59,7 @@ const EditableEmployeeTableView = ({
 
   return (
     <div className="manager-table-area">
-      <div className="manager-filter-subcard">
+      <ManagerSubCard className="manager-filter-subcard">
         <div className="manager-filter-toolbar">
           {leadingContent}
           <Button
@@ -80,7 +81,7 @@ const EditableEmployeeTableView = ({
             ))}
           </div>
         ) : null}
-      </div>
+      </ManagerSubCard>
 
       <div className="manager-table-action-row">
         {trailingContent}

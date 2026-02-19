@@ -54,13 +54,12 @@ type Props = {
 
 export const CatalogManagerSection = ({ title, description, keyName, itemLabel, embedded = false }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [sessionItems, setSessionItems] = useState<CatalogItem[] | null>(null);
 
-  const [newId, setNewId] = useState("");
   const [newName, setNewName] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraftId, setEditDraftId] = useState("");
   const [editDraftName, setEditDraftName] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
 
@@ -92,63 +91,98 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
     }
   }, [items, storageKey]);
 
-  const existsId = (id: string) => items.some((x) => x.id === id);
+  const getEditingItems = () => (sessionItems ?? items);
 
-  const addItem = (next: CatalogItem): { ok: true } | { ok: false; message: string } => {
-    const id = String(next.id ?? "").trim();
+  const existsId = (id: string, targetItems: CatalogItem[]) => targetItems.some((x) => x.id === id);
+
+  const buildNextId = (targetItems: CatalogItem[]) => {
+    const prefix = keyName === "departments" ? "dept" : keyName === "clients" ? "client" : "ws";
+    let index = targetItems.length + 1;
+    while (existsId(`${prefix}-${String(index).padStart(3, "0")}`, targetItems)) {
+      index += 1;
+    }
+    return `${prefix}-${String(index).padStart(3, "0")}`;
+  };
+
+  const addItem = (next: Pick<CatalogItem, "name">): { ok: true } | { ok: false; message: string } => {
+    const baseItems = getEditingItems();
     const name = String(next.name ?? "").trim();
-    if (!id) return { ok: false, message: "IDは必須です" };
     if (!name) return { ok: false, message: "名称は必須です" };
-    if (existsId(id)) return { ok: false, message: "このIDは既に使用されています" };
-    setItems((prev) => [...prev, { id, name }]);
+
+    const nextId = buildNextId(baseItems);
+    setSessionItems([...baseItems, { id: nextId, name }]);
     return { ok: true };
   };
 
-  const updateItem = (prevId: string, next: CatalogItem): { ok: true } | { ok: false; message: string } => {
-    const id = String(next.id ?? "").trim();
+  const updateItem = (prevId: string, next: Pick<CatalogItem, "name">): { ok: true } | { ok: false; message: string } => {
+    const baseItems = getEditingItems();
     const name = String(next.name ?? "").trim();
-    if (!id) return { ok: false, message: "IDは必須です" };
     if (!name) return { ok: false, message: "名称は必須です" };
-    if (id !== prevId && existsId(id)) return { ok: false, message: "このIDは既に使用されています" };
-    setItems((prev) => prev.map((x) => (x.id === prevId ? { id, name } : x)));
+
+    setSessionItems(baseItems.map((x) => (x.id === prevId ? { ...x, name } : x)));
     return { ok: true };
   };
 
   const deleteItem = (id: string) => {
-    setItems((prev) => prev.filter((x) => x.id !== id));
+    const baseItems = getEditingItems();
+    setSessionItems(baseItems.filter((x) => x.id !== id));
+    if (editingId === id) {
+      cancelEdit();
+    }
   };
 
-  const toggleOpen = () => {
-    setIsOpen((prev) => !prev);
+  const handleOpenManage = () => {
+    setSessionItems([...items]);
+    setIsOpen(true);
+  };
+
+  const handleCancelManage = () => {
+    setSessionItems(null);
+    setIsOpen(false);
+    setNewName("");
+    setAddError(null);
+    cancelEdit();
+  };
+
+  const handleSaveManage = () => {
+    const nextItems = sessionItems ?? items;
+    const confirmed = window.confirm(
+      "保存すると、すでに登録されている関連データにも影響する可能性があります。保存してよろしいですか？",
+    );
+    if (!confirmed) return;
+
+    setItems(nextItems);
+    setSessionItems(null);
+    setIsOpen(false);
+    setNewName("");
+    setAddError(null);
+    cancelEdit();
   };
 
   const startEdit = (item: CatalogItem) => {
     setEditingId(item.id);
-    setEditDraftId(item.id);
     setEditDraftName(item.name);
     setEditError(null);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditDraftId("");
     setEditDraftName("");
     setEditError(null);
   };
 
   const handleAdd = () => {
-    const result = addItem({ id: newId, name: newName });
+    const result = addItem({ name: newName });
     if (!result.ok) {
       setAddError(result.message);
       return;
     }
-    setNewId("");
     setNewName("");
     setAddError(null);
   };
 
   const handleSaveEdit = (prevId: string) => {
-    const result = updateItem(prevId, { id: editDraftId, name: editDraftName });
+    const result = updateItem(prevId, { name: editDraftName });
     if (!result.ok) {
       setEditError(result.message);
       return;
@@ -157,25 +191,17 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
   };
 
   //
-  const handleNewIdChange = (event: any) => {
-    setNewId(event.target.value);
-    if (addError) setAddError(null);
-  };
-
   const handleNewNameChange = (event: any) => {
     setNewName(event.target.value);
     if (addError) setAddError(null);
-  };
-
-  const handleEditDraftIdChange = (event: any) => {
-    setEditDraftId(event.target.value);
-    if (editError) setEditError(null);
   };
 
   const handleEditDraftNameChange = (event: any) => {
     setEditDraftName(event.target.value);
     if (editError) setEditError(null);
   };
+
+  const displayItems = sessionItems ?? items;
 
   const containerClassName = embedded
     ? `settings-master-item ${isOpen ? "is-open" : ""}`
@@ -191,16 +217,39 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            className="settings-action-button"
-            onClick={toggleOpen}
-            aria-expanded={isOpen}
-          >
-            {isOpen ? "閉じる" : "管理する"}
-          </Button>
+          {isOpen ? (
+            <>
+              <Button
+                type="button"
+                variant="danger"
+                size="md"
+                className="settings-action-button settings-cancel-button"
+                onClick={handleCancelManage}
+              >
+                キャンセル
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                className="settings-action-button"
+                onClick={handleSaveManage}
+              >
+                保存
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              className="settings-action-button"
+              onClick={handleOpenManage}
+              aria-expanded={isOpen}
+            >
+              管理する
+            </Button>
+          )}
         </div>
       </div>
 
@@ -208,13 +257,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
         <div className="px-6 pb-5">
           <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
             <div className="text-sm font-semibold text-slate-900">新規{itemLabel}追加</div>
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Input
-                type="text"
-                value={newId}
-                onChange={handleNewIdChange}
-                placeholder={`${itemLabel}ID（例: ${keyName === "departments" ? "dept-006" : keyName === "clients" ? "client-015" : "ws-001"}）`}
-              />
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Input
                 type="text"
                 value={newName}
@@ -240,13 +283,13 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
           </div>
 
           <div className="mt-4 space-y-2">
-            {items.length === 0 ? (
+            {displayItems.length === 0 ? (
               <div className="rounded-lg border border-slate-200 bg-white p-4">
                 <TextCaption>まだ登録がありません。</TextCaption>
               </div>
             ) : null}
 
-            {items.map((item) => {
+            {displayItems.map((item) => {
               const isEditing = editingId === item.id;
 
               return (
@@ -257,13 +300,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                   <div className="min-w-0 flex-1">
                     {isEditing ? (
                       <div className="space-y-2">
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <Input
-                            type="text"
-                            value={editDraftId}
-                            onChange={handleEditDraftIdChange}
-                            placeholder={`${itemLabel}ID`}
-                          />
+                        <div className="grid grid-cols-1 gap-2">
                           <Input
                             type="text"
                             value={editDraftName}
@@ -274,10 +311,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                         {editError ? <p className="text-xs text-rose-600">{editError}</p> : null}
                       </div>
                     ) : (
-                      <>
-                        <div className="text-sm font-semibold text-slate-900 truncate">{item.name}</div>
-                        <div className="mt-0.5 text-xs text-slate-500">ID: {item.id}</div>
-                      </>
+                      <div className="text-sm font-semibold text-slate-900 truncate">{item.name}</div>
                     )}
                   </div>
 
@@ -303,6 +337,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                           type="button"
                           variant="outline"
                           size="sm"
+                          className="settings-master-icon-button"
                           onClick={() => startEdit(item)}
                           aria-label={`${itemLabel}を編集`}
                           title="編集"
@@ -313,6 +348,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                           type="button"
                           variant="danger"
                           size="sm"
+                          className="settings-master-icon-button"
                           onClick={() => deleteItem(item.id)}
                           aria-label={`${itemLabel}を削除`}
                           title="削除"

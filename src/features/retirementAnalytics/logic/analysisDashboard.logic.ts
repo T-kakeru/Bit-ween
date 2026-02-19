@@ -17,8 +17,8 @@ export const DEFAULT_SERIES_COLOR = "#cbd5e1";
 
 export const DEFAULT_SCOPE_LABELS: Record<SelectionScope, string> = {
   "eligible-total": "全社員",
-  "eligible-window": "該当人数",
-  filtered: "表示人数",
+  "eligible-window": "対象社員",
+  filtered: "該当社員",
 };
 
 type PeriodParts = {

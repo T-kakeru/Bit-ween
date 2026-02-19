@@ -159,7 +159,7 @@ const SystemUsersManager = ({
       }
     }
 
-    setSuccess("利用者を更新しました");
+    setSuccess("アカウントを更新しました");
     cancelTableEdit();
   };
 
@@ -167,8 +167,8 @@ const SystemUsersManager = ({
     <Card className="settings-panel">
       <div className="settings-row">
         <div>
-          <Heading level={2} className="manager-card-title">システム利用者管理</Heading>
-          <TextCaption>分析対象の社員（Employee）と、ログインする利用者（SystemUser）を分離して管理します。</TextCaption>
+          <Heading level={3} className="manager-card-title">アカウント管理</Heading>
+          <TextCaption>分析対象の社員（Employee）と、ログインするアカウント（SystemUser）を分離して管理します。</TextCaption>
           <TextCaption className="mt-1">登録数: {sortedSystemUsers.length}</TextCaption>
         </div>
 
@@ -219,7 +219,7 @@ const SystemUsersManager = ({
               disabled={isTableEditing}
             >
               <UserPlus className="manager-edit-icon" size={16} aria-hidden="true" />
-              利用者を登録
+              アカウントを登録
             </Button>
           ) : null}
           {typeof onDone === "function" ? (
@@ -237,10 +237,10 @@ const SystemUsersManager = ({
         <div className="mt-4 space-y-2">
           {sortedSystemUsers.length === 0 ? (
             <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <TextCaption>登録されている利用者はいません。</TextCaption>
+              <TextCaption>登録されているアカウントは存在しません。</TextCaption>
             </div>
           ) : (
-            <TableContainer className="manager-table-wrap" role="region" aria-label="システム利用者一覧">
+            <TableContainer className="manager-table-wrap" role="region" aria-label="システムアカウント一覧">
               <Table className="manager-table system-users-table">
                 <thead>
                   <tr>
@@ -254,7 +254,7 @@ const SystemUsersManager = ({
                         disabled={isTableEditing}
                         aria-disabled={isTableEditing}
                       >
-                        <span className="manager-sort-label">利用者名</span>
+                        <span className="manager-sort-label">アカウント名</span>
                         {getSortIcon("display_name") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("display_name")}</span> : null}
                       </Button>
                     </Th>
@@ -363,7 +363,7 @@ const SystemUsersManager = ({
                               type="text"
                               value={String(draft.display_name || "")}
                               onChange={(e) => handleDraftChange(rowId, "display_name", e.target.value)}
-                              placeholder="利用者名"
+                              placeholder="アカウント名"
                             />
                           ) : (
                             <span className="font-medium text-slate-900">
@@ -472,16 +472,13 @@ const SystemUsersManager = ({
                                 size="sm"
                                 className="system-users-row-action-button"
                                 onClick={() => {
-                                  const ok = window.confirm("この利用者を削除しますか？");
+                                  const ok = window.confirm("このアカウントを削除しますか？");
                                   if (!ok) return;
                                   removeUser(systemUser.id);
-                                  setSuccess("利用者を削除しました");
+                                  setSuccess("アカウントを削除しました");
                                 }}
                               >
-                                <span className="inline-flex items-center gap-1">
-                                  <Icon name="🗑" alt="" />
-                                  削除
-                                </span>
+                                削除
                               </Button>
                             </div>
                           ) : <span className="system-users-action-placeholder">-</span>}
@@ -496,7 +493,7 @@ const SystemUsersManager = ({
 
           {!canEdit ? (
             <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <TextCaption>一般利用者は閲覧のみ可能です。追加・編集・削除は管理者のみ実行できます。</TextCaption>
+              <TextCaption>一般アカウントは閲覧のみ可能です。追加・編集・削除は管理者のみ実行できます。</TextCaption>
             </div>
           ) : null}
         </div>

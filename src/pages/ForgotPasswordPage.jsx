@@ -36,7 +36,7 @@ const ForgotPasswordPage = ({ onBackToLogin }) => {
       <section className="screen settings-screen">
         <Card className="settings-panel max-w-[520px] w-full mx-auto">
         <div className="settings-card-title-wrap">
-          <Heading level={2}>パスワード再設定</Heading>
+          <Heading level={3}>パスワード再設定</Heading>
           <TextCaption>登録済みメールアドレス宛に再設定メールを送信します。</TextCaption>
         </div>
 
@@ -56,9 +56,15 @@ const ForgotPasswordPage = ({ onBackToLogin }) => {
           </label>
 
           <div className="flex items-center justify-between gap-3">
-            <button type="button" className="text-sm text-slate-600 underline" onClick={onBackToLogin}>
+            <Button
+              type="button"
+              variant="danger"
+              size="md"
+              className="settings-action-button settings-cancel-button"
+              onClick={onBackToLogin}
+            >
               ログイン画面に戻る
-            </button>
+            </Button>
 
             <Button type="submit" variant="outline" size="md" className="settings-action-button" disabled={isSubmitting}>
               {isSubmitting ? (

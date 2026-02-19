@@ -189,8 +189,8 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
 
   const resetSystemUserPassword = (id) => {
     const target = companyUsers.find((u) => toText(u?.id) === toText(id));
-    if (!target) return { ok: false, message: "対象利用者が見つかりません" };
-    return { ok: true, message: `利用者 ${toText(target.display_name || target.email)} に再設定案内を送信しました` };
+    if (!target) return { ok: false, message: "対象アカウントが見つかりません" };
+    return { ok: true, message: `アカウント ${toText(target.display_name || target.email)} に再設定案内を送信しました` };
   };
 
   return {

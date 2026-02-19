@@ -24,9 +24,11 @@ const EmployeeTableCardView = ({ rows, subtitle }) => {
         <CsvDownloadButton
           rows={sortedRows}
           columns={MANAGER_EMPLOYEE_COLUMNS.map((column) => column.key)}
+          className="analytics-detail-icon-button analytics-detail-icon-button--download"
           iconOnly
           ariaLabel="対象社員リストをダウンロード"
-          iconNode={<ClipboardCopy className="manager-edit-icon" aria-hidden="true" />}
+          tooltipLabel="対象社員リストをダウンロード"
+          iconNode={<ClipboardCopy className="manager-edit-icon" size={30} aria-hidden="true" />}
         />
       </div>
 

@@ -1,11 +1,13 @@
-import { ClipboardCopy, ClipboardPlus } from "lucide-react";
+import { ChevronDown, ClipboardCopy, ClipboardPlus } from "lucide-react";
 import KPICard from "@/features/retirement/components/molecules/KPICard";
 import DataVolumeIndicator from "@/features/retirement/components/molecules/DataVolumeIndicator";
+import ManagerCategoryPie from "@/features/retirement/components/molecules/ManagerCategoryPie";
 import FloatingFilterPanel from "@/features/retirement/components/organisms/FloatingFilterPanel";
 import useManagerFilters from "@/features/retirement/hooks/useManagerFilters";
 import useManagerRowEditor from "@/features/retirement/hooks/useManagerRowEditor";
 import useManagerSearch from "@/features/retirement/hooks/useManagerSearch";
 import useManagerSort from "@/features/retirement/hooks/useManagerSort";
+import { buildManagerSummaryPieData } from "@/features/retirement/logic/managerSummaryCharts.logic";
 import { useEffect, useMemo, useState } from "react";
 import Heading from "@/shared/ui/Heading";
 import Button from "@/shared/ui/Button";
@@ -97,24 +99,54 @@ const buildFilterSummaryChips = (filters, query) => {
   return chips;
 };
 
+const buildChartSelectionChip = (scope, segment) => {
+  if (segment !== "active" && segment !== "resigned") return null;
+  const scopeLabel = scope === "all" ? "全社員" : "該当社員";
+  const segmentLabel = segment === "active" ? "現職" : "退職";
+  return `円グラフ: ${scopeLabel} / ${segmentLabel}`;
+};
+
 const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
   const { filters, filteredRows, toggleGroup, updateDetail, resetFilters, departmentOptions, reasonOptions, clientOptions } =
     useManagerFilters(searchedRows);
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows });
   const [quickStatusFilter, setQuickStatusFilter] = useState("all");
+  const [quickFilterScope, setQuickFilterScope] = useState("display");
+
+  const handleTotalSegmentClick = (segment) => {
+    setQuickStatusFilter((prev) => {
+      if (quickFilterScope === "all" && prev === segment) return "all";
+      return segment;
+    });
+    setQuickFilterScope("all");
+  };
+
+  const handleDisplaySegmentClick = (segment) => {
+    setQuickStatusFilter((prev) => {
+      if (quickFilterScope === "display" && prev === segment) return "all";
+      return segment;
+    });
+    setQuickFilterScope("display");
+  };
+
+  const baseRowsForQuickFilter = useMemo(
+    () => (quickFilterScope === "all" ? rows : sortedRows),
+    [quickFilterScope, rows, sortedRows]
+  );
 
   const quickFilteredRows = useMemo(() => {
     if (quickStatusFilter === "active") {
-      return sortedRows.filter((row) => !getIsRetired(row));
+      return baseRowsForQuickFilter.filter((row) => !getIsRetired(row));
     }
     if (quickStatusFilter === "resigned") {
-      return sortedRows.filter((row) => getIsRetired(row));
+      return baseRowsForQuickFilter.filter((row) => getIsRetired(row));
     }
-    return sortedRows;
-  }, [quickStatusFilter, sortedRows]);
+    return baseRowsForQuickFilter;
+  }, [baseRowsForQuickFilter, quickStatusFilter]);
 
   const [visibleRowsForCsv, setVisibleRowsForCsv] = useState(quickFilteredRows);
 
@@ -122,20 +154,31 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
     setVisibleRowsForCsv(quickFilteredRows);
   }, [quickFilteredRows]);
 
-  const visibleActiveCount = useMemo(
-    () => (visibleRowsForCsv ?? []).filter((row) => !getIsRetired(row)).length,
-    [visibleRowsForCsv]
+  const displayedActiveCount = useMemo(
+    () => (sortedRows ?? []).filter((row) => !getIsRetired(row)).length,
+    [sortedRows]
   );
-  const visibleResignedCount = useMemo(
-    () => (visibleRowsForCsv ?? []).filter((row) => getIsRetired(row)).length,
-    [visibleRowsForCsv]
+  const displayedResignedCount = useMemo(
+    () => (sortedRows ?? []).filter((row) => getIsRetired(row)).length,
+    [sortedRows]
   );
 
-  const handleSegmentClick = (segment) => {
-    setQuickStatusFilter((prev) => (prev === segment ? "all" : segment));
-  };
+  const selectedFilterChips = useMemo(() => {
+    const chips = buildFilterSummaryChips(filters, query);
+    const chartChip = buildChartSelectionChip(quickFilterScope, quickStatusFilter);
+    if (!chartChip) return chips;
+    return [chartChip, ...chips];
+  }, [filters, query, quickFilterScope, quickStatusFilter]);
 
-  const selectedFilterChips = useMemo(() => buildFilterSummaryChips(filters, query), [filters, query]);
+  const departmentPieData = useMemo(
+    () => buildManagerSummaryPieData(quickFilteredRows, "department"),
+    [quickFilteredRows],
+  );
+
+  const statusPieData = useMemo(
+    () => buildManagerSummaryPieData(quickFilteredRows, "status"),
+    [quickFilteredRows],
+  );
 
   return (
     <section className="screen manager-screen">
@@ -153,39 +196,76 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
         onClose={() => setIsFilterOpen(false)}
       />
 
-      <Card className="manager-summary-card">
-        <div className="manager-card-title-wrap mb-0">
-          <Heading level={2} className="manager-card-title">データ構造比</Heading>
-        </div>
-
-        <div className="manager-summary-chart-row">
-          <KPICard
-            label="全社員"
-            value={metrics.total}
-            activeCount={metrics.active}
-            resignedCount={metrics.resigned}
-            type="total"
-            size={168}
-            onSegmentClick={handleSegmentClick}
-            selectedSegment={quickStatusFilter}
-          />
-          <DataVolumeIndicator
-            current={visibleRowsForCsv?.length ?? quickFilteredRows.length}
-            total={rows.length}
-            activeCount={visibleActiveCount}
-            resignedCount={visibleResignedCount}
-            size={168}
-            onSegmentClick={handleSegmentClick}
-            selectedSegment={quickStatusFilter}
-          />
-        </div>
-      </Card>
-
       <Card className="manager-shell-card">
         <div className="mb-2 flex flex-wrap items-start justify-between gap-4">
           <div className="manager-card-title-wrap mb-0">
-            <Heading level={2} className="manager-card-title">対象社員リスト（分析・管理）</Heading>
+            <Heading level={3}>対象社員リスト（分析・管理）</Heading>
           </div>
+        </div>
+
+        <div className="manager-summary-subcard">
+          <button
+            type="button"
+            className="manager-summary-accordion-trigger"
+            onClick={() => setIsSummaryOpen((prev) => !prev)}
+            aria-expanded={isSummaryOpen}
+          >
+            <span>データ構造比</span>
+            <ChevronDown
+              size={18}
+              className={`manager-summary-accordion-chevron ${isSummaryOpen ? "is-open" : ""}`}
+              aria-hidden="true"
+            />
+          </button>
+
+          {isSummaryOpen ? (
+            <div className="manager-summary-chart-row manager-summary-chart-row--subcard">
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">全社員</p>
+                <KPICard
+                  label="全社員"
+                  value={metrics.total}
+                  activeCount={metrics.active}
+                  resignedCount={metrics.resigned}
+                  type="total"
+                  size={168}
+                  onSegmentClick={handleTotalSegmentClick}
+                  selectedSegment={quickFilterScope === "all" ? quickStatusFilter : "all"}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">該当社員</p>
+                <DataVolumeIndicator
+                  current={sortedRows?.length ?? 0}
+                  total={rows.length}
+                  activeCount={displayedActiveCount}
+                  resignedCount={displayedResignedCount}
+                  size={168}
+                  onSegmentClick={handleDisplaySegmentClick}
+                  selectedSegment={quickFilterScope === "display" ? quickStatusFilter : "all"}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">該当社員：部署別</p>
+                <ManagerCategoryPie
+                  chartLabel="該当社員リストの部署別構成比"
+                  data={departmentPieData}
+                  size={168}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">該当社員：稼働状態別</p>
+                <ManagerCategoryPie
+                  chartLabel="該当社員リストの稼働状態別構成比"
+                  data={statusPieData}
+                  size={168}
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <EditableEmployeeTable

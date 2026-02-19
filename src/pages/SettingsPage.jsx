@@ -158,13 +158,19 @@ const SettingsPage = () => {
     window.dispatchEvent(new PopStateEvent("popstate"));
   };
 
+  const handleOpenExternalLink = (url) => {
+    if (typeof window === "undefined") return;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <section className="screen settings-screen">
-      <div className="settings-management-grid">
-        <Card className="settings-panel settings-menu-card settings-profile-card">
+      <div className="settings-main-layout">
+        <div className="settings-left-column">
+          <Card className="settings-panel settings-menu-card settings-profile-card">
           <div className="settings-menu-card-head">
             <div className="settings-card-title-wrap">
-              <Heading level={2} className="manager-card-title">プロフィール管理</Heading>
+              <Heading level={3} className="manager-card-title">プロフィール管理</Heading>
               <TextCaption>編集を押すとプロフィール情報を更新できます。</TextCaption>
             </div>
 
@@ -317,64 +323,69 @@ const SettingsPage = () => {
 
             {profileMessage ? <p className="text-xs text-emerald-700">{profileMessage}</p> : null}
           </div>
-        </Card>
+          </Card>
 
-        <SettingsMasterDataPanel />
-      </div>
-
-      <Card className="settings-panel settings-menu-card settings-support-card">
-        <div className="settings-section-head">
-          <Heading level={2} className="manager-card-title">サポート・その他</Heading>
+          <SettingsMasterDataPanel />
         </div>
 
-        <div className="settings-support-grid">
-          <div className="settings-support-block">
-            <p className="settings-row-title">ドキュメント</p>
-            <div className="settings-support-links">
-              <a
-                className="settings-support-link"
-                href="https://www.notion.so/help"
-                target="_blank"
-                rel="noreferrer"
-              >
-                利用マニュアル
-              </a>
-              <a
-                className="settings-support-link"
-                href="https://policies.google.com/privacy?hl=ja"
-                target="_blank"
-                rel="noreferrer"
-              >
-                プライバシーポリシー
-              </a>
+        <aside className="settings-right-column">
+          <Card className="settings-panel settings-menu-card settings-support-card">
+            <div className="settings-section-head">
+              <Heading level={3} className="manager-card-title">サポート・その他</Heading>
             </div>
-          </div>
 
-          <div className="settings-support-block">
-            <p className="settings-row-title">システム</p>
-            <div className="settings-support-actions">
-              <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
-                お問い合わせ
-              </Button>
-              <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
-                操作ログ管理
-              </Button>
-              <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
-                更新履歴
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                size="md"
-                className="settings-action-button settings-cancel-button"
-                onClick={logout}
-              >
-                ログアウト
-              </Button>
+            <div className="settings-support-grid">
+              <div className="settings-support-block">
+                <p className="settings-row-title">ドキュメント</p>
+                <div className="settings-support-actions">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    className="settings-action-button"
+                    onClick={() => handleOpenExternalLink("https://www.notion.so/help")}
+                  >
+                    利用マニュアル
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    className="settings-action-button"
+                    onClick={() => handleOpenExternalLink("https://policies.google.com/privacy?hl=ja")}
+                  >
+                    プライバシーポリシー
+                  </Button>
+                </div>
+              </div>
+
+              <div className="settings-support-block">
+                <p className="settings-row-title">システム</p>
+                <div className="settings-support-actions">
+                  <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
+                    お問い合わせ
+                  </Button>
+                  <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
+                    操作ログ管理
+                  </Button>
+                  <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={handleOpenComingSoon}>
+                    更新履歴
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="md"
+                    className="settings-action-button settings-cancel-button"
+                    onClick={logout}
+                  >
+                    ログアウト
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
+          </Card>
+        </aside>
         </div>
-      </Card>
 
       {/* //フェーズ２
       <div className="settings-section-head">

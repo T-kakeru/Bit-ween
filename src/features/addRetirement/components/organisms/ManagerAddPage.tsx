@@ -77,7 +77,7 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave, enableCsvImport = tru
 	const breadcrumbs = useMemo(
 		() =>
 			buildEpisodeBreadcrumbItems({
-				baseItems: [{ label: "社員情報一覧", onClick: onCancel }],
+				baseItems: [{ label: "社員情報管理", onClick: onCancel }],
 				episodes: [
 					{ id: "form", label: "新規従業員登録" },
 					{ id: "confirm", label: "登録確認画面" },

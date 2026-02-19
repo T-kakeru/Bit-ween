@@ -1,4 +1,4 @@
-import { Cell, Pie, PieChart } from "recharts";
+import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 type KPIType = "total" | "active" | "resigned";
 type SegmentType = "active" | "resigned";
@@ -18,6 +18,17 @@ const COLOR_RESIGNED = "#fed7aa";
 
 const toSafeNumber = (value: number) => (Number.isFinite(value) ? Math.max(value, 0) : 0);
 
+const resolveSegment = (entry: any): SegmentType | null => {
+  const bySegment = entry?.segment;
+  if (bySegment === "active" || bySegment === "resigned") return bySegment;
+
+  const byName = entry?.name;
+  if (byName === "現職") return "active";
+  if (byName === "退職") return "resigned";
+
+  return null;
+};
+
 const toPercent = (value: number, total: number) => {
   if (total <= 0) return 0;
   return Math.round((value / total) * 100);
@@ -35,6 +46,33 @@ const buildChartData = ({ activeCount, resignedCount }: { type: KPIType; activeC
 const formatPercent = (value: number, total: number) => {
   if (total <= 0) return "0.0";
   return ((value / total) * 100).toFixed(1);
+};
+
+const SegmentTooltipContent = ({ active, payload }: any) => {
+  if (!active || !Array.isArray(payload) || payload.length === 0) return null;
+
+  const entry = payload[0]?.payload;
+  if (!entry) return null;
+
+  const value = toSafeNumber(entry?.rawValue ?? entry?.value);
+  const total = toSafeNumber(entry?.total);
+  const percentText = formatPercent(value, total);
+
+  return (
+    <div className="analytics-tooltip analytics-donut-tooltip">
+      <div className="analytics-tooltip-title">{String(entry?.name ?? "-")}</div>
+      <div className="analytics-tooltip-rows analytics-donut-tooltip-rows">
+        <div className="analytics-tooltip-row analytics-donut-tooltip-row">
+          <span className="analytics-tooltip-label analytics-donut-tooltip-label">人数</span>
+          <span className="analytics-tooltip-value analytics-donut-tooltip-value">{value}人</span>
+        </div>
+        <div className="analytics-tooltip-row analytics-donut-tooltip-row">
+          <span className="analytics-tooltip-label analytics-donut-tooltip-label">割合</span>
+          <span className="analytics-tooltip-value analytics-donut-tooltip-value">{percentText}%</span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const KPICard = ({
@@ -56,6 +94,12 @@ const KPICard = ({
   const activePercentText = formatPercent(safeActive, safeTotal);
   const resignedPercentText = formatPercent(safeResigned, safeTotal);
 
+  const chartDataWithMeta = chartData.map((item) => ({
+    ...item,
+    rawValue: toSafeNumber(item.value),
+    total: safeActive + safeResigned,
+  }));
+
   const renderSliceLabel = (props: any) => {
     const {
       cx,
@@ -75,10 +119,10 @@ const KPICard = ({
     const fontSize = Math.max(9, Math.round(size * 0.09));
     return (
       <g>
-        <text x={x} y={y - 6} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700">
+        <text x={x} y={y - 6} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700" pointerEvents="none">
           {name}
         </text>
-        <text x={x} y={y + 8} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700">
+        <text x={x} y={y + 8} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700" pointerEvents="none">
           {percentText}
         </text>
       </g>
@@ -90,9 +134,11 @@ const KPICard = ({
   return (
     <article className="relative shrink-0" style={{ width: size, height: size }} aria-label={`${label}の内訳 現職${activePercentText}% 退職${resignedPercentText}%`}>
       <PieChart width={size} height={size}>
+        <Tooltip content={<SegmentTooltipContent />} wrapperStyle={{ zIndex: 30 }} />
         <Pie
-          data={chartData}
+          data={chartDataWithMeta}
           dataKey="value"
+          rootTabIndex={-1}
           cx="50%"
           cy="50%"
           startAngle={90}
@@ -105,18 +151,21 @@ const KPICard = ({
           isAnimationActive={false}
           label={renderSliceLabel}
           labelLine={false}
+          onClick={(entry) => {
+            if (!onSegmentClick) return;
+            const segment = resolveSegment(entry);
+            if (!segment) return;
+            onSegmentClick(segment);
+          }}
         >
-          {chartData.map((item) => (
+          {chartDataWithMeta.map((item) => (
             <Cell
               key={`${label}-${item.name}`}
               fill={item.fill}
               stroke="#ffffff"
               strokeWidth={2}
               style={{ cursor: onSegmentClick ? "pointer" : "default" }}
-              onClick={() => {
-                if (!onSegmentClick) return;
-                onSegmentClick(item.segment);
-              }}
+              aria-label={`${item.name}セグメント`}
             />
           ))}
         </Pie>

@@ -7,7 +7,7 @@ export const SettingsMasterDataPanel = () => {
   return (
     <Card className="settings-panel settings-menu-card settings-master-card">
       <div className="settings-card-title-wrap">
-        <Heading level={2}>マスタ管理</Heading>
+        <Heading level={3}>マスタ管理</Heading>
         <TextCaption>部署・稼働先・稼働状態をこのカード内で管理します。</TextCaption>
       </div>
 

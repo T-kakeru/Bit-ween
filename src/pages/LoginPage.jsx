@@ -38,7 +38,7 @@ const LoginPage = ({ onNavigateForgotPassword, onLoginSuccess }) => {
       <section className="screen settings-screen">
         <Card className="settings-panel max-w-[520px] w-full mx-auto">
         <div className="settings-card-title-wrap">
-          <Heading level={2}>ログイン</Heading>
+          <Heading level={3}>ログイン</Heading>
           <TextCaption>登録済みのメールアドレスとパスワードを入力してください。</TextCaption>
         </div>
 
@@ -61,6 +61,7 @@ const LoginPage = ({ onNavigateForgotPassword, onLoginSuccess }) => {
             <div className="settings-password-input-wrap">
               <Input
                 type={isPasswordVisible ? "text" : "password"}
+                className="settings-password-input"
                 placeholder="パスワード"
                 autoComplete="current-password"
                 error={Boolean(errors.password)}
@@ -106,13 +107,16 @@ const LoginPage = ({ onNavigateForgotPassword, onLoginSuccess }) => {
           </label>
 
           <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              className="text-sm text-slate-600 underline"
-              onClick={onNavigateForgotPassword}
+            <a
+              href="#"
+              className="settings-auth-link"
+              onClick={(event) => {
+                event.preventDefault();
+                onNavigateForgotPassword?.();
+              }}
             >
               パスワードをお忘れの方はこちら
-            </button>
+            </a>
 
             <Button type="submit" variant="outline" size="md" className="settings-action-button" disabled={isSubmitting}>
               {isSubmitting ? (

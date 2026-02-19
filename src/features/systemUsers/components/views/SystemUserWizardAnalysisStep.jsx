@@ -75,7 +75,7 @@ const SystemUserWizardAnalysisStep = ({ initialPayload, onBack, onNext, submitLa
     <ManagerAddFormView
       breadcrumbs={EMPTY_BREADCRUMBS}
       hideBreadcrumbs
-      title="利用者の登録２"
+      title="アカウントの登録２"
       form={form}
       csvImportSection={undefined}
       isActive={isActive}

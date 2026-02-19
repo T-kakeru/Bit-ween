@@ -1,5 +1,5 @@
 const SummaryDonutCenter = ({
-  label = "表示人数",
+  label = "該当社員",
   count = 0,
   unit = "人",
   className = "",

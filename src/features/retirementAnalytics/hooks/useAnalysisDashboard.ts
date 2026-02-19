@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState, type RefObject } from "react";
 import useRetirementAnalyticsData from "@/features/retirementAnalytics/hooks/useRetirementAnalyticsData";
-import { GENDERS, STATUSES, getSeriesColors } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
+import {
+  GENDERS,
+  STATUSES,
+  getSeriesColors,
+} from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 import {
   buildDonutSeriesData,
   buildSeriesButtons,
@@ -13,7 +17,7 @@ import {
 type UseAnalysisDashboardArgs = {
   tableAnchorRef: RefObject<HTMLDivElement | null>;
 };
-
+// 直近12ヶ月 or 直近10年 or 年度 をタブで切り替えるダッシュボードのロジック
 const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
   const [activeTab, setActiveTab] = useState("current");
   const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
@@ -21,6 +25,8 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
   const [clients, setClients] = useState<string[]>([]);
   const [genders, setGenders] = useState<string[]>([...GENDERS]);
   const [seriesMode, setSeriesMode] = useState("reason");
+
+  const [selectionSeriesMode, setSelectionSeriesMode] = useState("reason");
 
   const [selectedSeriesKey, setSelectedSeriesKey] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("");
@@ -54,6 +60,11 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
     setClients((prev) => (Array.isArray(prev) && prev.length > 0 ? prev : [...clientOptions]));
   }, [clientOptions]);
 
+  useEffect(() => {
+    if (selectedSeriesKey || isAllSelected) return;
+    setSelectionSeriesMode(seriesMode);
+  }, [isAllSelected, selectedSeriesKey, seriesMode]);
+
   const seriesColors = useMemo(
     () => getSeriesColors(seriesMode) as Record<string, string>,
     [seriesMode]
@@ -83,11 +94,10 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
         selectedSeriesKey,
         selectedPeriod,
         axis,
-        seriesMode,
+        seriesMode: selectionSeriesMode,
       }),
-    [axis, isAllSelected, selectedPeriod, selectedSeriesKey, seriesMode, sourceRowsForDetail]
+    [axis, isAllSelected, selectedPeriod, selectedSeriesKey, selectionSeriesMode, sourceRowsForDetail]
   );
-
   const pieGroups = useMemo(() => {
     const filteredRows = Array.isArray(filteredRowsInWindow) ? filteredRowsInWindow : [];
     const windowRows = Array.isArray(eligibleRowsInWindow) ? eligibleRowsInWindow : [];
@@ -96,20 +106,26 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
     return [
       {
         id: "filtered" as const,
-        title: "表示人数",
+        scope: "filtered" as const,
+        title: "該当社員",
         total: filteredRows.length,
+        selectionSeriesMode: seriesMode,
         data: buildDonutSeriesData({ rows: filteredRows, seriesMode, seriesColors, displayedSeriesKeys }),
       },
       {
         id: "eligible-window" as const,
-        title: "該当人数",
+        scope: "eligible-window" as const,
+        title: "対象社員",
         total: windowRows.length,
+        selectionSeriesMode: seriesMode,
         data: buildDonutSeriesData({ rows: windowRows, seriesMode, seriesColors, displayedSeriesKeys }),
       },
       {
         id: "eligible-total" as const,
+        scope: "eligible-total" as const,
         title: "全社員",
         total: totalRows.length,
+        selectionSeriesMode: seriesMode,
         data: buildDonutSeriesData({ rows: totalRows, seriesMode, seriesColors, displayedSeriesKeys }),
       },
     ];
@@ -128,9 +144,10 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
     setIsAllSelected(false);
     setSelectedSeriesKey("");
     setSelectedPeriod("");
+    setSelectionSeriesMode(seriesMode);
   };
 
-  const handleSelectSeries = (scope: SelectionScope, seriesKey: string) => {
+  const handleSelectSeries = (scope: SelectionScope, seriesKey: string, nextSeriesMode?: string) => {
     if (seriesKey === "__all__") {
       handleSelectAllSeries();
       return;
@@ -140,6 +157,7 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
     setIsAllSelected(false);
     setSelectedSeriesKey(seriesKey);
     setSelectedPeriod("");
+    setSelectionSeriesMode(nextSeriesMode ?? seriesMode);
     scrollToTable();
   };
 
@@ -148,6 +166,7 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
     setIsAllSelected(true);
     setSelectedSeriesKey("");
     setSelectedPeriod("");
+    setSelectionSeriesMode(seriesMode);
     scrollToTable();
   };
 
@@ -157,6 +176,7 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
     setIsAllSelected(false);
     setSelectedSeriesKey(seriesKey);
     setSelectedPeriod(period ?? "");
+    setSelectionSeriesMode(seriesMode);
     scrollToTable();
   };
 
@@ -173,9 +193,9 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
 
   const windowLabel =
     activeTab === "current"
-      ? "表示期間（直近12ヶ月）"
+      ? "該当期間（直近12ヶ月）"
       : activeTab === "year"
-      ? "表示期間（直近10年）"
+      ? "該当期間（直近10年）"
       : `${selectedYear}年（1月〜12月）`;
 
   const detailSubtitle = selectedSeriesKey

@@ -73,6 +73,7 @@ type CsvDownloadButtonProps = {
   iconNode?: ReactNode;
   iconOnly?: boolean;
   ariaLabel?: string;
+  tooltipLabel?: string;
 };
 
 const CsvDownloadButton = ({
@@ -86,6 +87,7 @@ const CsvDownloadButton = ({
   iconNode,
   iconOnly = false,
   ariaLabel,
+  tooltipLabel,
 }: CsvDownloadButtonProps) => {
   const handleClick = () => {
     if (typeof onClick === "function") {
@@ -96,15 +98,18 @@ const CsvDownloadButton = ({
     downloadCsv(rows ?? [], fileName, columns);
   };
 
+  const resolvedLabel = ariaLabel ?? label;
+
   return (
     <Button
       type="button"
       variant="outline"
       size="md"
-      className={`manager-action-button ${iconOnly ? "manager-icon-only-button" : ""} ${className}`}
+      className={`manager-action-button ${iconOnly ? "manager-icon-only-button" : ""} ${tooltipLabel ? "icon-tooltip-trigger" : ""} ${className}`}
       onClick={handleClick}
-      aria-label={ariaLabel ?? label}
-      title={ariaLabel ?? label}
+      aria-label={resolvedLabel}
+      title={tooltipLabel ? undefined : resolvedLabel}
+      data-tooltip={tooltipLabel ?? undefined}
     >
       {iconNode ? iconNode : showIcon ? <ClipboardCopy className="manager-edit-icon" aria-hidden="true" /> : null}
       {iconOnly ? null : <span>{label}</span>}

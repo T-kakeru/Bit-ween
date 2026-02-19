@@ -28,6 +28,7 @@ const AnalyticsChartsView = ({
           seriesKeys={chartSeriesKeys}
           seriesMode={seriesMode}
           axis={axis}
+          isChartMaximized={isChartMaximized}
           enableYearTickClick={enableYearTickClick}
           onYearTickClick={onYearTickClick}
           onBarClick={onBarClick}

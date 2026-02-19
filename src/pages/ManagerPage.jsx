@@ -25,7 +25,7 @@ const ManagerPage = () => {
     const handler = (e) => {
       try {
         const nav = e?.detail;
-        if (nav === "社員情報一覧") {
+        if (nav === "社員情報管理") {
           closeAdd();
           setPendingUserEmail("");
           setPendingUserRole("general");
@@ -84,7 +84,7 @@ const ManagerPage = () => {
           });
 
           if (!result.ok) {
-            window.alert(result.message || "利用者登録に失敗しました");
+            window.alert(result.message || "アカウント登録に失敗しました");
           }
 
           setPendingUserEmail("");

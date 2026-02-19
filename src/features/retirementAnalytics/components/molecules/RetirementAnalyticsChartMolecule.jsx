@@ -11,6 +11,8 @@ import {
 } from "recharts";
 import EmptyState from "@/shared/components/EmptyState";
 import { getSeriesColors } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
+import AnalyticsYearTickButton from "@/features/retirementAnalytics/components/molecules/AnalyticsYearTickButton";
+import { calcNiceYAxis } from "@/features/retirementAnalytics/logic/calcNiceYAxis.logic";
 
 const formatPeriodLabel = (axis, period) => {
   if (axis === "month") {
@@ -60,48 +62,12 @@ const extractPeriodFromBarClickArg = (arg) => {
   return "";
 };
 
-const ClickableYearTick = ({ x, y, payload, onSelectYear }) => {
-  const value = payload?.value;
-  const label = String(value ?? "");
-  const textWidth = Math.max(label.length * 8, 28);
-  const pillWidth = textWidth + 20;
-  const pillHeight = 26;
-  return (
-    <g
-      transform={`translate(${x},${y})`}
-      role="button"
-      tabIndex={0}
-      style={{ cursor: "pointer" }}
-      onClick={() => onSelectYear?.(value)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onSelectYear?.(value);
-        }
-      }}
-    >
-      <rect
-        x={-pillWidth / 2}
-        y={8}
-        width={pillWidth}
-        height={pillHeight}
-        rx={13}
-        ry={13}
-        fill="#eff6ff"
-        stroke="#bfdbfe"
-      />
-      <text x={0} y={0} dy={26} textAnchor="middle" fill="#111827" fontSize={12} fontWeight={600}>
-        {label}
-      </text>
-    </g>
-  );
-};
-
 const RetirementAnalyticsChartMolecule = ({
   data,
   seriesKeys,
   seriesMode,
   axis,
+  isChartMaximized,
   enableYearTickClick,
   onYearTickClick,
   onBarClick,
@@ -130,18 +96,34 @@ const RetirementAnalyticsChartMolecule = ({
 
   const [hoveredSeriesKey, setHoveredSeriesKey] = useState("");
   const isYearTickMode = enableYearTickClick && axis === "year";
-  const yAxisUpperBound = (dataMax) => {
-    const safeMax = Number.isFinite(dataMax) ? dataMax : 0;
-    const paddedMax = Math.ceil(safeMax * 1.4);
-    return Math.max(4, paddedMax);
-  };
+  const baseChartHeight = isYearTickMode ? 430 : 360;
+  const chartHeight = isChartMaximized ? 520 : baseChartHeight;
+
+  const stackedMax = Array.isArray(data)
+    ? data.reduce((max, row) => {
+        const sum = Array.isArray(seriesKeys)
+          ? seriesKeys.reduce((acc, key) => {
+              const value = row?.[key];
+              const num = typeof value === "number" ? value : Number(value ?? 0);
+              return acc + (Number.isFinite(num) ? num : 0);
+            }, 0)
+          : 0;
+        return Math.max(max, sum);
+      }, 0)
+    : 0;
+
+  const yAxisConfig = calcNiceYAxis({
+    maxValue: stackedMax,
+    multiplier: 1.1,
+    minMax: 1,
+  });
 
   return (
     <div className="analytics-chart">
-      <ResponsiveContainer width="100%" height={isYearTickMode ? 340 : 320}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <BarChart
           data={data}
-          margin={{ top: 30, right: 18, left: 6, bottom: isYearTickMode ? 6 : 0 }}
+          margin={{ top: 8, right: 18, left: 6, bottom: isYearTickMode ? 14 : 0 }}
           barCategoryGap={12}
           barGap={6}
           maxBarSize={34}
@@ -149,15 +131,26 @@ const RetirementAnalyticsChartMolecule = ({
           <CartesianGrid stroke="#e6e8ec" strokeDasharray="3 3" />
           <XAxis
             dataKey="period"
-            tickMargin={isYearTickMode ? 12 : 6}
+            tickMargin={isYearTickMode ? 10 : 6}
             tick={
               enableYearTickClick && axis === "year"
-                ? (props) => <ClickableYearTick {...props} onSelectYear={onYearTickClick} />
+                ? (props) => (
+                    <AnalyticsYearTickButton
+                      x={props?.x}
+                      y={props?.y}
+                      value={props?.payload?.value}
+                      onSelect={onYearTickClick}
+                    />
+                  )
                 : undefined
             }
             tickFormatter={(value) => formatPeriodLabel(axis, value)}
           />
-          <YAxis allowDecimals={false} domain={[0, yAxisUpperBound]} tickCount={6} />
+          <YAxis
+            allowDecimals={false}
+            domain={[0, yAxisConfig.max]}
+            ticks={yAxisConfig.ticks}
+          />
           <Tooltip
             cursor={false}
             content={

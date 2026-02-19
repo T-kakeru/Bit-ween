@@ -1,22 +1,63 @@
 import Card from "@/shared/ui/Card";
 import Heading from "@/shared/ui/Heading";
 import Button from "@/shared/ui/Button";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { MoveDiagonal, Minimize2 } from "lucide-react";
 import SummaryDonutCenter from "@/features/retirementAnalytics/components/molecules/SummaryDonutCenter";
 import SummaryDonutMiniCenter from "@/features/retirementAnalytics/components/molecules/SummaryDonutMiniCenter";
+import AnalyticsDonutChart from "@/features/retirementAnalytics/components/molecules/AnalyticsDonutChart";
 
 const EMPTY_DONUT_KEY = "__empty__";
-const EMPTY_DONUT_DATA = [{ name: EMPTY_DONUT_KEY, value: 1, color: "#e5e7eb" }];
+const EMPTY_DONUT_DATA = [{ name: EMPTY_DONUT_KEY, value: 1, color: "#e5e7eb", percent: 0 }];
 
 const toRenderableDonutData = (data) => {
   const safeData = (Array.isArray(data) ? data : []).filter((item) => Number(item?.value ?? 0) > 0);
-  return safeData.length > 0 ? safeData : EMPTY_DONUT_DATA;
+  if (safeData.length === 0) return EMPTY_DONUT_DATA;
+
+  const total = safeData.reduce((sum, item) => sum + Math.max(Number(item?.value ?? 0), 0), 0);
+  if (total <= 0) return EMPTY_DONUT_DATA;
+
+  return safeData.map((item) => {
+    const safeValue = Math.max(Number(item?.value ?? 0), 0);
+    return {
+      ...item,
+      value: safeValue,
+      percent: (safeValue / total) * 100,
+    };
+  });
 };
 
-const formatDonutTooltip = (value, name) => {
-  if (name === EMPTY_DONUT_KEY) return ["0人", "人数"];
-  return [`${value}人`, "人数"];
+const formatDonutPercent = (percent) => {
+  const safePercent = Number(percent);
+  if (!Number.isFinite(safePercent) || safePercent <= 0) return "0.0%";
+  return `${safePercent.toFixed(1)}%`;
+};
+
+const DonutTooltipContent = ({ active, payload }) => {
+  if (!active || !Array.isArray(payload) || payload.length === 0) return null;
+
+  const entry = payload[0]?.payload;
+  if (!entry) return null;
+
+  const isEmpty = entry?.name === EMPTY_DONUT_KEY;
+  const safeValue = isEmpty ? 0 : Math.max(Number(entry?.value ?? 0), 0);
+  const percentText = formatDonutPercent(isEmpty ? 0 : entry?.percent);
+  const title = isEmpty ? "人数" : String(entry?.name ?? "人数");
+
+  return (
+    <div className="analytics-tooltip analytics-donut-tooltip">
+      <div className="analytics-tooltip-title">{title}</div>
+      <div className="analytics-tooltip-rows analytics-donut-tooltip-rows">
+        <div className="analytics-tooltip-row analytics-donut-tooltip-row">
+          <span className="analytics-tooltip-label analytics-donut-tooltip-label">人数</span>
+          <span className="analytics-tooltip-value analytics-donut-tooltip-value">{safeValue}人</span>
+        </div>
+        <div className="analytics-tooltip-row analytics-donut-tooltip-row">
+          <span className="analytics-tooltip-label analytics-donut-tooltip-label">割合</span>
+          <span className="analytics-tooltip-value analytics-donut-tooltip-value">{percentText}</span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const SummaryPieCardView = ({
@@ -28,15 +69,19 @@ const SummaryPieCardView = ({
 }) => {
   const safeGroups = Array.isArray(pieGroups) ? pieGroups : [];
   const displayGroup = safeGroups.find((group) => group.id === "filtered") ?? safeGroups[0];
-  const matchedGroup = safeGroups.find((group) => group.id === "eligible-window");
-  const totalGroup = safeGroups.find((group) => group.id === "eligible-total");
+  const miniFirstGroup = safeGroups.find((group) => group.id === "eligible-window") ?? safeGroups[1];
+  const miniSecondGroup = safeGroups.find((group) => group.id === "eligible-total") ?? safeGroups[2];
 
   const displayCount = Math.max(Number(displayGroup?.total ?? 0), 0);
-  const matchedCount = Math.max(Number(matchedGroup?.total ?? 0), 0);
-  const totalCount = Math.max(Number(totalGroup?.total ?? 0), 0);
+  const miniFirstCount = Math.max(Number(miniFirstGroup?.total ?? 0), 0);
+  const miniSecondCount = Math.max(Number(miniSecondGroup?.total ?? 0), 0);
   const mainData = toRenderableDonutData(displayGroup?.data);
-  const miniMatchedData = toRenderableDonutData(matchedGroup?.data);
-  const miniTotalData = toRenderableDonutData(totalGroup?.data);
+  const miniFirstData = toRenderableDonutData(miniFirstGroup?.data);
+  const miniSecondData = toRenderableDonutData(miniSecondGroup?.data);
+  const tripleGroups = [displayGroup, miniFirstGroup, miniSecondGroup].filter(Boolean).map((group) => ({
+    ...group,
+    chartData: toRenderableDonutData(group?.data),
+  }));
 
   const getGroupTotal = (group) => {
     if (Number.isFinite(Number(group?.total))) {
@@ -60,49 +105,38 @@ const SummaryPieCardView = ({
             type="button"
             variant="outline"
             size="md"
-            className="analytics-toggle-button analytics-icon-only-button"
+            className="analytics-toggle-button analytics-icon-only-button analytics-detail-icon-button icon-tooltip-trigger"
             aria-label={isChartMaximized ? "グラフを最小化" : "グラフを最大化"}
+            data-tooltip={isChartMaximized ? "グラフを最小化" : "グラフを最大化"}
             onClick={onToggleMaximize}
           >
             {isChartMaximized ? (
-              <Minimize2 className="manager-edit-icon" size={16} aria-hidden="true" />
+              <Minimize2 className="manager-edit-icon" size={20} aria-hidden="true" />
             ) : (
-              <MoveDiagonal className="manager-edit-icon" size={16} aria-hidden="true" />
+              <MoveDiagonal className="manager-edit-icon" size={20} aria-hidden="true" />
             )}
           </Button>
         </div>
 
-        <div className="analytics-pie-triple-grid" aria-label="概要ドーナツ（3グラフ）">
-          {safeGroups.slice(0, 3).map((group, index) => (
+        <div className="analytics-pie-triple-grid" aria-label="概要ドーナツ（複数グラフ）">
+          {tripleGroups.map((group, index) => (
             <section
               key={group.id}
               className={`analytics-pie-triple-item ${index === 0 ? "analytics-pie-triple-item--display" : ""}`}
               aria-label={group.title}
             >
               <div className="analytics-pie-triple-wrap">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip formatter={formatDonutTooltip} />
-                    <Pie
-                      data={toRenderableDonutData(group?.data)}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={86}
-                      outerRadius={120}
-                      paddingAngle={2}
-                      isAnimationActive={false}
-                      onClick={(entry) => {
-                        const key = entry?.name;
-                        if (!key || key === EMPTY_DONUT_KEY) return;
-                        onSliceClick?.(group.id, key);
-                      }}
-                    >
-                      {toRenderableDonutData(group?.data).map((item) => (
-                        <Cell key={`${group.id}-${item.name}`} fill={item.color ?? "#cbd5e1"} stroke="#ffffff" strokeWidth={2} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+                <AnalyticsDonutChart
+                  data={group.chartData}
+                  chartHeight="100%"
+                  innerRadius={87}
+                  outerRadius={126}
+                  paddingAngle={2}
+                  strokeWidth={2}
+                  emptyKey={EMPTY_DONUT_KEY}
+                  tooltipContent={<DonutTooltipContent />}
+                  onSliceClick={(key) => onSliceClick?.(group.scope ?? group.id, key, group.selectionSeriesMode)}
+                />
 
                 <SummaryDonutCenter
                   label={group.title}
@@ -125,52 +159,33 @@ const SummaryPieCardView = ({
           type="button"
           variant="outline"
           size="md"
-          className="analytics-toggle-button analytics-icon-only-button"
+          className="analytics-toggle-button analytics-icon-only-button analytics-detail-icon-button icon-tooltip-trigger"
           aria-label={isChartMaximized ? "グラフを最小化" : "グラフを最大化"}
+          data-tooltip={isChartMaximized ? "グラフを最小化" : "グラフを最大化"}
           onClick={onToggleMaximize}
         >
           {isChartMaximized ? (
-            <Minimize2 className="manager-edit-icon" size={16} aria-hidden="true" />
+            <Minimize2 className="manager-edit-icon" size={20} aria-hidden="true" />
           ) : (
-            <MoveDiagonal className="manager-edit-icon" size={16} aria-hidden="true" />
+            <MoveDiagonal className="manager-edit-icon" size={20} aria-hidden="true" />
           )}
         </Button>
       </div>
 
       <div className="analytics-pie-single" aria-label="概要ドーナツチャート">
         <div className="analytics-pie-wrap">
-          <ResponsiveContainer width="100%" height={420}>
-            <PieChart>
-              <Tooltip formatter={formatDonutTooltip} />
-              <Pie
-                data={mainData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={102}
-                outerRadius={148}
-                cy="64%"
-                startAngle={90}
-                endAngle={-270}
-                paddingAngle={2}
-                isAnimationActive={false}
-                onClick={(entry) => {
-                  const key = entry?.name;
-                  if (!key || key === EMPTY_DONUT_KEY) return;
-                  onSliceClick?.("filtered", String(key));
-                }}
-              >
-                {mainData.map((item) => (
-                  <Cell
-                    key={`filtered-${item.name}`}
-                    fill={item.color ?? "#cbd5e1"}
-                    stroke="#ffffff"
-                    strokeWidth={2}
-                    style={{ cursor: "pointer" }}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          <AnalyticsDonutChart
+            data={mainData}
+            chartHeight={360}
+            innerRadius={72}
+            outerRadius={106}
+            cy="66.5%"
+            paddingAngle={2}
+            strokeWidth={2}
+            emptyKey={EMPTY_DONUT_KEY}
+            tooltipContent={<DonutTooltipContent />}
+            onSliceClick={(key) => onSliceClick?.("filtered", key)}
+          />
 
           <SummaryDonutCenter
             count={displayCount}
@@ -179,60 +194,34 @@ const SummaryPieCardView = ({
         </div>
 
         <div className="analytics-donut-mini-row">
-          <div className="analytics-donut-mini" aria-label="該当人数ミニドーナツ">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={miniMatchedData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={34}
-                  outerRadius={56}
-                  startAngle={90}
-                  endAngle={-270}
-                  paddingAngle={1}
-                  isAnimationActive={false}
-                  onClick={(entry) => {
-                    const key = entry?.name;
-                    if (!key || key === EMPTY_DONUT_KEY) return;
-                    onSliceClick?.("eligible-window", String(key));
-                  }}
-                >
-                  {miniMatchedData.map((item) => (
-                    <Cell key={`mini-matched-${item.name}`} fill={item.color ?? "#cbd5e1"} stroke="#ffffff" strokeWidth={1} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <SummaryDonutMiniCenter label="該当人数" count={matchedCount} />
+          <div className="analytics-donut-mini" aria-label={`${miniFirstGroup?.title ?? "対象社員"}ミニドーナツ`}>
+            <AnalyticsDonutChart
+              data={miniFirstData}
+              chartHeight="100%"
+              innerRadius={34}
+              outerRadius={56}
+              paddingAngle={1}
+              strokeWidth={1}
+              emptyKey={EMPTY_DONUT_KEY}
+              tooltipContent={<DonutTooltipContent />}
+              onSliceClick={(key) => onSliceClick?.(miniFirstGroup?.scope ?? "filtered", key, miniFirstGroup?.selectionSeriesMode)}
+            />
+            <SummaryDonutMiniCenter label={miniFirstGroup?.title ?? "対象社員"} count={miniFirstCount} />
           </div>
 
-          <div className="analytics-donut-mini" aria-label="全社員ミニドーナツ">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={miniTotalData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={34}
-                  outerRadius={56}
-                  startAngle={90}
-                  endAngle={-270}
-                  paddingAngle={1}
-                  isAnimationActive={false}
-                  onClick={(entry) => {
-                    const key = entry?.name;
-                    if (!key || key === EMPTY_DONUT_KEY) return;
-                    onSliceClick?.("eligible-total", String(key));
-                  }}
-                >
-                  {miniTotalData.map((item) => (
-                    <Cell key={`mini-total-${item.name}`} fill={item.color ?? "#cbd5e1"} stroke="#ffffff" strokeWidth={1} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <SummaryDonutMiniCenter label="全社員" count={totalCount} />
+          <div className="analytics-donut-mini" aria-label={`${miniSecondGroup?.title ?? "全社員"}ミニドーナツ`}>
+            <AnalyticsDonutChart
+              data={miniSecondData}
+              chartHeight="100%"
+              innerRadius={34}
+              outerRadius={56}
+              paddingAngle={1}
+              strokeWidth={1}
+              emptyKey={EMPTY_DONUT_KEY}
+              tooltipContent={<DonutTooltipContent />}
+              onSliceClick={(key) => onSliceClick?.(miniSecondGroup?.scope ?? "filtered", key, miniSecondGroup?.selectionSeriesMode)}
+            />
+            <SummaryDonutMiniCenter label={miniSecondGroup?.title ?? "全社員"} count={miniSecondCount} />
           </div>
         </div>
       </div>

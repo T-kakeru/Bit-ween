@@ -29,7 +29,7 @@ const AppSidebar = ({ navItems, activeNav, onNavChange, menuTitle = "メニュ�
             >
               <span className="nav-icon-frame" aria-hidden="true">
                 <Icon
-                  className={item.label === "利用者管理" ? "nav-icon nav-icon--system-users" : "nav-icon"}
+                  className={item.label === "アカウント管理" ? "nav-icon nav-icon--system-users" : "nav-icon"}
                   name={item.icon}
                 />
               </span>

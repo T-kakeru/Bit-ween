@@ -85,7 +85,7 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
     const copyText = [
       `${analysisPayload["名前"] || "ご担当者"} 様`,
       "",
-      "システム利用者登録が完了しました。",
+      "アカウント登録が完了しました。",
       `メールアドレス: ${String(basicInfo.email ?? "").trim()}`,
       `初期パスワード: ${credentials.initialPassword}`,
       `招待リンク: ${inviteLink}`,
@@ -141,8 +141,8 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
           <Card className="settings-panel">
             <div className="settings-row">
               <div>
-                <Heading level={2} className="manager-card-title">利用者の登録１</Heading>
-                <TextCaption>利用者一覧と分離した登録フローです。</TextCaption>
+                <Heading level={3} className="manager-card-title">アカウントの登録１</Heading>
+                <TextCaption>アカウント一覧と分離した登録フローです。</TextCaption>
                 <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
               </div>
             </div>
@@ -173,8 +173,8 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
         <Card className="settings-panel">
           <div className="settings-row">
             <div>
-              <Heading level={2} className="manager-card-title">利用者の登録１</Heading>
-              <TextCaption>利用者一覧と分離した登録フローです。</TextCaption>
+              <Heading level={3} className="manager-card-title">アカウントの登録１</Heading>
+              <TextCaption>アカウント一覧と分離した登録フローです。</TextCaption>
               <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
             </div>
           </div>
@@ -196,8 +196,8 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
         <Card className="settings-panel">
           <div className="settings-row">
             <div>
-              <Heading level={2} className="manager-card-title">利用者の登録１</Heading>
-              <TextCaption>利用者一覧と分離した登録フローです。</TextCaption>
+              <Heading level={3} className="manager-card-title">アカウントの登録１</Heading>
+              <TextCaption>アカウント一覧と分離した登録フローです。</TextCaption>
               <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
             </div>
           </div>
