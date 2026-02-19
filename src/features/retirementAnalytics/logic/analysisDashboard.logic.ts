@@ -1,4 +1,10 @@
 import { resolveRowSeriesKey } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
+import {
+  DONUT_COLOR_PALETTE,
+  UNKNOWN_CHART_COLOR,
+  getPaletteColorByIndex,
+  isUnknownChartLabel,
+} from "@/shared/logic/chartColorPalettes";
 
 export type SelectionScope = "filtered" | "eligible-window" | "eligible-total";
 export type AnalyticsAxis = "month" | "year" | string;
@@ -29,9 +35,8 @@ type PeriodParts = {
 type DonutSeriesArgs = {
   rows: EmployeeRow[];
   seriesMode: string;
-  seriesColors: Record<string, string>;
   displayedSeriesKeys?: string[];
-  defaultSeriesColor?: string;
+  seriesColors?: Record<string, string>;
 };
 
 type DetailRowsArgs = {
@@ -132,9 +137,8 @@ export const getRowPeriodKey = (row: EmployeeRow, axis: string): string => {
 export const buildDonutSeriesData = ({
   rows,
   seriesMode,
-  seriesColors,
   displayedSeriesKeys = [],
-  defaultSeriesColor = DEFAULT_SERIES_COLOR,
+  seriesColors = {},
 }: DonutSeriesArgs) => {
   const safeRows = Array.isArray(rows) ? rows : [];
   const safeSeries = Array.isArray(displayedSeriesKeys) ? displayedSeriesKeys : [];
@@ -151,9 +155,15 @@ export const buildDonutSeriesData = ({
   }
 
   return Array.from(counter.entries())
-    .map(([name, value]) => ({ name, value, color: seriesColors[name] ?? defaultSeriesColor }))
-    .filter((item) => item.value > 0)
-    .sort((a, b) => b.value - a.value);
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, value], index) => ({
+      name,
+      value,
+      color: isUnknownChartLabel(name)
+        ? UNKNOWN_CHART_COLOR
+        : (seriesColors[name] ?? getPaletteColorByIndex(index, DONUT_COLOR_PALETTE)),
+    }));
 };
 
 export const getDetailRowsBySelection = ({

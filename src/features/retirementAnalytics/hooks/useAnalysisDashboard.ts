@@ -110,7 +110,12 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
         title: "該当社員",
         total: filteredRows.length,
         selectionSeriesMode: seriesMode,
-        data: buildDonutSeriesData({ rows: filteredRows, seriesMode, seriesColors, displayedSeriesKeys }),
+        data: buildDonutSeriesData({
+          rows: filteredRows,
+          seriesMode,
+          displayedSeriesKeys,
+          seriesColors,
+        }),
       },
       {
         id: "eligible-window" as const,
@@ -118,7 +123,12 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
         title: "対象社員",
         total: windowRows.length,
         selectionSeriesMode: seriesMode,
-        data: buildDonutSeriesData({ rows: windowRows, seriesMode, seriesColors, displayedSeriesKeys }),
+        data: buildDonutSeriesData({
+          rows: windowRows,
+          seriesMode,
+          displayedSeriesKeys,
+          seriesColors,
+        }),
       },
       {
         id: "eligible-total" as const,
@@ -126,7 +136,12 @@ const useAnalysisDashboard = ({ tableAnchorRef }: UseAnalysisDashboardArgs) => {
         title: "全社員",
         total: totalRows.length,
         selectionSeriesMode: seriesMode,
-        data: buildDonutSeriesData({ rows: totalRows, seriesMode, seriesColors, displayedSeriesKeys }),
+        data: buildDonutSeriesData({
+          rows: totalRows,
+          seriesMode,
+          displayedSeriesKeys,
+          seriesColors,
+        }),
       },
     ];
   }, [displayedSeriesKeys, eligibleRowsInWindow, eligibleRowsTotal, filteredRowsInWindow, seriesColors, seriesMode]);

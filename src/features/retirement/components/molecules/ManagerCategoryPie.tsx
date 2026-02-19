@@ -71,19 +71,24 @@ const ManagerCategoryPie = ({ chartLabel, data, size = 168 }: ManagerCategoryPie
     const totalValue = toSafeNumber(payload?.total);
     const percent = totalValue > 0 ? (rawValue / totalValue) * 100 : 0;
 
-    if (percent < 12) return null;
+    if (percent <= 12) return null;
 
-    const radius = innerRadius + (sliceOuterRadius - innerRadius) * 0.58;
+    const isSmallLabel = percent <= 20;
+
+    const radius = innerRadius + (sliceOuterRadius - innerRadius) * (isSmallLabel ? 0.74 : 0.66);
     const radian = Math.PI / 180;
     const x = cx + radius * Math.cos(-midAngle * radian);
     const y = cy + radius * Math.sin(-midAngle * radian);
-    const fontSize = Math.max(9, Math.round(size * 0.088));
+    const baseFontSize = Math.max(9, Math.round(size * 0.088));
+    const fontSize = isSmallLabel ? Math.max(8, Math.round(baseFontSize * 0.82)) : baseFontSize;
+    const topYOffset = isSmallLabel ? 5 : 7;//  ラベルが小さい場合は上下のスペースをさらに詰める
+    const bottomYOffset = isSmallLabel ? 8 : 10;// ラベルが小さい場合は上下のスペースをさらに詰める
 
     return (
       <g>
         <text
           x={x}
-          y={y - 5}
+          y={y - topYOffset}
           textAnchor="middle"
           fill="#0f172a"
           fontSize={fontSize}
@@ -94,7 +99,7 @@ const ManagerCategoryPie = ({ chartLabel, data, size = 168 }: ManagerCategoryPie
         </text>
         <text
           x={x}
-          y={y + 8}
+          y={y + bottomYOffset}
           textAnchor="middle"
           fill="#0f172a"
           fontSize={fontSize}

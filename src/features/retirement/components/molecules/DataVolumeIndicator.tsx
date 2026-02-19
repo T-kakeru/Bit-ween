@@ -1,4 +1,5 @@
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
+import { EMPLOYEE_STATUS_LIGHT_COLORS } from "@/shared/logic/chartColorPalettes";
 
 type SegmentType = "active" | "resigned";
 
@@ -11,8 +12,8 @@ type DataVolumeIndicatorProps = {
   size?: number;
 };
 
-const COLOR_ACTIVE = "#bfdbfe";
-const COLOR_RESIGNED = "#fed7aa";
+const COLOR_ACTIVE = EMPLOYEE_STATUS_LIGHT_COLORS.active;
+const COLOR_RESIGNED = EMPLOYEE_STATUS_LIGHT_COLORS.resigned;
 
 const toSafeNumber = (value: number) => (Number.isFinite(value) ? Math.max(value, 0) : 0);
 const resolveSegment = (entry: any): SegmentType | null => {
@@ -106,10 +107,10 @@ const DataVolumeIndicator = ({
     const fontSize = Math.max(9, Math.round(size * 0.09));
     return (
       <g>
-        <text x={x} y={y - 6} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700" pointerEvents="none">
+        <text x={x} y={y - 8} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700" pointerEvents="none">
           {name}
         </text>
-        <text x={x} y={y + 8} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700" pointerEvents="none">
+        <text x={x} y={y + 10} textAnchor="middle" fill="#111827" fontSize={fontSize} fontWeight="700" pointerEvents="none">
           {percentText}
         </text>
       </g>

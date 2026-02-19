@@ -1,5 +1,4 @@
 import { ChevronDown, ClipboardCopy, ClipboardPlus } from "lucide-react";
-import KPICard from "@/features/retirement/components/molecules/KPICard";
 import DataVolumeIndicator from "@/features/retirement/components/molecules/DataVolumeIndicator";
 import ManagerCategoryPie from "@/features/retirement/components/molecules/ManagerCategoryPie";
 import FloatingFilterPanel from "@/features/retirement/components/organisms/FloatingFilterPanel";
@@ -99,9 +98,9 @@ const buildFilterSummaryChips = (filters, query) => {
   return chips;
 };
 
-const buildChartSelectionChip = (scope, segment) => {
+const buildChartSelectionChip = (segment) => {
   if (segment !== "active" && segment !== "resigned") return null;
-  const scopeLabel = scope === "all" ? "全社員" : "該当社員";
+  const scopeLabel = "該当社員";
   const segmentLabel = segment === "active" ? "現職" : "退職";
   return `円グラフ: ${scopeLabel} / ${segmentLabel}`;
 };
@@ -115,28 +114,15 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows });
   const [quickStatusFilter, setQuickStatusFilter] = useState("all");
-  const [quickFilterScope, setQuickFilterScope] = useState("display");
-
-  const handleTotalSegmentClick = (segment) => {
-    setQuickStatusFilter((prev) => {
-      if (quickFilterScope === "all" && prev === segment) return "all";
-      return segment;
-    });
-    setQuickFilterScope("all");
-  };
 
   const handleDisplaySegmentClick = (segment) => {
     setQuickStatusFilter((prev) => {
-      if (quickFilterScope === "display" && prev === segment) return "all";
+      if (prev === segment) return "all";
       return segment;
     });
-    setQuickFilterScope("display");
   };
 
-  const baseRowsForQuickFilter = useMemo(
-    () => (quickFilterScope === "all" ? rows : sortedRows),
-    [quickFilterScope, rows, sortedRows]
-  );
+  const baseRowsForQuickFilter = useMemo(() => sortedRows, [sortedRows]);
 
   const quickFilteredRows = useMemo(() => {
     if (quickStatusFilter === "active") {
@@ -163,21 +149,49 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
     [sortedRows]
   );
 
+  // 円グラフの集計対象は、検索・フィルタリング・ソートが適用された後のデータ（＝画面に表示されているデータ）とする
   const selectedFilterChips = useMemo(() => {
     const chips = buildFilterSummaryChips(filters, query);
-    const chartChip = buildChartSelectionChip(quickFilterScope, quickStatusFilter);
+    const chartChip = buildChartSelectionChip(quickStatusFilter);
     if (!chartChip) return chips;
     return [chartChip, ...chips];
-  }, [filters, query, quickFilterScope, quickStatusFilter]);
+  }, [filters, query, quickStatusFilter]);
+
+  const summaryPieOptions = useMemo(() => ({ aggregateOthers: true }), []);
+
+  const reasonPieData = useMemo(
+    () => buildManagerSummaryPieData(quickFilteredRows, "reason", summaryPieOptions),
+    [quickFilteredRows, summaryPieOptions],
+  );
 
   const departmentPieData = useMemo(
-    () => buildManagerSummaryPieData(quickFilteredRows, "department"),
-    [quickFilteredRows],
+    () => buildManagerSummaryPieData(quickFilteredRows, "department", summaryPieOptions),
+    [quickFilteredRows, summaryPieOptions],
+  );
+
+  const agePieData = useMemo(
+    () => buildManagerSummaryPieData(quickFilteredRows, "age", summaryPieOptions),
+    [quickFilteredRows, summaryPieOptions],
+  );
+
+  const tenurePieData = useMemo(
+    () => buildManagerSummaryPieData(quickFilteredRows, "tenure", summaryPieOptions),
+    [quickFilteredRows, summaryPieOptions],
   );
 
   const statusPieData = useMemo(
-    () => buildManagerSummaryPieData(quickFilteredRows, "status"),
-    [quickFilteredRows],
+    () => buildManagerSummaryPieData(quickFilteredRows, "status", summaryPieOptions),
+    [quickFilteredRows, summaryPieOptions],
+  );
+
+  const genderPieData = useMemo(
+    () => buildManagerSummaryPieData(quickFilteredRows, "gender", summaryPieOptions),
+    [quickFilteredRows, summaryPieOptions],
+  );
+
+  const clientPieData = useMemo(
+    () => buildManagerSummaryPieData(quickFilteredRows, "client", summaryPieOptions),
+    [quickFilteredRows, summaryPieOptions],
   );
 
   return (
@@ -221,47 +235,77 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           {isSummaryOpen ? (
             <div className="manager-summary-chart-row manager-summary-chart-row--subcard">
               <div className="manager-summary-chart-block">
-                <p className="manager-summary-chart-title">全社員</p>
-                <KPICard
-                  label="全社員"
-                  value={metrics.total}
-                  activeCount={metrics.active}
-                  resignedCount={metrics.resigned}
-                  type="total"
-                  size={168}
-                  onSegmentClick={handleTotalSegmentClick}
-                  selectedSegment={quickFilterScope === "all" ? quickStatusFilter : "all"}
-                />
-              </div>
-
-              <div className="manager-summary-chart-block">
                 <p className="manager-summary-chart-title">該当社員</p>
                 <DataVolumeIndicator
                   current={sortedRows?.length ?? 0}
                   total={rows.length}
                   activeCount={displayedActiveCount}
                   resignedCount={displayedResignedCount}
-                  size={168}
+                  size={156}
                   onSegmentClick={handleDisplaySegmentClick}
-                  selectedSegment={quickFilterScope === "display" ? quickStatusFilter : "all"}
                 />
               </div>
 
               <div className="manager-summary-chart-block">
-                <p className="manager-summary-chart-title">該当社員：部署別</p>
+                <p className="manager-summary-chart-title">退職理由</p>
                 <ManagerCategoryPie
-                  chartLabel="該当社員リストの部署別構成比"
+                  chartLabel="該当社員リストの退職理由構成比"
+                  data={reasonPieData}
+                  size={156}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">部署</p>
+                <ManagerCategoryPie
+                  chartLabel="該当社員リストの部署構成比"
                   data={departmentPieData}
-                  size={168}
+                  size={156}
                 />
               </div>
 
               <div className="manager-summary-chart-block">
-                <p className="manager-summary-chart-title">該当社員：稼働状態別</p>
+                <p className="manager-summary-chart-title">年齢</p>
                 <ManagerCategoryPie
-                  chartLabel="該当社員リストの稼働状態別構成比"
+                  chartLabel="該当社員リストの年齢構成比"
+                  data={agePieData}
+                  size={156}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">在籍月数</p>
+                <ManagerCategoryPie
+                  chartLabel="該当社員リストの在籍月数構成比"
+                  data={tenurePieData}
+                  size={156}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">稼働状態</p>
+                <ManagerCategoryPie
+                  chartLabel="該当社員リストの稼働状態構成比"
                   data={statusPieData}
-                  size={168}
+                  size={156}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">性別</p>
+                <ManagerCategoryPie
+                  chartLabel="該当社員リストの性別構成比"
+                  data={genderPieData}
+                  size={156}
+                />
+              </div>
+
+              <div className="manager-summary-chart-block">
+                <p className="manager-summary-chart-title">稼働先</p>
+                <ManagerCategoryPie
+                  chartLabel="該当社員リストの稼働先構成比"
+                  data={clientPieData}
+                  size={156}
                 />
               </div>
             </div>

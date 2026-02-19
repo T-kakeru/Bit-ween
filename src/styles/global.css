@@ -349,6 +349,43 @@ input:disabled,
 .manager-summary-chart-row--subcard {
   margin-top: 0;
   padding: 12px 14px 14px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: start;
+  flex-wrap: nowrap;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.manager-summary-chart-row--subcard {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.manager-summary-chart-row--subcard::-webkit-scrollbar {
+  display: none;
+}
+
+.manager-summary-chart-divider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 182px;
+  background: #d1d5db;
+  flex: 0 0 1px;
+}
+
+.manager-summary-chart-block--all-total {
+  margin-left: auto;
+}
+
+.manager-summary-chart-row--subcard .manager-summary-chart-block {
+  min-width: 168px;
+  width: 168px;
+  border: 0;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 6px 4px 8px;
 }
 
 .manager-summary-chart-row .recharts-wrapper:focus,
