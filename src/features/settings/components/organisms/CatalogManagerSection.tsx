@@ -1,48 +1,64 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "@/shared/ui/Card";
 import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
 import Icon from "@/shared/ui/Icon";
 import Input from "@/shared/ui/Input";
-import departments from "@/shared/data/mock/departments.json";
-import clients from "@/shared/data/mock/clients.json";
-import workStatuses from "@/shared/data/mock/workStatuses.json";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
+import {
+  fetchWorkStatusNames,
+} from "@/services/masterData/masterDataService";
+import type { CatalogItem, CatalogKey } from "@/shared/logic/catalogStorage";
+import { isSupabaseConfigured } from "@/services/common/supabaseClient";
+import { listDepartments, addDepartmentToSupabase, updateDepartmentInSupabase, deleteDepartmentFromSupabase } from "@/services/department/departmentService";
+import { listClients, addClientToSupabase, updateClientInSupabase, deleteClientFromSupabase } from "@/services/client/clientService";
 
-type CatalogKey = "departments" | "clients" | "workStatuses";
+const WORK_STATUS_ID_PREFIX = "ws";
 
-type CatalogItem = {
-  id: string;
+const toWorkStatusItems = (names: string[]): CatalogItem[] =>
+  (Array.isArray(names) ? names : [])
+    .map((name) => String(name ?? "").trim())
+    .filter(Boolean)
+    .map((name, index) => ({
+      id: `${WORK_STATUS_ID_PREFIX}-${String(index + 1).padStart(3, "0")}`,
+      name,
+    }));
+
+const normalizeName = (value: unknown) => String(value ?? "").trim();
+
+const validateCatalogName = ({
+  itemLabel,
+  keyName,
+  name,
+}: {
+  itemLabel: "部署" | "稼働先" | "稼働状態";
+  keyName: CatalogKey;
   name: string;
+}): { ok: true } | { ok: false; message: string } => {
+  const trimmed = normalizeName(name);
+  if (!trimmed) return { ok: false, message: ERROR_MESSAGES.MASTER.NAME_REQUIRED };
+
+  const maxLength =
+    keyName === "departments" ? 100 : keyName === "clients" ? 150 : 100;
+  if (trimmed.length > maxLength) {
+    return { ok: false, message: ERROR_MESSAGES.CSV.EMPLOYEE.MAX_LENGTH(itemLabel, maxLength) };
+  }
+
+  return { ok: true };
 };
 
-const STORAGE_PREFIX = "bit_ween.settings.catalog.";
-
-const normalizeItems = (raw: unknown): CatalogItem[] => {
-  if (!Array.isArray(raw)) return [];
-
-  const list = raw
-    .map((x) => ({ id: String((x as any)?.id ?? "").trim(), name: String((x as any)?.name ?? "").trim() }))
-    .filter((x) => x.id && x.name);
-
+const hasDuplicateNames = (items: CatalogItem[]) => {
   const seen = new Set<string>();
-  const unique: CatalogItem[] = [];
-  for (const item of list) {
-    if (seen.has(item.id)) continue;
-    seen.add(item.id);
-    unique.push(item);
+  for (const item of items) {
+    const key = normalizeName(item.name);
+    if (!key) continue;
+    if (seen.has(key)) return true;
+    seen.add(key);
   }
-  return unique;
+  return false;
 };
 
-const loadFromStorage = (storageKey: string): CatalogItem[] | null => {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) return null;
-    return normalizeItems(JSON.parse(raw));
-  } catch {
-    return null;
-  }
-};
+const isTempId = (id: string) => String(id ?? "").startsWith("tmp:");
 
 type Props = {
   title: string;
@@ -50,11 +66,15 @@ type Props = {
   keyName: CatalogKey;
   itemLabel: "部署" | "稼働先" | "稼働状態";
   embedded?: boolean;
+  readOnly?: boolean;
 };
 
-export const CatalogManagerSection = ({ title, description, keyName, itemLabel, embedded = false }: Props) => {
+export const CatalogManagerSection = ({ title, description, keyName, itemLabel, embedded = false, readOnly = false }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [sessionItems, setSessionItems] = useState<CatalogItem[] | null>(null);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [newName, setNewName] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
@@ -63,33 +83,44 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
   const [editDraftName, setEditDraftName] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
 
-  const initialItems = useMemo<CatalogItem[]>(() => {
-    const source =
-      keyName === "departments"
-        ? (departments as any)
-        : keyName === "clients"
-          ? (clients as any)
-          : (workStatuses as any);
-    return (Array.isArray(source) ? source : [])
-      .map((x) => ({ id: String(x?.id ?? "").trim(), name: String(x?.name ?? "").trim() }))
-      .filter((x) => x.id && x.name);
-  }, [keyName]);
+  const [items, setItems] = useState<CatalogItem[]>([]);
 
-  const storageKey = useMemo(() => `${STORAGE_PREFIX}${keyName}`, [keyName]);
+  const tempIdSeqRef = useRef(1);
+  const createTempId = () => {
+    const seq = tempIdSeqRef.current++;
+    if (typeof crypto !== "undefined" && typeof (crypto as any).randomUUID === "function") {
+      return `tmp:${(crypto as any).randomUUID()}`;
+    }
+    return `tmp:${Date.now()}-${seq}`;
+  };
 
-  const [items, setItems] = useState<CatalogItem[]>(() => {
-    if (typeof window === "undefined") return initialItems;
-    const stored = loadFromStorage(storageKey);
-    return stored && stored.length > 0 ? stored : initialItems;
-  });
+  const loadItems = async (): Promise<CatalogItem[]> => {
+    if (keyName === "departments") {
+      return await listDepartments();
+    }
+    if (keyName === "clients") {
+      return await listClients();
+    }
+
+    const names = await fetchWorkStatusNames();
+    return toWorkStatusItems(names);
+  };
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(items));
-    } catch {
-      // ignore
-    }
-  }, [items, storageKey]);
+    let disposed = false;
+
+    const load = async () => {
+      if (disposed) return;
+      const loaded = await loadItems();
+      if (disposed) return;
+      setItems(Array.isArray(loaded) ? loaded : []);
+    };
+
+    void load();
+    return () => {
+      disposed = true;
+    };
+  }, [keyName]);
 
   const getEditingItems = () => (sessionItems ?? items);
 
@@ -106,18 +137,19 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
 
   const addItem = (next: Pick<CatalogItem, "name">): { ok: true } | { ok: false; message: string } => {
     const baseItems = getEditingItems();
-    const name = String(next.name ?? "").trim();
-    if (!name) return { ok: false, message: "名称は必須です" };
+    const name = normalizeName(next.name);
+    const validated = validateCatalogName({ itemLabel, keyName, name });
+    if (!validated.ok) return validated;
 
-    const nextId = buildNextId(baseItems);
-    setSessionItems([...baseItems, { id: nextId, name }]);
+    setSessionItems([...baseItems, { id: createTempId(), name }]);
     return { ok: true };
   };
 
   const updateItem = (prevId: string, next: Pick<CatalogItem, "name">): { ok: true } | { ok: false; message: string } => {
     const baseItems = getEditingItems();
-    const name = String(next.name ?? "").trim();
-    if (!name) return { ok: false, message: "名称は必須です" };
+    const name = normalizeName(next.name);
+    const validated = validateCatalogName({ itemLabel, keyName, name });
+    if (!validated.ok) return validated;
 
     setSessionItems(baseItems.map((x) => (x.id === prevId ? { ...x, name } : x)));
     return { ok: true };
@@ -134,6 +166,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
   const handleOpenManage = () => {
     setSessionItems([...items]);
     setIsOpen(true);
+    setSaveError(null);
   };
 
   const handleCancelManage = () => {
@@ -141,28 +174,103 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
     setIsOpen(false);
     setNewName("");
     setAddError(null);
+    setSaveError(null);
     cancelEdit();
   };
 
-  const handleSaveManage = () => {
+  const handleSaveManage = async () => {
+    if (readOnly) return;
+    if (!isSupabaseConfigured()) {
+      setSaveError(ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED_SUPABASE_ENV);
+      return;
+    }
+
     const nextItems = sessionItems ?? items;
+    const trimmedItems = nextItems.map((x) => ({ ...x, name: normalizeName(x.name) })).filter((x) => x.name);
+
+    if (hasDuplicateNames(trimmedItems)) {
+      setSaveError(ERROR_MESSAGES.MASTER.NAME_ALREADY_EXISTS);
+      return;
+    }
+
+    for (const x of trimmedItems) {
+      const validated = validateCatalogName({ itemLabel, keyName, name: x.name });
+      if (!validated.ok) {
+        setSaveError(validated.message);
+        return;
+      }
+    }
+
     const confirmed = window.confirm(
       "保存すると、すでに登録されている関連データにも影響する可能性があります。保存してよろしいですか？",
     );
     if (!confirmed) return;
 
-    setItems(nextItems);
-    setSessionItems(null);
-    setIsOpen(false);
-    setNewName("");
-    setAddError(null);
-    cancelEdit();
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      const beforeById = new Map(items.map((x) => [x.id, x] as const));
+      const afterById = new Map(trimmedItems.map((x) => [x.id, x] as const));
+
+      const deleted = items.filter((x) => !afterById.has(x.id));
+      const added = trimmedItems.filter((x) => isTempId(x.id));
+      const updated = trimmedItems.filter((x) => {
+        if (isTempId(x.id)) return false;
+        const before = beforeById.get(x.id);
+        return before ? normalizeName(before.name) !== normalizeName(x.name) : false;
+      });
+
+      if (keyName === "departments") {
+        for (const x of added) {
+          const r = await addDepartmentToSupabase(x.name);
+          if (!r.ok) throw new Error(r.message);
+        }
+        for (const x of updated) {
+          const r = await updateDepartmentInSupabase({ id: x.id, name: x.name });
+          if (!r.ok) throw new Error(r.message);
+        }
+        for (const x of deleted) {
+          const r = await deleteDepartmentFromSupabase(x.id);
+          if (!r.ok) throw new Error(r.message);
+        }
+      }
+
+      if (keyName === "clients") {
+        for (const x of added) {
+          const r = await addClientToSupabase(x.name);
+          if (!r.ok) throw new Error(r.message);
+        }
+        for (const x of updated) {
+          const r = await updateClientInSupabase({ id: x.id, name: x.name });
+          if (!r.ok) throw new Error(r.message);
+        }
+        for (const x of deleted) {
+          const r = await deleteClientFromSupabase(x.id);
+          if (!r.ok) throw new Error(r.message);
+        }
+      }
+
+      const refreshed = await loadItems();
+      setItems(Array.isArray(refreshed) ? refreshed : []);
+
+      setSessionItems(null);
+      setIsOpen(false);
+      setNewName("");
+      setAddError(null);
+      cancelEdit();
+    } catch (err: any) {
+      setSaveError(String(err?.message ?? err ?? ERROR_MESSAGES.SYSTEM.UPDATE_FAILED_GENERIC));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const startEdit = (item: CatalogItem) => {
     setEditingId(item.id);
     setEditDraftName(item.name);
     setEditError(null);
+    if (saveError) setSaveError(null);
   };
 
   const cancelEdit = () => {
@@ -179,6 +287,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
     }
     setNewName("");
     setAddError(null);
+    if (saveError) setSaveError(null);
   };
 
   const handleSaveEdit = (prevId: string) => {
@@ -188,20 +297,24 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
       return;
     }
     cancelEdit();
+    if (saveError) setSaveError(null);
   };
 
   //
   const handleNewNameChange = (event: any) => {
     setNewName(event.target.value);
     if (addError) setAddError(null);
+    if (saveError) setSaveError(null);
   };
 
   const handleEditDraftNameChange = (event: any) => {
     setEditDraftName(event.target.value);
     if (editError) setEditError(null);
+    if (saveError) setSaveError(null);
   };
 
-  const displayItems = sessionItems ?? items;
+  const shouldShowList = readOnly || isOpen;
+  const displayItems = readOnly ? items : sessionItems ?? items;
 
   const containerClassName = embedded
     ? `settings-master-item ${isOpen ? "is-open" : ""}`
@@ -217,7 +330,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
         </div>
 
         <div className="flex items-center gap-2">
-          {isOpen ? (
+          {readOnly ? null : isOpen ? (
             <>
               <Button
                 type="button"
@@ -225,6 +338,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                 size="md"
                 className="settings-action-button settings-cancel-button"
                 onClick={handleCancelManage}
+                disabled={isSaving}
               >
                 キャンセル
               </Button>
@@ -234,6 +348,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                 size="md"
                 className="settings-action-button"
                 onClick={handleSaveManage}
+                disabled={isSaving}
               >
                 保存
               </Button>
@@ -253,34 +368,39 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
         </div>
       </div>
 
-      {isOpen ? (
+      {shouldShowList ? (
         <div className="px-6 pb-5">
-          <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-sm font-semibold text-slate-900">新規{itemLabel}追加</div>
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Input
-                type="text"
-                value={newName}
-                onChange={handleNewNameChange}
-                placeholder={`${itemLabel}名`}
-              />
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="md"
-                  className="settings-action-button"
-                  onClick={handleAdd}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <Icon src="/img/icon_file_add.png" alt="追加" />
-                    追加
-                  </span>
-                </Button>
+          {saveError ? <p className="mt-3 text-xs text-rose-600">{saveError}</p> : null}
+          {!readOnly ? (
+            <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-sm font-semibold text-slate-900">新規{itemLabel}追加</div>
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Input
+                  type="text"
+                  value={newName}
+                  onChange={handleNewNameChange}
+                  placeholder={`${itemLabel}名`}
+                  disabled={isSaving}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    className="settings-action-button"
+                    onClick={handleAdd}
+                    disabled={isSaving}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <Icon src="/img/icon_file_add.png" alt="追加" />
+                      追加
+                    </span>
+                  </Button>
+                </div>
               </div>
+              {addError ? <p className="mt-2 text-xs text-rose-600">{addError}</p> : null}
             </div>
-            {addError ? <p className="mt-2 text-xs text-rose-600">{addError}</p> : null}
-          </div>
+          ) : null}
 
           <div className="mt-4 space-y-2">
             {displayItems.length === 0 ? (
@@ -306,6 +426,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                             value={editDraftName}
                             onChange={handleEditDraftNameChange}
                             placeholder={`${itemLabel}名`}
+                            disabled={isSaving}
                           />
                         </div>
                         {editError ? <p className="text-xs text-rose-600">{editError}</p> : null}
@@ -316,7 +437,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
-                    {isEditing ? (
+                    {readOnly ? null : isEditing ? (
                       <>
                         <Button type="button" variant="outline" size="sm" onClick={() => handleSaveEdit(item.id)}>
                           保存
@@ -341,6 +462,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                           onClick={() => startEdit(item)}
                           aria-label={`${itemLabel}を編集`}
                           title="編集"
+                          disabled={isSaving}
                         >
                           <Icon src="/img/icon_edit.png" alt="編集" />
                         </Button>
@@ -352,6 +474,7 @@ export const CatalogManagerSection = ({ title, description, keyName, itemLabel, 
                           onClick={() => deleteItem(item.id)}
                           aria-label={`${itemLabel}を削除`}
                           title="削除"
+                          disabled={isSaving}
                         >
                           <Icon name="×" alt="削除" />
                         </Button>

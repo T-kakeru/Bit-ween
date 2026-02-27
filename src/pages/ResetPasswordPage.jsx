@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useResetPasswordForm } from "@/features/auth/hooks/useResetPasswordForm";
 import AuthScreenLayout from "@/features/auth/components/AuthScreenLayout";
+import { ERROR_MESSAGES, NOTIFY_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const ResetPasswordPage = ({ onBackToLogin }) => {
   const { resetPassword } = useAuth();
@@ -28,10 +29,10 @@ const ResetPasswordPage = ({ onBackToLogin }) => {
     setSuccessMessage("");
     const result = await resetPassword({ password: values.password });
     if (!result.ok) {
-      setSubmitError(result.message || "パスワード更新に失敗しました");
+      setSubmitError(result.message || ERROR_MESSAGES.AUTH.PASSWORD_UPDATE_FAILED);
       return;
     }
-    setSuccessMessage("パスワードを変更しました。ログイン画面からログインしてください。");
+    setSuccessMessage(NOTIFY_MESSAGES.AUTH.PASSWORD_UPDATED);
   };
 
   return (

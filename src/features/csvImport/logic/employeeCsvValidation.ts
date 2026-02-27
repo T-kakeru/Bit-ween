@@ -4,8 +4,9 @@ import type {
   EmployeeCsvRawRow,
   EmployeeCsvValidationResult,
 } from "../types";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
+import { validateEmploymentStatusConsistency } from "@/shared/validation/employeeValidation";
 import {
-  EMPLOYMENT_STATUS_MASTER,
   GENDER_MASTER,
   hasWorkStatusMaster,
   hasClientMaster,
@@ -27,6 +28,8 @@ const normalizeValue = (value: string | null | undefined) => {
   const trimmed = String(value).trim();
   // Excel/スプレッドシート運用で「値なし」の表現として入りがちなダッシュは空扱いにする
   if (trimmed === "-" || trimmed === "－" || trimmed === "ー" || trimmed === "―" || trimmed === "—") return "";
+  // Excelで空欄/参照切れのときに入りがちなエラー文字列は「値なし」として扱う
+  if (trimmed === "#REF!") return "";
   return trimmed;
 };
 
@@ -115,12 +118,18 @@ export const validateEmployeeCsvRow = ({
   const employeeId = normalizeValue(row.employeeId) || null;
   const department = normalizeValue(row.department) || null;
   const joinDateRaw = normalizeValue(row.joinDate);
-  const employmentStatusRaw = normalizeValue(row.employmentStatus) || null;
+  const employmentStatusRaw = normalizeValue((row as any).employmentStatus);
   const workStatus = normalizeValue(row.workStatus);
   const workLocation = normalizeValue(row.workLocation) || null;
   const retirementDateRaw = normalizeValue(row.retirementDate);
   const retirementReason = normalizeValue(row.retirementReason);
   const remark = normalizeValue(row.remark);
+
+  // 在籍/退職の判定
+  // - 在籍状態列があればそれを優先（在籍/退職）
+  // - 無ければ、退職情報(退職日/退職理由)が入っているかで推定する
+  const hasExplicitEmploymentStatus = Boolean(employmentStatusRaw);
+  const isRetired = employmentStatusRaw === "退職" ? true : employmentStatusRaw === "在籍" ? false : Boolean(retirementDateRaw || retirementReason);
 
   const valuesToCheck = [
     name,
@@ -129,7 +138,7 @@ export const validateEmployeeCsvRow = ({
     employeeId ?? "",
     department ?? "",
     joinDateRaw,
-    employmentStatusRaw ?? "",
+    employmentStatusRaw,
     workStatus,
     workLocation ?? "",
     retirementDateRaw,
@@ -141,31 +150,39 @@ export const validateEmployeeCsvRow = ({
     errors.push({
       rowNumber,
       field: "row",
-      message: "文字コードが正しくありません。UTF-8で保存し直してください。",
+      message: ERROR_MESSAGES.CSV.EMPLOYEE.INVALID_ENCODING_UTF8_DOT,
     });
   }
 
-  if (isBlank(name)) errors.push(toFieldError(rowNumber, "name", "氏名は必須です。"));
+  if (isBlank(name)) errors.push(toFieldError(rowNumber, "name", ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED("氏名")));
   if (name && name.length > MAX_NAME_LENGTH) {
-    errors.push(toFieldError(rowNumber, "name", `氏名は${MAX_NAME_LENGTH}文字以内で入力してください。`));
+    errors.push(
+      toFieldError(rowNumber, "name", ERROR_MESSAGES.CSV.EMPLOYEE.MAX_LENGTH("氏名", MAX_NAME_LENGTH))
+    );
   }
 
   if (isBlank(genderRaw)) {
-    errors.push(toFieldError(rowNumber, "gender", "性別は必須です。"));
+    errors.push(toFieldError(rowNumber, "gender", ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED("性別")));
   } else if (!GENDER_MASTER.includes(genderRaw) && !GENDER_MASTER.includes(genderValue)) {
-    errors.push(toFieldError(rowNumber, "gender", "性別は『男性/女性/その他』で入力してください。"));
+    errors.push(toFieldError(rowNumber, "gender", ERROR_MESSAGES.CSV.EMPLOYEE.GENDER_MUST_BE_ALLOWED));
   }
 
   const birthDate = normalizeDateValue(birthDateRaw);
   if (isBlank(birthDateRaw)) {
-    errors.push(toFieldError(rowNumber, "birthDate", "生年月日は必須です。"));
+    errors.push(toFieldError(rowNumber, "birthDate", ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED("生年月日")));
   } else if (!birthDate) {
-    errors.push(toFieldError(rowNumber, "birthDate", "生年月日が日付として認識できません。例: 1990/04/01"));
+    errors.push(
+      toFieldError(
+        rowNumber,
+        "birthDate",
+        ERROR_MESSAGES.CSV.EMPLOYEE.DATE_NOT_RECOGNIZED_WITH_EXAMPLE("生年月日", "1990/04/01")
+      )
+    );
   }
 
   if (department && !hasDepartmentMaster(department)) {
     errors.push({
-      ...toFieldError(rowNumber, "department", "部署がマスタに存在しません。追加して取り込みできます。"),
+      ...toFieldError(rowNumber, "department", ERROR_MESSAGES.CSV.EMPLOYEE.DEPARTMENT_NOT_IN_MASTER_ADDABLE),
       code: "unknownDepartment",
       value: department,
     });
@@ -173,69 +190,155 @@ export const validateEmployeeCsvRow = ({
 
   const joinDate = normalizeDateValue(joinDateRaw);
   if (isBlank(joinDateRaw)) {
-    errors.push(toFieldError(rowNumber, "joinDate", "入社日は必須です。"));
+    errors.push(toFieldError(rowNumber, "joinDate", ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED("入社日")));
   } else if (!joinDate) {
-    errors.push(toFieldError(rowNumber, "joinDate", "入社日が日付として認識できません。例: 2020/04/01"));
-  }
-
-  if (employmentStatusRaw && !EMPLOYMENT_STATUS_MASTER.includes(employmentStatusRaw)) {
-    errors.push(toFieldError(rowNumber, "employmentStatus", "在籍状態が不正です。例: 在籍中 / 退職済"));
+    errors.push(
+      toFieldError(
+        rowNumber,
+        "joinDate",
+        ERROR_MESSAGES.CSV.EMPLOYEE.DATE_NOT_RECOGNIZED_WITH_EXAMPLE("入社日", "2020/04/01")
+      )
+    );
   }
 
   if (isBlank(workStatus)) {
-    errors.push(toFieldError(rowNumber, "workStatus", "稼働状態は必須です。"));
+    errors.push(toFieldError(rowNumber, "workStatus", ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED("稼働状態")));
   } else {
     if (workStatus.length > MAX_WORK_STATUS_LENGTH) {
-      errors.push(toFieldError(rowNumber, "workStatus", `稼働状態は${MAX_WORK_STATUS_LENGTH}文字以内で入力してください。`));
+      errors.push(
+        toFieldError(
+          rowNumber,
+          "workStatus",
+          ERROR_MESSAGES.CSV.EMPLOYEE.MAX_LENGTH("稼働状態", MAX_WORK_STATUS_LENGTH)
+        )
+      );
     }
     if (!hasWorkStatusMaster(workStatus)) {
-      errors.push({
-        ...toFieldError(rowNumber, "workStatus", "稼働状態がマスタに存在しません。追加して取り込みできます。"),
-        code: "unknownWorkStatus",
-        value: workStatus,
-      });
+      errors.push(
+        toFieldError(
+          rowNumber,
+          "workStatus",
+          ERROR_MESSAGES.CSV.EMPLOYEE.WORK_STATUS_NOT_IN_MASTER(workStatus)
+        )
+      );
     }
   }
 
   if (workLocation && workLocation.length > MAX_WORK_LOCATION_LENGTH) {
-    errors.push(toFieldError(rowNumber, "workLocation", `稼働先は${MAX_WORK_LOCATION_LENGTH}文字以内で入力してください。`));
+    errors.push(
+      toFieldError(
+        rowNumber,
+        "workLocation",
+        ERROR_MESSAGES.CSV.EMPLOYEE.MAX_LENGTH("稼働先", MAX_WORK_LOCATION_LENGTH)
+      )
+    );
   }
 
   if (workLocation && !hasClientMaster(workLocation)) {
     errors.push({
-      ...toFieldError(rowNumber, "workLocation", "稼働先がマスタに存在しません。追加して取り込みできます。"),
+      ...toFieldError(rowNumber, "workLocation", ERROR_MESSAGES.CSV.EMPLOYEE.WORK_LOCATION_NOT_IN_MASTER_ADDABLE),
       code: "unknownWorkLocation",
       value: workLocation,
     });
   }
 
-  const retirementDate = normalizeDateValue(retirementDateRaw);
-  if (isBlank(retirementDateRaw)) {
-    errors.push(toFieldError(rowNumber, "retirementDate", "退職日は必須です。"));
-  } else if (!retirementDate) {
-    errors.push(toFieldError(rowNumber, "retirementDate", "退職日が日付として認識できません。例: 2023/03/31"));
-  } else if (joinDate) {
-    const joinDateObj = parseDateString(joinDate);
-    const retireDateObj = parseDateString(retirementDate);
-    if (joinDateObj && retireDateObj && retireDateObj < joinDateObj) {
-      errors.push(toFieldError(rowNumber, "retirementDate", "退職日が入社日より前になっています。日付を修正してください。"));
+  // 在籍状態の入力値が不正な場合（列がある/入力がある想定）
+  if (hasExplicitEmploymentStatus && employmentStatusRaw !== "在籍" && employmentStatusRaw !== "退職") {
+    errors.push({
+      ...toFieldError(rowNumber, "employmentStatus", ERROR_MESSAGES.VALIDATION.EMPLOYMENT_STATUS_INVALID),
+      code: "invalidEmploymentStatus",
+      value: employmentStatusRaw,
+    });
+  }
+
+  // 在籍状態と退職情報の整合性（在籍なのに退職日/退職理由/備考が入っている等）
+  const consistencyErrors = validateEmploymentStatusConsistency({
+    employmentStatus: employmentStatusRaw,
+    retireDate: retirementDateRaw,
+    retireReason: retirementReason,
+    remark,
+  });
+  for (const e of consistencyErrors) {
+    if (e.code === "EMPLOYMENT_STATUS_INVALID") continue; // ここは上でCSV専用として出している
+
+    if (e.field === "retireDate") {
+      errors.push({
+        ...toFieldError(rowNumber, "retirementDate", e.message),
+        code: "activeDisallowRetirementDate",
+      });
     }
-  } else if (!allowFutureRetirementDate) {
-    const today = new Date();
-    const retireDateObj = parseDateString(retirementDate);
-    if (retireDateObj && retireDateObj > today) {
-      errors.push(toFieldError(rowNumber, "retirementDate", "退職日が未来日です。修正してください。"));
+    if (e.field === "retireReason") {
+      errors.push({
+        ...toFieldError(rowNumber, "retirementReason", e.message),
+        code: "activeDisallowRetirementReason",
+      });
+    }
+    if (e.field === "remark") {
+      errors.push({
+        ...toFieldError(rowNumber, "remark", e.message),
+        code: "activeDisallowRemark",
+      });
     }
   }
 
-  if (retirementReason.length > MAX_RETIRE_REASON_LENGTH) {
-    errors.push(
-      toFieldError(rowNumber, "retirementReason", `退職理由は${MAX_RETIRE_REASON_LENGTH}文字以内で入力してください。`)
-    );
+  const retirementDate = normalizeDateValue(retirementDateRaw);
+  if (isRetired) {
+    if (isBlank(retirementDateRaw)) {
+      errors.push(toFieldError(rowNumber, "retirementDate", ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED("退職日")));
+    } else if (!retirementDate) {
+      errors.push(
+        toFieldError(
+          rowNumber,
+          "retirementDate",
+          ERROR_MESSAGES.CSV.EMPLOYEE.DATE_NOT_RECOGNIZED_WITH_EXAMPLE("退職日", "2023/03/31")
+        )
+      );
+    } else {
+      if (joinDate) {
+        const joinDateObj = parseDateString(joinDate);
+        const retireDateObj = parseDateString(retirementDate);
+        if (joinDateObj && retireDateObj && retireDateObj < joinDateObj) {
+          errors.push(
+            toFieldError(rowNumber, "retirementDate", ERROR_MESSAGES.CSV.EMPLOYEE.RETIREMENT_DATE_BEFORE_JOIN_DATE)
+          );
+        }
+      }
+
+      if (!allowFutureRetirementDate) {
+        const today = new Date();
+        const retireDateObj = parseDateString(retirementDate);
+        if (retireDateObj && retireDateObj > today) {
+          errors.push(toFieldError(rowNumber, "retirementDate", ERROR_MESSAGES.CSV.EMPLOYEE.RETIREMENT_DATE_IN_FUTURE));
+        }
+      }
+    }
+
+    if (isBlank(retirementReason)) {
+      errors.push(toFieldError(rowNumber, "retirementReason", ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED("退職理由")));
+    } else if (retirementReason.length > MAX_RETIRE_REASON_LENGTH) {
+      errors.push(
+        toFieldError(
+          rowNumber,
+          "retirementReason",
+          ERROR_MESSAGES.CSV.EMPLOYEE.MAX_LENGTH("退職理由", MAX_RETIRE_REASON_LENGTH)
+        )
+      );
+    }
+  } else {
+    // 在籍扱いの場合は、退職日/退職理由が空であることを許容する（必須にしない）
+    if (retirementReason.length > MAX_RETIRE_REASON_LENGTH) {
+      errors.push(
+        toFieldError(
+          rowNumber,
+          "retirementReason",
+          ERROR_MESSAGES.CSV.EMPLOYEE.MAX_LENGTH("退職理由", MAX_RETIRE_REASON_LENGTH)
+        )
+      );
+    }
   }
 
   if (remark.length > MAX_REMARK_LENGTH) {
-    errors.push(toFieldError(rowNumber, "remark", `備考は${MAX_REMARK_LENGTH}文字以内で入力してください。`));
+    errors.push(toFieldError(rowNumber, "remark", ERROR_MESSAGES.CSV.EMPLOYEE.MAX_LENGTH("備考", MAX_REMARK_LENGTH)));
   }
 
   if (errors.length > 0) {
@@ -250,7 +353,7 @@ export const validateEmployeeCsvRow = ({
       employeeId,
       department,
       joinDate: joinDate ?? "",
-      employmentStatus: employmentStatusRaw,
+      employmentStatus: employmentStatusRaw || undefined,
       workStatus,
       workLocation,
       retirementDate: retirementDate ?? "",
@@ -300,7 +403,7 @@ export const validateEmployeeCsvRows = ({
       errors.push({
         rowNumber,
         field: "employeeId",
-        message: "社員IDがCSV内で重複しています。重複行を修正してください。",
+        message: ERROR_MESSAGES.CSV.EMPLOYEE.EMPLOYEE_ID_DUPLICATED_IN_CSV,
       });
     });
   });

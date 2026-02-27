@@ -13,6 +13,7 @@ export type ManagerRowInput = {
   "社員ID": string;
   "部署": string;
   "名前": string;
+  "在籍状態": "在籍" | "退職";
   "性別": "男性" | "女性" | "その他" | "";
   "生年月日": string; // input: YYYY-MM-DD
   "入社日": string; // input: YYYY-MM-DD
@@ -33,13 +34,13 @@ type UseManagerAddFormArgs = {
   columns: ManagerColumn[];
   rows: Array<Record<string, any>>;
   initialFormData?: Partial<ManagerRowInput>;
-  initialIsActive?: boolean | null;
 };
 
 const createInitialForm = (employeeId: string): ManagerRowInput => ({
   "社員ID": employeeId,
   "部署": "",
   "名前": "",
+  "在籍状態": "在籍",
   "性別": "",
   "生年月日": "",
   "入社日": "",
@@ -54,7 +55,6 @@ const useManagerAddForm = ({
   columns,
   rows,
   initialFormData,
-  initialIsActive = null,
 }: UseManagerAddFormArgs) => {
   const initialEmployeeId = useMemo(
     () => buildNextEmployeeIdByJoinYear({ rows, joinDate: "", today: new Date(), preferHyphen: true }),
@@ -82,7 +82,6 @@ const useManagerAddForm = ({
   }, [rows]);
 
   const [form, setForm] = useState<ManagerRowInput>(() => initialForm);
-  const [isActive, setIsActiveState] = useState<boolean | null>(initialIsActive);
   const {
     register,
     handleSubmit,
@@ -95,10 +94,10 @@ const useManagerAddForm = ({
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      isActive: initialIsActive,
       employeeId: initialForm["社員ID"],
       department: initialForm["部署"],
       name: initialForm["名前"],
+      employmentStatus: initialForm["在籍状態"],
       gender: initialForm["性別"],
       birthDate: initialForm["生年月日"],
       joinDate: initialForm["入社日"],
@@ -115,9 +114,9 @@ const useManagerAddForm = ({
   const canSave = isValid;
 
   // RHFにフィールド登録（ChipGroup/Controlled Inputでもスキーマ検証を回すため）
-  register("isActive");
   register("employeeId");
   register("department");
+  register("employmentStatus");
   register("birthDate");
   register("joinDate");
   register("retireDate");
@@ -164,7 +163,12 @@ const useManagerAddForm = ({
       return;
     }
     if (existingEmployeeIdSet.has(current)) {
-      setError("employeeId", { type: "custom", message: managerAddMessages.employeeIdDuplicate });
+      const nextJoinDate = String(form["入社日"] ?? "").trim();
+      const nextId = buildNextEmployeeIdByJoinYear({ rows, joinDate: nextJoinDate, today: new Date(), preferHyphen: true });
+      initialEmployeeIdRef.current = nextId;
+      setForm((p) => ({ ...p, "社員ID": nextId }));
+      setValue("employeeId", nextId, { shouldDirty: true, shouldValidate: true });
+      clearErrors("employeeId");
       return;
     }
     if (errors.employeeId?.type === "custom") {
@@ -175,7 +179,6 @@ const useManagerAddForm = ({
   return {
     form,
     setForm,
-    isActive,
     hasStatusColumn,
     canSave,
     isValid,
@@ -183,11 +186,11 @@ const useManagerAddForm = ({
     employeeIdError: errors.employeeId?.message,
     departmentError: errors.department?.message,
     nameError: errors.name?.message,
+    employmentStatusError: (errors as any).employmentStatus?.message,
     genderError: errors.gender?.message,
     birthDateError: errors.birthDate?.message,
     joinDateError: errors.joinDate?.message,
     retireDateError: errors.retireDate?.message,
-    isActiveError: errors.isActive?.message,
     reasonError: errors.retireReason?.message,
     remarkError: (errors as any).remark?.message,
     statusError: errors.workStatus?.message,
@@ -217,6 +220,20 @@ const useManagerAddForm = ({
       // 社員IDを手動変更していない場合のみ、入社年 + 連番で採番を更新
       updateAutoEmployeeIdIfNeeded(value);
     },
+    setEmploymentStatus: (value: ManagerRowInput["在籍状態"]) => {
+      setForm((p) => {
+        // 「在籍」に戻したら退職系をクリアして整合を保つ
+        if (value === "在籍") {
+          return { ...p, "在籍状態": value, "退職日": "", "退職理由": "" };
+        }
+        return { ...p, "在籍状態": value };
+      });
+      setValue("employmentStatus", String(value ?? ""), { shouldDirty: true, shouldValidate: true });
+      if (value === "在籍") {
+        setValue("retireDate", "", { shouldDirty: true, shouldValidate: true });
+        setValue("retireReason", "", { shouldDirty: true, shouldValidate: true });
+      }
+    },
     setRetireDate: (value: string) => {
       setForm((p) => {
         // 退職日を消したら、退職理由も一緒にクリア（UI/バリデーション整合）
@@ -243,19 +260,6 @@ const useManagerAddForm = ({
     setClient: (value: string) => {
       setForm((p) => ({ ...p, "当時のクライアント": value }));
       setValue("client", value, { shouldDirty: true, shouldValidate: true });
-    },
-
-    setIsActive: (next: boolean) => {
-      setIsActiveState(next);
-      setValue("isActive", next, { shouldDirty: true, shouldValidate: true });
-
-      // 在籍中へ戻した場合は、退職項目をフォームから外す（非表示でも残っていると誤エラーになり得る）
-      if (next) {
-        setForm((p) => ({ ...p, "退職日": "", "退職理由": "", "備考": "" }));
-        setValue("retireDate", "", { shouldDirty: true, shouldValidate: true });
-        setValue("retireReason", "", { shouldDirty: true, shouldValidate: true });
-        setValue("remark", "", { shouldDirty: true, shouldValidate: true });
-      }
     },
   };
 };

@@ -35,13 +35,6 @@ const buildFilterSummaryChips = (filters, query) => {
   }
 
   chips.push(
-    ...collectCheckedLabels(safeFilters.employmentStatus, {
-      retired: "在籍状態: 退職済の社員",
-      active: "在籍状態: 在籍中の社員",
-    })
-  );
-
-  chips.push(
     ...collectCheckedLabels(safeFilters.ageBands, {
       under20: "年齢: 20代未満",
       between20And25: "年齢: 20〜25",
@@ -76,8 +69,8 @@ const buildFilterSummaryChips = (filters, query) => {
   chips.push(
     ...collectCheckedLabels(safeFilters.statuses, {
       waiting: "稼働状態: 待機",
-      working: "稼働状態: 稼働中",
-      leave: "稼働状態: 休職中",
+      working: "稼働状態: 稼働",
+      leave: "稼働状態: 休職",
     })
   );
 

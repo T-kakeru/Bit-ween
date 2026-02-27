@@ -12,6 +12,9 @@ const EditableCellField = ({
   normalizeCell,
   onChange,
   clientOptions,
+  departmentOptions,
+  statusOptions,
+  reasonOptions,
   onAddClientOption,
   errorMessage,
 }) => {
@@ -34,6 +37,7 @@ const EditableCellField = ({
 
   // セレクト（ステータス / 性別 など）
   if (key === "ステータス") {
+    const options = Array.isArray(statusOptions) ? statusOptions : [];
     return (
       <div className="space-y-1">
         <Select
@@ -44,12 +48,57 @@ const EditableCellField = ({
           error={Boolean(errorMessage)}
         >
           <option value="">未設定</option>
-          <option value="開発">開発</option>
-          <option value="営業">営業</option>
-          <option value="事務">事務</option>
-          <option value="派遣">派遣</option>
-          <option value="待機">待機</option>
-          <option value="その他">その他</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </Select>
+        {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
+      </div>
+    );
+  }
+
+  if (key === "部署") {
+    const options = Array.isArray(departmentOptions) ? departmentOptions : [];
+    return (
+      <div className="space-y-1">
+        <Select
+          className="manager-edit-select"
+          value={toEditableValue(row?.[key], normalizeCell)}
+          onChange={(event) => onChange(row.id, key, event.target.value)}
+          aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
+          error={Boolean(errorMessage)}
+        >
+          <option value="">未設定</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </Select>
+        {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
+      </div>
+    );
+  }
+
+  if (key === "退職理由") {
+    const options = Array.isArray(reasonOptions) ? reasonOptions : [];
+    return (
+      <div className="space-y-1">
+        <Select
+          className="manager-edit-select"
+          value={toEditableValue(row?.[key], normalizeCell)}
+          onChange={(event) => onChange(row.id, key, event.target.value)}
+          aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
+          error={Boolean(errorMessage)}
+        >
+          <option value="">未設定</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
         </Select>
         {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
       </div>
@@ -69,24 +118,6 @@ const EditableCellField = ({
           <option value="">未設定</option>
           <option value="男性">男性</option>
           <option value="女性">女性</option>
-        </Select>
-        {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
-      </div>
-    );
-  }
-
-  if (key === "在籍状態") {
-    return (
-      <div className="space-y-1">
-        <Select
-          className="manager-edit-select"
-          value={toEditableValue(row?.[key], normalizeCell)}
-          onChange={(event) => onChange(row.id, key, event.target.value)}
-          aria-label={`${row?.["名前"] ?? "社員"}の${column.label}`}
-          error={Boolean(errorMessage)}
-        >
-          <option value="在籍中">在籍中</option>
-          <option value="退職済">退職済</option>
         </Select>
         {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}
       </div>

@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import mypageData from "@/shared/data/mock/mypage.json";
+import { useEffect, useMemo, useState } from "react";
 import Icon from "@/shared/ui/Icon";
 import Heading from "@/shared/ui/Heading";
 import Divider from "@/shared/ui/Divider";
@@ -7,6 +6,8 @@ import Card from "@/shared/ui/Card";
 import Button from "@/shared/ui/Button";
 import TextCaption from "@/shared/ui/TextCaption";
 import Avatar from "@/shared/ui/Avatar";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { fetchSettingsProfileByEmail } from "@/services/user/usersService";
 
 const viewIds = {
   HOME: "home",
@@ -33,9 +34,47 @@ const computeProfileCompleteness = (profile) => {
 // pages: 画面単位の状態（タブ/ビュー切替）を統合する
 const MyPage = ({ onOpenSettings }) => {
   const [view, setView] = useState(viewIds.HOME);
-  const [profile] = useState(mypageData.profile);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(() => ({
+    name: String(user?.displayName ?? "ユーザー"),
+    department: "",
+    role: String(user?.role ?? "general") === "admin" ? "管理者" : "一般",
+    team: "Bit-ween",
+    bio: "",
+    avatar: "",
+    status: "オンライン",
+  }));
   const completeness = useMemo(() => computeProfileCompleteness(profile), [profile]);
-  const { stats, engagement, recentActivities, thanksHistory } = mypageData;
+
+  useEffect(() => {
+    let disposed = false;
+
+    const load = async () => {
+      const email = String(user?.email ?? "").trim();
+      if (!email) return;
+
+      const dbProfile = await fetchSettingsProfileByEmail(email);
+      if (disposed) return;
+      if (!dbProfile) return;
+
+      setProfile((prev) => ({
+        ...prev,
+        name: String(dbProfile.name ?? prev.name),
+        department: String(dbProfile.department ?? ""),
+        role: String(dbProfile.role ?? prev.role),
+      }));
+    };
+
+    void load();
+    return () => {
+      disposed = true;
+    };
+  }, [user?.email]);
+
+  const stats = { read: 0, saved: 0, reactions: 0, thanks: 0 };
+  const engagement = { score: 0, weeklyReactions: 0, streakDays: 0, focusTags: [] };
+  const recentActivities = [];
+  const thanksHistory = [];
 
   return (
     <section className="screen mypage-screen">
@@ -146,12 +185,18 @@ const MyPage = ({ onOpenSettings }) => {
               </Button>
             </div>
             <ul className="mypage-list">
-              {recentActivities.map((activity) => (
-                <li key={activity.id} className="mypage-list-item">
-                  <p>{activity.title}</p>
-                  <TextCaption as="span" className="small">{activity.meta}</TextCaption>
+              {recentActivities.length ? (
+                recentActivities.map((activity) => (
+                  <li key={activity.id} className="mypage-list-item">
+                    <p>{activity.title}</p>
+                    <TextCaption as="span" className="small">{activity.meta}</TextCaption>
+                  </li>
+                ))
+              ) : (
+                <li className="mypage-list-item">
+                  <TextCaption className="small">データは準備中です。</TextCaption>
                 </li>
-              ))}
+              )}
             </ul>
           </Card>
 
@@ -163,12 +208,18 @@ const MyPage = ({ onOpenSettings }) => {
               </Button>
             </div>
             <ul className="mypage-list">
-              {thanksHistory.map((item) => (
-                <li key={item.id} className="mypage-list-item">
-                  <p>{item.message}</p>
-                  <TextCaption as="span" className="small">{item.to} ・ {item.date}</TextCaption>
+              {thanksHistory.length ? (
+                thanksHistory.map((item) => (
+                  <li key={item.id} className="mypage-list-item">
+                    <p>{item.message}</p>
+                    <TextCaption as="span" className="small">{item.to} ・ {item.date}</TextCaption>
+                  </li>
+                ))
+              ) : (
+                <li className="mypage-list-item">
+                  <TextCaption className="small">データは準備中です。</TextCaption>
                 </li>
-              ))}
+              )}
             </ul>
           </Card>
         </div>
@@ -181,12 +232,18 @@ const MyPage = ({ onOpenSettings }) => {
           </Button>
           <Heading level={2}>最近の活動</Heading>
           <ul className="mypage-list">
-            {recentActivities.map((activity) => (
-              <li key={activity.id} className="mypage-list-item">
-                <p>{activity.title}</p>
-                <TextCaption as="span" className="small">{activity.meta}</TextCaption>
+            {recentActivities.length ? (
+              recentActivities.map((activity) => (
+                <li key={activity.id} className="mypage-list-item">
+                  <p>{activity.title}</p>
+                  <TextCaption as="span" className="small">{activity.meta}</TextCaption>
+                </li>
+              ))
+            ) : (
+              <li className="mypage-list-item">
+                <TextCaption className="small">データは準備中です。</TextCaption>
               </li>
-            ))}
+            )}
           </ul>
         </section>
       ) : null}
@@ -198,12 +255,18 @@ const MyPage = ({ onOpenSettings }) => {
           </Button>
           <Heading level={2}>感謝されたこと</Heading>
           <ul className="mypage-list">
-            {thanksHistory.map((item) => (
-              <li key={item.id} className="mypage-list-item">
-                <p>{item.message}</p>
-                <TextCaption as="span" className="small">{item.to} ・ {item.date}</TextCaption>
+            {thanksHistory.length ? (
+              thanksHistory.map((item) => (
+                <li key={item.id} className="mypage-list-item">
+                  <p>{item.message}</p>
+                  <TextCaption as="span" className="small">{item.to} ・ {item.date}</TextCaption>
+                </li>
+              ))
+            ) : (
+              <li className="mypage-list-item">
+                <TextCaption className="small">データは準備中です。</TextCaption>
               </li>
-            ))}
+            )}
           </ul>
         </section>
       ) : null}

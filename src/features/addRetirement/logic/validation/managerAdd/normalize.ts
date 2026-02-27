@@ -3,10 +3,10 @@ import type { ManagerAddFormValues } from "./schema";
 export const normalizeManagerAddValues = (values: ManagerAddFormValues): ManagerAddFormValues => {
   return {
     ...values,
-    isActive: Boolean((values as any).isActive),
     employeeId: String(values.employeeId ?? "").trim(),
     department: String(values.department ?? "").trim(),
     name: String(values.name ?? "").trim(),
+    employmentStatus: String((values as any).employmentStatus ?? "").trim(),
     gender: String(values.gender ?? "").trim(),
     birthDate: String(values.birthDate ?? "").trim(),
     joinDate: String(values.joinDate ?? "").trim(),

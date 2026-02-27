@@ -4,7 +4,6 @@ import {
   BarChart,
   CartesianGrid,
   Rectangle,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -13,6 +12,7 @@ import EmptyState from "@/shared/components/EmptyState";
 import { getSeriesColors } from "@/features/retirementAnalytics/logic/retirementAnalytics.logic";
 import AnalyticsYearTickButton from "@/features/retirementAnalytics/components/molecules/AnalyticsYearTickButton";
 import { calcNiceYAxis } from "@/features/retirementAnalytics/logic/calcNiceYAxis.logic";
+import { useElementSize } from "@/shared/hooks/useElementSize";
 
 const formatPeriodLabel = (axis, period) => {
   if (axis === "month") {
@@ -98,6 +98,11 @@ const RetirementAnalyticsChartMolecule = ({
   const isYearTickMode = enableYearTickClick && axis === "year";
   const baseChartHeight = isYearTickMode ? 430 : 360;
   const chartHeight = isChartMaximized ? 520 : baseChartHeight;
+  const { ref, size } = useElementSize();
+
+  const width = Math.floor(size.width);
+  const height = Math.floor(size.height);
+  const canRenderChart = width > 0 && height > 0;
 
   const stackedMax = Array.isArray(data)
     ? data.reduce((max, row) => {
@@ -120,78 +125,72 @@ const RetirementAnalyticsChartMolecule = ({
 
   return (
     <div className="analytics-chart">
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <BarChart
-          data={data}
-          margin={{ top: 8, right: 18, left: 6, bottom: isYearTickMode ? 14 : 0 }}
-          barCategoryGap={12}
-          barGap={6}
-          maxBarSize={34}
-        >
-          <CartesianGrid stroke="#e6e8ec" strokeDasharray="3 3" />
-          <XAxis
-            dataKey="period"
-            tickMargin={isYearTickMode ? 10 : 6}
-            tick={
-              enableYearTickClick && axis === "year"
-                ? (props) => (
-                    <AnalyticsYearTickButton
-                      x={props?.x}
-                      y={props?.y}
-                      value={props?.payload?.value}
-                      onSelect={onYearTickClick}
-                    />
-                  )
-                : undefined
-            }
-            tickFormatter={(value) => formatPeriodLabel(axis, value)}
-          />
-          <YAxis
-            allowDecimals={false}
-            domain={[0, yAxisConfig.max]}
-            ticks={yAxisConfig.ticks}
-          />
-          <Tooltip
-            cursor={false}
-            content={
-              <AnalyticsTooltip
-                seriesKeys={seriesKeys}
-                seriesMode={seriesMode}
-                axis={axis}
-              />
-            }
-          />
-          {seriesKeys.map((key) => (
-            <Bar
-              key={key}
-              dataKey={key}
-              stackId="reasons"
-              fill={getSeriesColors(seriesMode)[key] ?? "#94a3b8"}
-              radius={[5, 5, 0, 0]}
-              cursor="pointer"
-              activeBar={
-                hoveredSeriesKey === key
+      <div ref={ref} style={{ width: "100%", height: `${chartHeight}px`, minHeight: 1, minWidth: 1 }}>
+        {canRenderChart ? (
+          <BarChart
+            width={width}
+            height={height}
+            data={data}
+            margin={{ top: 8, right: 18, left: 6, bottom: isYearTickMode ? 14 : 0 }}
+            barCategoryGap={12}
+            barGap={6}
+            maxBarSize={34}
+          >
+            <CartesianGrid stroke="#e6e8ec" strokeDasharray="3 3" />
+            <XAxis
+              dataKey="period"
+              tickMargin={isYearTickMode ? 10 : 6}
+              tick={
+                enableYearTickClick && axis === "year"
                   ? (props) => (
-                      <Rectangle
-                        {...props}
-                        fill={props?.fill}
-                        stroke="#60a5fa"
-                        strokeWidth={2}
-                        radius={[5, 5, 0, 0]}
+                      <AnalyticsYearTickButton
+                        x={props?.x}
+                        y={props?.y}
+                        value={props?.payload?.value}
+                        onSelect={onYearTickClick}
                       />
                     )
-                  : false
+                  : undefined
               }
-              onMouseEnter={() => setHoveredSeriesKey(key)}
-              onMouseLeave={() => setHoveredSeriesKey("")}
-              onClick={(arg) => {
-                const period = extractPeriodFromBarClickArg(arg);
-                onBarClick?.(key, period);
-              }}
+              tickFormatter={(value) => formatPeriodLabel(axis, value)}
             />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
+            <YAxis allowDecimals={false} domain={[0, yAxisConfig.max]} ticks={yAxisConfig.ticks} />
+            <Tooltip
+              cursor={false}
+              content={<AnalyticsTooltip seriesKeys={seriesKeys} seriesMode={seriesMode} axis={axis} />}
+            />
+            {seriesKeys.map((key) => (
+              <Bar
+                key={key}
+                dataKey={key}
+                stackId="reasons"
+                fill={getSeriesColors(seriesMode)[key] ?? "#94a3b8"}
+                radius={[5, 5, 0, 0]}
+                cursor="pointer"
+                activeBar={
+                  hoveredSeriesKey === key
+                    ? (props) => (
+                        <Rectangle
+                          {...props}
+                          fill={props?.fill}
+                          stroke="#60a5fa"
+                          strokeWidth={2}
+                          radius={[5, 5, 0, 0]}
+                        />
+                      )
+                    : false
+                }
+                onMouseEnter={() => setHoveredSeriesKey(key)}
+                onMouseLeave={() => setHoveredSeriesKey("")}
+                onClick={(arg) => {
+                  const period = extractPeriodFromBarClickArg(arg);
+                  onBarClick?.(key, period);
+                }}
+              />
+            ))}
+          </BarChart>
+        ) : null}
+      </div>
     </div>
   );
 };

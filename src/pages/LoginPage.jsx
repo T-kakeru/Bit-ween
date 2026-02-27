@@ -25,7 +25,9 @@ const LoginPage = ({ onNavigateForgotPassword, onLoginSuccess }) => {
     setSubmitError("");
     const result = await login(values);
     if (!result.ok) {
-      setSubmitError("メールアドレスまたはパスワードが間違っています");
+      const fallbackMessage = "メールアドレスまたはパスワードが間違っています";
+      const messageFromAuth = typeof result.message === "string" ? result.message : "";
+      setSubmitError(messageFromAuth || fallbackMessage);
       return;
     }
     if (typeof onLoginSuccess === "function") {

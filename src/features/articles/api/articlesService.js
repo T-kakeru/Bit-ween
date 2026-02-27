@@ -1,6 +1,6 @@
 // 通信周りの処理をまとめたサービス層
 
-import getJson from "@/shared/api/apiClient";
+import getJson from "@/services/common/apiClient";
 import buildArticleQuery from "../logic/buildArticleQuery";
 import normalizeArticles from "./mappers/articleMapper";
 

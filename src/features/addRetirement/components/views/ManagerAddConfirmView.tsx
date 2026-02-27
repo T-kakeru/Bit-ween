@@ -8,12 +8,13 @@ import Button from "@/shared/ui/Button";
 
 type Props = {
   breadcrumbs: BreadcrumbItem[];
-  payload: ManagerRowInput & { is_active: boolean };
+  payload: ManagerRowInput;
   onBack: () => void;
   onConfirm: () => void;
+  showCredentialsHint?: boolean;
 };
 
-const buildRows = (payload: ManagerRowInput & { is_active: boolean }) => {
+const buildRows = (payload: ManagerRowInput) => {
   const rows: Array<{ label: string; value: string }> = [];
 
   const push = (label: string, value: any) => {
@@ -27,9 +28,10 @@ const buildRows = (payload: ManagerRowInput & { is_active: boolean }) => {
   push("性別", payload["性別"]);
   push("生年月日", payload["生年月日"]);
   push("入社日", payload["入社日"]);
-  push("退職日", payload["退職日"]);
+  push("在籍状態", payload["在籍状態"]);
 
-  if (payload.is_active === false) {
+  if (payload["在籍状態"] === "退職") {
+    push("退職日", payload["退職日"]);
     push("退職理由", payload["退職理由"]);
     push("備考", payload["備考"]);
   }
@@ -40,8 +42,7 @@ const buildRows = (payload: ManagerRowInput & { is_active: boolean }) => {
   return rows;
 };
 
-export const ManagerAddConfirmView = ({ breadcrumbs, payload, onBack, onConfirm }: Props) => {
-  const isEmployeeRegistration = payload.is_active;
+export const ManagerAddConfirmView = ({ breadcrumbs, payload, onBack, onConfirm, showCredentialsHint = false }: Props) => {
   const rows = buildRows(payload);
 
   return (
@@ -54,8 +55,8 @@ export const ManagerAddConfirmView = ({ breadcrumbs, payload, onBack, onConfirm 
         <div className="mb-4">
           <Heading level={2}>入力内容の確認</Heading>
           <TextCaption>
-            {isEmployeeRegistration
-              ? "在籍中として登録されます。登録後に案内（初期パスワード）を表示します。"
+            {showCredentialsHint
+              ? "この内容で登録します。登録後に案内（初期パスワード）を表示します。"
               : "この内容で登録します。"}
           </TextCaption>
         </div>

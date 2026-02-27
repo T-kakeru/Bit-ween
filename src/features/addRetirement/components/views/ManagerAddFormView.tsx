@@ -22,21 +22,19 @@ type Props = {
 
   csvImportSection?: ReactNode;
 
-  isActive: boolean | null;
-  onChangeIsActive: (next: boolean) => void;
-
   registerName: any;
 
   employeeIdError?: string;
   departmentError?: string;
   nameError?: string;
 
+  employmentStatusError?: string;
+
   genderError?: string;
 
   birthDateError?: string;
   joinDateError?: string;
   retireDateError?: string;
-  isActiveError?: string;
   statusError?: string;
   clientError?: string;
   reasonError?: string;
@@ -53,6 +51,7 @@ type Props = {
 
   onChangeJoinDate: (v: string) => void;
   onChangeRetireDate: (v: string) => void;
+  onChangeEmploymentStatus: (v: string) => void;
 
   statusOptions: string[];
   reasonOptions: string[];
@@ -77,13 +76,11 @@ export const ManagerAddFormView = ({
   form,
   hideBreadcrumbs = false,
   csvImportSection,
-  isActive,
-  onChangeIsActive,
-  isActiveError,
   registerName,
   employeeIdError,
   departmentError,
   nameError,
+  employmentStatusError,
   genderError,
   birthDateError,
   joinDateError,
@@ -100,6 +97,7 @@ export const ManagerAddFormView = ({
   onChangeBirthDate,
   onChangeJoinDate,
   onChangeRetireDate,
+  onChangeEmploymentStatus,
   statusOptions,
   reasonOptions,
   clientOptions,
@@ -107,7 +105,6 @@ export const ManagerAddFormView = ({
   onChangeClient,
   onChangeReason,
   onChangeRemark,
-  canSubmit,
   submitLabel = "確認へ進む",
   title = "分析データの追加",
   showCancelButton = true,
@@ -116,6 +113,7 @@ export const ManagerAddFormView = ({
   onCancel,
 }: Props) => {
   const hasCsvImportSection = Boolean(csvImportSection);
+  const isRetired = form["在籍状態"] === "退職";
 
   return (
     <section className={`screen manager-screen ${hasCsvImportSection ? "" : "manager-screen--embedded"}`}>
@@ -194,17 +192,18 @@ export const ManagerAddFormView = ({
               <FieldChipGroup
                 label="在籍状態"
                 required
-                value={isActive === null ? "" : isActive ? "在籍中" : "退職済"}
-                options={["在籍中", "退職済"]}
-                onChange={(v) => onChangeIsActive(v === "在籍中")}
+                value={form["在籍状態"]}
+                options={["在籍", "退職"]}
+                onChange={onChangeEmploymentStatus}
                 allowEmpty={false}
-                errorMessage={isActiveError}
+                errorMessage={employmentStatusError}
               />
 
-              {isActive === false ? (
+              {isRetired ? (
                 <>
                   <FieldDate
                     label="退職日"
+                    required
                     value={form["退職日"]}
                     onChange={onChangeRetireDate}
                     errorMessage={retireDateError}
@@ -217,17 +216,17 @@ export const ManagerAddFormView = ({
                     onChange={onChangeReason}
                     errorMessage={reasonError}
                   />
-
-                  <FieldText
-                    label="備考"
-                    value={form["備考"]}
-                    onChange={onChangeRemark}
-                    placeholder="備考を入力（200文字まで）"
-                    maxLength={200}
-                    errorMessage={remarkError}
-                  />
                 </>
               ) : null}
+
+              <FieldText
+                label="備考"
+                value={form["備考"]}
+                onChange={onChangeRemark}
+                placeholder="備考を入力（200文字まで）"
+                maxLength={200}
+                errorMessage={remarkError}
+              />
 
               <Divider className="border-slate-200" />
 
@@ -256,7 +255,7 @@ export const ManagerAddFormView = ({
                   {cancelLabel}
                 </Button>
               ) : null}
-              <Button type="submit" disabled={!canSubmit}>
+              <Button type="submit">
                 {submitLabel}
               </Button>
             </div>

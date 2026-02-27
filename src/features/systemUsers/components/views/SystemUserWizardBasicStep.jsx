@@ -11,7 +11,7 @@ const SystemUserWizardBasicStep = ({
   return (
     <div className="space-y-5">
       <div>
-        <Heading level={3}>Step 1 / 基本情報入力</Heading>
+        <Heading level={3}>基本情報入力</Heading>
         <TextCaption className="mt-1">メールアドレスと権限を設定します。</TextCaption>
       </div>
 

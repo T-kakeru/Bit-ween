@@ -7,7 +7,17 @@ type CsvImportErrorListProps = {
   isProcessing?: boolean;
   onAddDepartment?: (value: string) => void;
   onAddWorkLocation?: (value: string) => void;
-  onAddWorkStatus?: (value: string) => void;
+};
+
+const renderErrorMessage = (error: EmployeeCsvError) => {
+  if (error.code === "unknownWorkLocation" && error.value) {
+    return (
+      <>
+        稼働先マスタ「<strong>{String(error.value)}</strong>」を追加しますか？
+      </>
+    );
+  }
+  return error.message;
 };
 
 const formatLocation = (rowNumber: number) => (rowNumber === 0 ? "ヘッダー" : `${rowNumber}行目`);
@@ -24,7 +34,6 @@ const CsvImportErrorList = ({
   isProcessing = false,
   onAddDepartment,
   onAddWorkLocation,
-  onAddWorkStatus,
 }: CsvImportErrorListProps) => {
   if (!errors.length) return null;
 
@@ -34,7 +43,6 @@ const CsvImportErrorList = ({
 
     if (error.code === "unknownDepartment") onAddDepartment?.(value);
     if (error.code === "unknownWorkLocation") onAddWorkLocation?.(value);
-    if (error.code === "unknownWorkStatus") onAddWorkStatus?.(value);
   };
 
   return (
@@ -45,12 +53,9 @@ const CsvImportErrorList = ({
           <li key={`${error.rowNumber}-${error.field}-${index}`}>
             <span className="manager-import-error-location">{formatLocation(error.rowNumber)}</span>
             <span className="manager-import-error-field">{formatFieldLabel(error.field)}</span>
-            <span className="manager-import-error-message">{error.message}</span>
+            <span className="manager-import-error-message">{renderErrorMessage(error)}</span>
 
-            {(error.code === "unknownDepartment" ||
-              error.code === "unknownWorkLocation" ||
-              error.code === "unknownWorkStatus") &&
-            error.value ? (
+            {(error.code === "unknownDepartment" || error.code === "unknownWorkLocation") && error.value ? (
               <Button
                 type="button"
                 variant="outline"

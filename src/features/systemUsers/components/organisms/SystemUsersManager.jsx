@@ -8,6 +8,9 @@ import Input from "@/shared/ui/Input";
 import Select from "@/shared/ui/Select";
 import { TableContainer, Table, Th, Td } from "@/shared/ui/Table";
 import { useSystemUsersCrud } from "@/features/systemUsers/hooks/useSystemUsersCrud";
+import ConfirmChangesModal from "@/features/retirement/components/molecules/ConfirmChangesModal";
+import { buildSystemUserPendingChanges } from "@/features/systemUsers/logic/systemUserEdit.logic";
+import { ERROR_MESSAGES, NOTIFY_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const toText = (value) => String(value ?? "").trim();
 
@@ -25,24 +28,6 @@ const toSortableValue = (systemUser, key) => {
   return toText(systemUser?.[key]);
 };
 
-const formatLastLogin = (value) => {
-  const raw = toText(value);
-  if (!raw) return "-";
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) return raw;
-
-  const diffMs = Date.now() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / 60000);
-
-  if (diffMinutes < 60) return `${Math.max(diffMinutes, 1)}分前`;
-  if (diffMinutes < 60 * 24) return `${Math.floor(diffMinutes / 60)}時間前`;
-
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}/${mm}/${dd}`;
-};
-
 const SystemUsersManager = ({
   companyId = "company-default",
   currentRole = "admin",
@@ -51,13 +36,17 @@ const SystemUsersManager = ({
   onStartRegister,
 }) => {
   const canEdit = currentRole === "admin";
-  const { users, updateUser, removeUser, setSystemUserEnabled, resetSystemUserPassword } = useSystemUsersCrud({ companyId });
+  const { users, updateUser, removeUser, resetSystemUserPassword } = useSystemUsersCrud({ companyId });
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isTableEditing, setIsTableEditing] = useState(false);
   const [editRows, setEditRows] = useState({});
+  const [selectedRowIds, setSelectedRowIds] = useState({});
   const [sort, setSort] = useState({ key: "updated_at", direction: "desc" });
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingTargetIds, setPendingTargetIds] = useState([]);
+  const [pendingChanges, setPendingChanges] = useState([]);
 
   const sortedSystemUsers = useMemo(() => {
     const directionFactor = sort?.direction === "desc" ? -1 : 1;
@@ -110,10 +99,11 @@ const SystemUsersManager = ({
         email: String(systemUser?.email || ""),
         role: String(systemUser?.role || "general"),
         employee_id: String(systemUser?.employee_id || ""),
-        is_enabled: Boolean(systemUser?.is_enabled),
+        // NOTE: is_enabled / last_login_at はDBから取得できない前提のため編集対象外
       };
     });
     setEditRows(draft);
+    setSelectedRowIds({});
     setIsTableEditing(true);
     setError("");
     setSuccess("");
@@ -122,6 +112,19 @@ const SystemUsersManager = ({
   const cancelTableEdit = () => {
     setIsTableEditing(false);
     setEditRows({});
+    setSelectedRowIds({});
+    setIsConfirmOpen(false);
+    setPendingTargetIds([]);
+    setPendingChanges([]);
+  };
+
+  const toggleRowSelection = (id) => {
+    const rowId = String(id || "");
+    if (!rowId) return;
+    setSelectedRowIds((prev) => ({
+      ...prev,
+      [rowId]: !prev[rowId],
+    }));
   };
 
   const handleDraftChange = (id, key, value) => {
@@ -134,13 +137,45 @@ const SystemUsersManager = ({
     }));
   };
 
-  const saveTableEdit = () => {
+  const openSaveConfirm = () => {
+    const targetIds = Object.entries(selectedRowIds)
+      .filter(([, checked]) => Boolean(checked))
+      .map(([id]) => id);
+
+    if (targetIds.length === 0) {
+      setError(ERROR_MESSAGES.SYSTEM_USERS.SELECT_ROW_TO_EDIT);
+      return;
+    }
+
+    const changes = buildSystemUserPendingChanges({
+      originalRows: sortedSystemUsers,
+      editRowsById: editRows,
+      targetIds,
+    });
+
+    if (changes.length === 0) {
+      setError(ERROR_MESSAGES.SYSTEM_USERS.NO_CHANGES);
+      return;
+    }
+
+    setPendingTargetIds(targetIds);
+    setPendingChanges(changes);
+    setIsConfirmOpen(true);
+    setError("");
+    setSuccess("");
+  };
+
+  const confirmSaveTableEdit = async () => {
+    const targetIds = pendingTargetIds;
+    setIsConfirmOpen(false);
+
     for (const systemUser of sortedSystemUsers) {
       const id = String(systemUser?.id || "");
       if (!id) continue;
+      if (!targetIds.includes(id)) continue;
       const draft = editRows[id] || {};
 
-      const updateResult = updateUser(id, {
+      const updateResult = await updateUser(id, {
         email: draft.email,
         role: draft.role,
         display_name: draft.display_name,
@@ -151,15 +186,9 @@ const SystemUsersManager = ({
         setError(updateResult.message);
         return;
       }
-
-      const enabledResult = setSystemUserEnabled(id, Boolean(draft.is_enabled));
-      if (!enabledResult.ok) {
-        setError(enabledResult.message || "ステータス更新に失敗しました");
-        return;
-      }
     }
 
-    setSuccess("アカウントを更新しました");
+    setSuccess(NOTIFY_MESSAGES.SYSTEM_USERS.UPDATED);
     cancelTableEdit();
   };
 
@@ -190,7 +219,7 @@ const SystemUsersManager = ({
                   variant="outline"
                   size="md"
                   className="settings-action-button system-users-top-action-button"
-                  onClick={saveTableEdit}
+                  onClick={openSaveConfirm}
                 >
                   保存
                 </Button>
@@ -300,6 +329,8 @@ const SystemUsersManager = ({
                         {getSortIcon("employee_id") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("employee_id")}</span> : null}
                       </Button>
                     </Th>
+                    {/* NOTE: last_login_at / is_enabled はDBから取得できないため表示しない */}
+                    {/*
                     <Th scope="col" className={getHeaderClass("last_login_at")} aria-sort={getAriaSort("last_login_at")}>
                       <Button
                         type="button"
@@ -324,10 +355,11 @@ const SystemUsersManager = ({
                         disabled={isTableEditing}
                         aria-disabled={isTableEditing}
                       >
-                        <span className="manager-sort-label">ステータス</span>
+                        <span className="manager-sort-label">アカウントの有効/無効</span>
                         {getSortIcon("is_enabled") ? <span className="manager-sort-icon" aria-hidden="true">{getSortIcon("is_enabled")}</span> : null}
                       </Button>
                     </Th>
+                    */}
                     <Th scope="col" className="manager-th system-users-th-actions">
                       {canEdit ? (
                         <Button
@@ -345,20 +377,26 @@ const SystemUsersManager = ({
                         <span className="system-users-th-action-label">操作</span>
                       )}
                     </Th>
+                    {isTableEditing ? (
+                      <Th scope="col" className="manager-th text-slate-400">
+                        選択
+                      </Th>
+                    ) : null}
                   </tr>
                 </thead>
                 <tbody>
                   {sortedSystemUsers.map((systemUser) => {
                     const rowId = String(systemUser.id);
                     const draft = editRows[rowId] || {};
-                    const roleValue = isTableEditing ? String(draft.role || "general") : String(systemUser.role || "general");
+                    const isRowSelected = Boolean(selectedRowIds[rowId]);
+                    const rowEditable = isTableEditing && isRowSelected;
+                    const roleValue = rowEditable ? String(draft.role || "general") : String(systemUser.role || "general");
                     const roleLabel = roleValue === "admin" ? "管理者" : "一般";
-                    const statusEnabled = isTableEditing ? Boolean(draft.is_enabled) : Boolean(systemUser.is_enabled);
 
                     return (
                       <tr key={systemUser.id}>
                         <Td>
-                          {isTableEditing ? (
+                          {rowEditable ? (
                             <Input
                               type="text"
                               value={String(draft.display_name || "")}
@@ -373,7 +411,7 @@ const SystemUsersManager = ({
                         </Td>
 
                         <Td>
-                          {isTableEditing ? (
+                          {rowEditable ? (
                             <Input
                               type="text"
                               value={String(draft.email || "")}
@@ -386,7 +424,7 @@ const SystemUsersManager = ({
                         </Td>
 
                         <Td>
-                          {isTableEditing ? (
+                          {rowEditable ? (
                             <Select
                               value={roleValue}
                               onChange={(e) => handleDraftChange(rowId, "role", e.target.value)}
@@ -400,7 +438,7 @@ const SystemUsersManager = ({
                         </Td>
 
                         <Td className="text-slate-700">
-                          {isTableEditing ? (
+                          {rowEditable ? (
                             <Input
                               type="text"
                               value={String(draft.employee_id || "")}
@@ -411,44 +449,13 @@ const SystemUsersManager = ({
                             toText(systemUser.employee_id) || "-"
                           )}
                         </Td>
-                        <Td className="text-slate-700">{formatLastLogin(systemUser.last_login_at)}</Td>
 
-                        <Td className="system-users-status-cell">
-                          {isTableEditing ? (
-                            <div className="inline-flex items-center gap-2">
-                              <label className="switch system-users-switch">
-                                <input
-                                  type="checkbox"
-                                  checked={statusEnabled}
-                                  onChange={(e) => {
-                                    if (!canEdit || !isTableEditing) return;
-                                    handleDraftChange(rowId, "is_enabled", e.target.checked);
-                                  }}
-                                  disabled={!canEdit || !isTableEditing}
-                                />
-                                <span className="switch-slider" />
-                              </label>
-                              <span
-                                className={`text-xs font-semibold system-users-status-text ${
-                                  statusEnabled ? "system-users-status-text--enabled" : "system-users-status-text--disabled"
-                                }`}
-                              >
-                                {statusEnabled ? "有効" : "停止"}
-                              </span>
-                            </div>
-                          ) : (
-                            <span
-                              className={`text-xs font-semibold system-users-status-text ${
-                                statusEnabled ? "system-users-status-text--enabled" : "system-users-status-text--disabled"
-                              }`}
-                            >
-                              {statusEnabled ? "有効" : "停止"}
-                            </span>
-                          )}
-                        </Td>
+                        {/* NOTE: last_login_at / is_enabled はDBから取得できないため表示しない */}
+                        {/* <Td className="text-slate-700">{formatLastLogin(systemUser.last_login_at)}</Td> */}
+                        {/* <Td className="system-users-status-cell">(有効/無効スイッチ)</Td> */}
 
                         <Td className="system-users-actions-cell">
-                          {isTableEditing && canEdit ? (
+                          {rowEditable && canEdit ? (
                             <div className="inline-flex items-center gap-2 system-users-row-actions">
                               <Button
                                 type="button"
@@ -456,12 +463,15 @@ const SystemUsersManager = ({
                                 size="sm"
                                 className="system-users-row-action-button"
                                 onClick={() => {
-                                  const result = resetSystemUserPassword(systemUser.id);
-                                  if (!result.ok) {
-                                    setError(result.message);
-                                    return;
-                                  }
-                                  setSuccess(result.message);
+                                  const run = async () => {
+                                    const result = await resetSystemUserPassword(systemUser.id);
+                                    if (!result.ok) {
+                                      setError(result.message || ERROR_MESSAGES.SYSTEM_USERS.PASSWORD_RESET_FAILED);
+                                      return;
+                                    }
+                                    setSuccess(result.message);
+                                  };
+                                  void run();
                                 }}
                               >
                                 パスワードリセット
@@ -472,10 +482,17 @@ const SystemUsersManager = ({
                                 size="sm"
                                 className="system-users-row-action-button"
                                 onClick={() => {
-                                  const ok = window.confirm("このアカウントを削除しますか？");
+                                  const ok = window.confirm(NOTIFY_MESSAGES.SYSTEM_USERS.CONFIRM_DELETE);
                                   if (!ok) return;
-                                  removeUser(systemUser.id);
-                                  setSuccess("アカウントを削除しました");
+                                  const run = async () => {
+                                    const result = await removeUser(systemUser.id);
+                                    if (!result.ok) {
+                                      setError(result.message || ERROR_MESSAGES.SYSTEM_USERS.DELETE_FAILED);
+                                      return;
+                                    }
+                                    setSuccess(NOTIFY_MESSAGES.SYSTEM_USERS.DELETED);
+                                  };
+                                  void run();
                                 }}
                               >
                                 削除
@@ -483,6 +500,17 @@ const SystemUsersManager = ({
                             </div>
                           ) : <span className="system-users-action-placeholder">-</span>}
                         </Td>
+                        {isTableEditing ? (
+                          <Td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-slate-300 align-middle"
+                              checked={isRowSelected}
+                              onChange={() => toggleRowSelection(rowId)}
+                              aria-label="この行を編集対象にする"
+                            />
+                          </Td>
+                        ) : null}
                       </tr>
                     );
                   })}
@@ -498,8 +526,143 @@ const SystemUsersManager = ({
           ) : null}
         </div>
       </div>
+
+      <ConfirmChangesModal
+        isOpen={isConfirmOpen}
+        changes={pendingChanges}
+        onCancel={() => setIsConfirmOpen(false)}
+        onConfirm={() => void confirmSaveTableEdit()}
+      />
     </Card>
   );
 };
+
+/*
+==============================
+PHASE2（復元用メモ）
+最終ログイン（last_login_at）とアカウント有効/無効（is_enabled）を
+「DBから取得できる」状態になったら戻すためのコード一式です。
+
+このブロックは“動かさない保管用”です。
+復元する場合は、この中身を必要箇所へ貼り戻してください。
+==============================
+
+// 1) useSystemUsersCrud の返り値に setSystemUserEnabled がある前提
+// const { users, updateUser, removeUser, setSystemUserEnabled, resetSystemUserPassword } = useSystemUsersCrud({ companyId });
+
+// 2) 最終ログイン表示（相対表示）
+// const formatLastLogin = (value) => {
+//   const raw = toText(value);
+//   if (!raw) return "-";
+//   const date = new Date(raw);
+//   if (Number.isNaN(date.getTime())) return raw;
+//
+//   const diffMs = Date.now() - date.getTime();
+//   const diffMinutes = Math.floor(diffMs / 60000);
+//
+//   if (diffMinutes < 60) return `${Math.max(diffMinutes, 1)}分前`;
+//   if (diffMinutes < 60 * 24) return `${Math.floor(diffMinutes / 60)}時間前`;
+//
+//   const yyyy = date.getFullYear();
+//   const mm = String(date.getMonth() + 1).padStart(2, "0");
+//   const dd = String(date.getDate()).padStart(2, "0");
+//   return `${yyyy}/${mm}/${dd}`;
+// };
+
+// 3) 編集開始時に is_enabled をドラフトに入れる
+// draft[id] = {
+//   display_name: String(systemUser?.display_name || systemUser?.employee_name || ""),
+//   email: String(systemUser?.email || ""),
+//   role: String(systemUser?.role || "general"),
+//   employee_id: String(systemUser?.employee_id || ""),
+//   is_enabled: Boolean(systemUser?.is_enabled),
+// };
+
+// 4) 保存時に有効/無効も更新する
+// const enabledResult = await setSystemUserEnabled(id, Boolean(draft.is_enabled));
+// if (!enabledResult.ok) {
+//   setError(enabledResult.message || "ステータス更新に失敗しました");
+//   return;
+// }
+
+// 5) 行ごとの表示用（編集時はドラフト、通常時は systemUser を参照）
+// const statusEnabled = isTableEditing ? Boolean(draft.is_enabled) : Boolean(systemUser.is_enabled);
+
+// 6) ヘッダー列（並び替えボタン）
+// <Th scope="col" className={getHeaderClass("last_login_at")} aria-sort={getAriaSort("last_login_at")}>
+//   <Button
+//     type="button"
+//     variant="outline"
+//     size="sm"
+//     className={sort?.key === "last_login_at" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+//     onClick={() => toggleSort("last_login_at")}
+//     disabled={isTableEditing}
+//     aria-disabled={isTableEditing}
+//   >
+//     <span className="manager-sort-label">最終ログイン</span>
+//     {getSortIcon("last_login_at") ? (
+//       <span className="manager-sort-icon" aria-hidden="true">
+//         {getSortIcon("last_login_at")}
+//       </span>
+//     ) : null}
+//   </Button>
+// </Th>
+// <Th scope="col" className={getHeaderClass("is_enabled")} aria-sort={getAriaSort("is_enabled")}>
+//   <Button
+//     type="button"
+//     variant="outline"
+//     size="sm"
+//     className={sort?.key === "is_enabled" && sort?.direction ? "manager-sort-button is-sorted" : "manager-sort-button"}
+//     onClick={() => toggleSort("is_enabled")}
+//     disabled={isTableEditing}
+//     aria-disabled={isTableEditing}
+//   >
+//     <span className="manager-sort-label">アカウントの有効/無効</span>
+//     {getSortIcon("is_enabled") ? (
+//       <span className="manager-sort-icon" aria-hidden="true">
+//         {getSortIcon("is_enabled")}
+//       </span>
+//     ) : null}
+//   </Button>
+// </Th>
+
+// 7) 行のセル
+// <Td className="text-slate-700">{formatLastLogin(systemUser.last_login_at)}</Td>
+// <Td className="system-users-status-cell">
+//   {isTableEditing ? (
+//     <div className="inline-flex items-center gap-2">
+//       <label className="switch system-users-switch">
+//         <input
+//           type="checkbox"
+//           checked={statusEnabled}
+//           onChange={(e) => {
+//             if (!canEdit || !isTableEditing) return;
+//             handleDraftChange(rowId, "is_enabled", e.target.checked);
+//           }}
+//           disabled={!canEdit || !isTableEditing}
+//         />
+//         <span className="switch-slider" />
+//       </label>
+//       <span
+//         className={`text-xs font-semibold system-users-status-text ${
+//           statusEnabled ? "system-users-status-text--enabled" : "system-users-status-text--disabled"
+//         }`}
+//       >
+//         {statusEnabled ? "有効" : "停止"}
+//       </span>
+//     </div>
+//   ) : (
+//     <span
+//       className={`text-xs font-semibold system-users-status-text ${
+//         statusEnabled ? "system-users-status-text--enabled" : "system-users-status-text--disabled"
+//       }`}
+//     >
+//       {statusEnabled ? "有効" : "停止"}
+//     </span>
+//   )}
+// </Td>
+
+==============================
+*/
 
 export default SystemUsersManager;

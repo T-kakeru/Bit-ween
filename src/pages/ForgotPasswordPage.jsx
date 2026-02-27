@@ -8,6 +8,7 @@ import Spinner from "@/shared/ui/Spinner";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useForgotPasswordForm } from "@/features/auth/hooks/useForgotPasswordForm";
 import AuthScreenLayout from "@/features/auth/components/AuthScreenLayout";
+import { ERROR_MESSAGES, NOTIFY_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const ForgotPasswordPage = ({ onBackToLogin }) => {
   const { requestPasswordReset } = useAuth();
@@ -25,10 +26,10 @@ const ForgotPasswordPage = ({ onBackToLogin }) => {
     setSuccessMessage("");
     const result = await requestPasswordReset(values);
     if (!result.ok) {
-      setSubmitError(result.message || "送信に失敗しました");
+      setSubmitError(result.message || ERROR_MESSAGES.AUTH.REQUEST_PASSWORD_RESET_FAILED);
       return;
     }
-    setSuccessMessage("再設定メールを送信しました。メールをご確認ください。");
+    setSuccessMessage(NOTIFY_MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT);
   };
 
   return (

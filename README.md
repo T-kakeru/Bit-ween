@@ -20,6 +20,26 @@ If you are developing a production application, we recommend using TypeScript wi
 ローカル本番確認: npm run preview
 ESLint: npm run lint
 
+## Supabase 接続（必須）
+
+このアプリは Supabase をデータソースとして利用します。
+
+- `.env.local.example` をコピーして `.env.local` を作成
+- `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` を設定
+
+例:
+
+```bash
+copy .env.local.example .env.local
+```
+
+## 開発時の自動ログイン（任意）
+
+開発環境（`npm run dev`）では、Supabase が設定されていて、かつログアウト直後でなければ、テストユーザーで自動ログインを試みます。
+
+- 無効化したい場合: `.env.local` に `VITE_DEV_AUTO_LOGIN=0`
+- ログイン情報を変えたい場合: `VITE_DEV_AUTO_LOGIN_EMAIL` / `VITE_DEV_AUTO_LOGIN_PASSWORD`
+
 ※このプロジェクトをテンプレートとして利用する場合
 このプロジェクトのディレクトリにて
 npm create vite@latest new_project -- --template react

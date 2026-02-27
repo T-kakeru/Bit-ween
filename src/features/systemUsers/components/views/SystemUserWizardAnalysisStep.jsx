@@ -62,7 +62,7 @@ const SystemUserWizardAnalysisStep = ({ initialPayload, onBack, onNext, submitLa
     columns,
     rows,
     initialFormData,
-    initialIsActive: typeof initialPayload?.is_active === "boolean" ? initialPayload.is_active : null,
+    initialIsActive: true,
   });
 
   const onSubmit = handleSubmit((values) => {
@@ -75,7 +75,8 @@ const SystemUserWizardAnalysisStep = ({ initialPayload, onBack, onNext, submitLa
     <ManagerAddFormView
       breadcrumbs={EMPTY_BREADCRUMBS}
       hideBreadcrumbs
-      title="アカウントの登録２"
+      hideIsActiveField
+      title="社員情報入力"
       form={form}
       csvImportSection={undefined}
       isActive={isActive}

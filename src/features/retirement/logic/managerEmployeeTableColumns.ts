@@ -6,7 +6,6 @@ export const MANAGER_EMPLOYEE_COLUMNS: ManagerColumn[] = [
   { key: "退職月", label: "退職月", type: "string" },
   { key: "名前", label: "名前", type: "string" },
   { key: "入社日", label: "入社日", type: "date" },
-  { key: "在籍状態", label: "在籍状態", type: "string" },
   { key: "退職日", label: "退職日", type: "date" },
   { key: "在籍月数", label: "在籍月数", type: "number" },
   { key: "ステータス", label: "稼働状態", type: "string" },
@@ -19,7 +18,7 @@ export const MANAGER_EMPLOYEE_COLUMNS: ManagerColumn[] = [
   { key: "年齢", label: "年齢", type: "number" },
 ];
 
-const RESERVED_KEYS = new Set(["id", "is_active"]);
+const RESERVED_KEYS = new Set(["id", "is_active", "在籍状態"]);
 
 const COLUMN_LABELS: Record<string, string> = {
   ステータス: "稼働状態",

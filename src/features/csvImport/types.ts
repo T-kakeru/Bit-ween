@@ -23,7 +23,7 @@ export type EmployeeCsvNormalizedRow = {
   employeeId: string | null;
   department: string | null;
   joinDate: string;
-  employmentStatus: string | null;
+  employmentStatus?: string;
   workStatus: string;
   workLocation: string | null;
   retirementDate: string;
@@ -34,7 +34,13 @@ export type EmployeeCsvNormalizedRow = {
 export type EmployeeCsvError = {
   rowNumber: number;
   field: EmployeeCsvErrorField;
-  code?: "unknownDepartment" | "unknownWorkLocation" | "unknownWorkStatus";
+  code?:
+    | "unknownDepartment"
+    | "unknownWorkLocation"
+    | "invalidEmploymentStatus"
+    | "activeDisallowRetirementDate"
+    | "activeDisallowRetirementReason"
+    | "activeDisallowRemark";
   value?: string;
   message: string;
 };

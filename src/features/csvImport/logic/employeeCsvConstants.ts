@@ -1,8 +1,10 @@
-import departments from "@/shared/data/mock/departments.json";
-import clients from "@/shared/data/mock/clients.json";
-import workStatuses from "@/shared/data/mock/workStatuses.json";
 import type { EmployeeCsvField } from "../types";
-import { addCatalogNameIfMissing, loadCatalogItems } from "@/shared/logic/catalogStorage";
+import {
+  addCatalogOption,
+  fetchClientNames,
+  fetchDepartmentNames,
+  fetchWorkStatusNames,
+} from "@/services/masterData/masterDataService";
 
 export const EMPLOYEE_CSV_FIELD_LABELS: Record<EmployeeCsvField, string> = {
   name: "氏名",
@@ -25,6 +27,8 @@ export type EmployeeCsvHeaderSpec = {
   required: boolean;
 };
 
+const toEmployeeCsvHeaderRequiredLabel = (label: string) => `${label}（必須）`;
+
 // この一覧にあるヘッダー名のみ許可（別名・揺れは許可しない）
 export const EMPLOYEE_CSV_HEADER_SPECS: EmployeeCsvHeaderSpec[] = [
   { field: "name", label: EMPLOYEE_CSV_FIELD_LABELS.name, required: true },
@@ -33,10 +37,12 @@ export const EMPLOYEE_CSV_HEADER_SPECS: EmployeeCsvHeaderSpec[] = [
   { field: "employeeId", label: EMPLOYEE_CSV_FIELD_LABELS.employeeId, required: false },
   { field: "department", label: EMPLOYEE_CSV_FIELD_LABELS.department, required: false },
   { field: "joinDate", label: EMPLOYEE_CSV_FIELD_LABELS.joinDate, required: true },
+  // 「在籍/退職」の入力がある場合は、退職情報との整合性を検証する
   { field: "employmentStatus", label: EMPLOYEE_CSV_FIELD_LABELS.employmentStatus, required: false },
   { field: "workStatus", label: EMPLOYEE_CSV_FIELD_LABELS.workStatus, required: true },
   { field: "workLocation", label: EMPLOYEE_CSV_FIELD_LABELS.workLocation, required: false },
-  { field: "retirementDate", label: EMPLOYEE_CSV_FIELD_LABELS.retirementDate, required: true },
+  // 退職日/退職理由は「退職者のみ必須」。CSVでは列は用意するが、入力は条件付き。
+  { field: "retirementDate", label: EMPLOYEE_CSV_FIELD_LABELS.retirementDate, required: false },
   { field: "retirementReason", label: EMPLOYEE_CSV_FIELD_LABELS.retirementReason, required: false },
   { field: "remark", label: EMPLOYEE_CSV_FIELD_LABELS.remark, required: false },
 ];
@@ -51,70 +57,70 @@ export const EMPLOYEE_CSV_REQUIRED_FIELDS: EmployeeCsvField[] = EMPLOYEE_CSV_HEA
 export const EMPLOYEE_CSV_HEADER_MAP: Record<string, EmployeeCsvField> = Object.fromEntries(
   EMPLOYEE_CSV_HEADER_SPECS.flatMap((x) => [
     [x.label, x.field],
+    // 過去に「（必須）」付きで運用されていたCSVとの互換性のため、全項目で許可する
+    [toEmployeeCsvHeaderRequiredLabel(x.label), x.field],
     [toEmployeeCsvHeaderDisplayLabel(x), x.field],
   ])
 ) as Record<string, EmployeeCsvField>;
 
-const buildUniqueList = (values: (string | null | undefined)[]) =>
-  Array.from(new Set(values.filter((value): value is string => Boolean(value))));
+const departmentMasterSet = new Set<string>();
+const clientMasterSet = new Set<string>();
+const workStatusMasterSet = new Set<string>();
 
-const toCatalogItems = (list: any[]): Array<{ id: string; name: string }> =>
-  (Array.isArray(list) ? list : [])
-    .map((x) => ({ id: String(x?.id ?? "").trim(), name: String(x?.name ?? "").trim() }))
-    .filter((x) => x.id && x.name);
+let initPromise: Promise<void> | null = null;
 
-const departmentCatalogFallback = toCatalogItems(departments as any);
-const clientCatalogFallback = toCatalogItems(clients as any);
-const workStatusCatalogFallback = toCatalogItems(workStatuses as any);
+const normalizeValue = (value: unknown) => String(value ?? "").trim();
 
-const departmentCatalog = loadCatalogItems("departments", departmentCatalogFallback);
-const clientCatalog = loadCatalogItems("clients", clientCatalogFallback);
-const workStatusCatalog = loadCatalogItems("workStatuses", workStatusCatalogFallback);
+const overwriteSet = (target: Set<string>, values: string[]) => {
+  target.clear();
+  for (const v of values) {
+    const trimmed = normalizeValue(v);
+    if (trimmed) target.add(trimmed);
+  }
+};
 
-const departmentMasterSet = new Set(
-  buildUniqueList([
-    ...departmentCatalog.map((dept) => dept.name),
-    ...departmentCatalog.map((dept) => dept.id),
-  ])
-);
+export const initializeEmployeeCsvMasters = async () => {
+  if (initPromise) return initPromise;
 
-const clientMasterSet = new Set(
-  buildUniqueList([
-    ...clientCatalog.map((client) => client.name),
-    ...clientCatalog.map((client) => client.id),
-  ])
-);
+  initPromise = (async () => {
+    const [departments, clients, workStatuses] = await Promise.all([
+      fetchDepartmentNames(),
+      fetchClientNames(),
+      fetchWorkStatusNames(),
+    ]);
+    overwriteSet(departmentMasterSet, Array.isArray(departments) ? departments : []);
+    overwriteSet(clientMasterSet, Array.isArray(clients) ? clients : []);
+    overwriteSet(workStatusMasterSet, Array.isArray(workStatuses) ? workStatuses : []);
+  })();
 
-const workStatusMasterSet = new Set(buildUniqueList(workStatusCatalog.map((x) => x.name)));
+  return initPromise;
+};
 
-export const hasDepartmentMaster = (value: string) => departmentMasterSet.has(value);
-export const addDepartmentMaster = (value: string) => {
-  const trimmed = String(value ?? "").trim();
+export const refreshEmployeeCsvMasters = async () => {
+  initPromise = null;
+  await initializeEmployeeCsvMasters();
+};
+
+export const hasDepartmentMaster = (value: string) => departmentMasterSet.has(normalizeValue(value));
+export const addDepartmentMaster = async (value: string) => {
+  const trimmed = normalizeValue(value);
   if (!trimmed) return;
-  departmentMasterSet.add(trimmed);
-  addCatalogNameIfMissing({ keyName: "departments", name: trimmed, fallbackItems: departmentCatalogFallback, idPrefix: "dept-auto-" });
+  await addCatalogOption({ keyName: "departments", value: trimmed });
+  await refreshEmployeeCsvMasters();
 };
 export const getDepartmentMasterList = () => Array.from(departmentMasterSet);
 
-export const hasClientMaster = (value: string) => clientMasterSet.has(value);
-export const addClientMaster = (value: string) => {
-  const trimmed = String(value ?? "").trim();
+export const hasClientMaster = (value: string) => clientMasterSet.has(normalizeValue(value));
+export const addClientMaster = async (value: string) => {
+  const trimmed = normalizeValue(value);
   if (!trimmed) return;
-  clientMasterSet.add(trimmed);
-  addCatalogNameIfMissing({ keyName: "clients", name: trimmed, fallbackItems: clientCatalogFallback, idPrefix: "client-auto-" });
+  await addCatalogOption({ keyName: "clients", value: trimmed });
+  await refreshEmployeeCsvMasters();
 };
 export const getClientMasterList = () => Array.from(clientMasterSet);
 
-export const hasWorkStatusMaster = (value: string) => workStatusMasterSet.has(value);
-export const addWorkStatusMaster = (value: string) => {
-  const trimmed = String(value ?? "").trim();
-  if (!trimmed) return;
-  workStatusMasterSet.add(trimmed);
-  addCatalogNameIfMissing({ keyName: "workStatuses", name: trimmed, fallbackItems: workStatusCatalogFallback, idPrefix: "ws-auto-" });
-};
+export const hasWorkStatusMaster = (value: string) => workStatusMasterSet.has(normalizeValue(value));
 export const getWorkStatusMasterList = () => Array.from(workStatusMasterSet);
-
-export const EMPLOYMENT_STATUS_MASTER = ["在籍中", "退職済"];
 
 export const GENDER_MASTER = ["男性", "女性", "その他"];
 

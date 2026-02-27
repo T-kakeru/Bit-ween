@@ -28,17 +28,23 @@ const EditableEmployeeTableView = ({
   onCellChange,
   getCellError,
   clientOptions,
+  departmentOptions,
+  statusOptions,
+  reasonOptions,
   onAddClientOption,
   onEditStart,
   onSaveRequest,
   isSaveDisabled,
   onCancel,
+  selectedRowIds,
+  onToggleRowSelection,
 
   // confirm
   isConfirmOpen,
   pendingChanges,
   onCloseConfirm,
   onConfirmSave,
+  saveError,
 }) => {
   const getSortIcon = (key) => {
     if (!sort || sort.key !== key) return null;
@@ -94,6 +100,8 @@ const EditableEmployeeTableView = ({
         />
       </div>
 
+      {saveError ? <p className="mt-2 text-xs text-rose-600">{saveError}</p> : null}
+
       <TableContainer className="manager-table-wrap" role="region" aria-label="社員一覧">
         <Table className={isEditing ? "manager-table is-editing" : "manager-table"}>
           <thead>
@@ -128,6 +136,11 @@ const EditableEmployeeTableView = ({
                   </Button>
                 </Th>
               ))}
+              {isEditing ? (
+                <Th scope="col" className="manager-th">
+                  <span className="text-slate-400">選択</span>
+                </Th>
+              ) : null}
             </tr>
           </thead>
           <tbody>
@@ -136,6 +149,7 @@ const EditableEmployeeTableView = ({
                 {columns.map((c) => {
                   const originalRow = originalRowMap?.get(String(row.id));
                   const changed = isCellChanged({ draftRow: row, originalRow, column: c, normalizeCell });
+                  const isRowSelected = Boolean(selectedRowIds?.[String(row.id)]);
                   return (
                     <Td
                       key={`${row.id}-${c.key}`}
@@ -143,18 +157,32 @@ const EditableEmployeeTableView = ({
                       data-col-key={c.key}
                     >
                       <EditableCellField
-                        isEditing={isEditing}
+                        isEditing={isEditing && isRowSelected}
                         row={row}
                         column={c}
                         normalizeCell={normalizeCell}
                         onChange={onCellChange}
                         clientOptions={clientOptions}
+                        departmentOptions={departmentOptions}
+                        statusOptions={statusOptions}
+                        reasonOptions={reasonOptions}
                         onAddClientOption={onAddClientOption}
                         errorMessage={getCellError ? getCellError(row.id, c.key) : undefined}
                       />
                     </Td>
                   );
                 })}
+                {isEditing ? (
+                  <Td className="text-center">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-slate-300 align-middle"
+                      checked={Boolean(selectedRowIds?.[String(row.id)])}
+                      onChange={() => onToggleRowSelection?.(row.id)}
+                      aria-label="この行を編集対象にする"
+                    />
+                  </Td>
+                ) : null}
               </tr>
             ))}
           </tbody>

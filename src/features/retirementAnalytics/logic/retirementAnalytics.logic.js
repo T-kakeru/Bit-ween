@@ -4,7 +4,7 @@
 // 1-1) 表データとの互換性を優先し、分析は実データの退職日/退職月に合わせる
 // 2) 部署: raw.部署 があれば優先。無ければ raw.ステータス が「人事/営業/開発/派遣」の場合は部署として解釈
 // 2-1) 欠損/未知は index で均等に振り分け（人事も含めて可視化できるようにする）
-// 3) ステータス: raw.ステータス が「待機/稼働中/休職中」の場合のみ採用
+// 3) ステータス: raw.ステータス が「待機/稼働/休職」の場合のみ採用（旧表記: 稼働中/休職中 も読み替え）
 // 3-1) 欠損/未知は index で均等に振り分け（休職中を含めるため）
 // 4) 退職理由: 空欄/未知値は既存カテゴリへ寄せて正規化
 // ※ 仮定: 「退職者分析」なので、退職日/退職月/退職理由 が全て空の行（現職想定）は集計対象外
@@ -12,7 +12,7 @@
 
 
 export const DEPARTMENTS = ["人事", "営業", "開発", "派遣"];
-export const STATUSES = ["待機", "稼働中", "休職中"];
+export const STATUSES = ["待機", "稼働", "休職"];
 export const UNKNOWN_SERIES_LABEL = "未選択";
 export const GENDERS = ["男性", "女性"];
 export const REASONS = [
@@ -53,8 +53,8 @@ export const DEPARTMENT_COLORS = {
 };
 export const STATUS_COLORS = {
   待機: "#7aa2f7",
-  稼働中: "#7ccba2",
-  休職中: "#f0a35e",
+  稼働: "#7ccba2",
+  休職: "#f0a35e",
   未選択: "#d1d5db",
 };
 export const AGE_COLORS = {
@@ -93,6 +93,13 @@ const REASON_SET = new Set(REASONS);
 const GENDER_SET = new Set(GENDERS);
 
 const pad2 = (value) => String(value).padStart(2, "0");
+
+const normalizeStatusLabel = (value) => {
+  if (!value || typeof value !== "string") return value;
+  if (value === "稼働中") return "稼働";
+  if (value === "休職中") return "休職";
+  return value;
+};
 
 const toMonthKey = (dateString) => String(dateString).slice(0, 7);
 
@@ -148,12 +155,21 @@ const normalizeJapaneseMonth = (value) => {
   return `${y}-${pad2(m)}-01`;
 };
 
+const normalizeSlashMonth = (value) => {
+  if (!value || typeof value !== "string") return null;
+  const match = value.match(/^(\d{4})[\/-](\d{1,2})$/);
+  if (!match) return null;
+  const [, y, m] = match;
+  return `${y}-${pad2(m)}-01`;
+};
+
 
 
 const normalizeDate = (retirementDate, retirementMonth) => {
   return (
     normalizeSlashDate(retirementDate) ||
     normalizeJapaneseMonth(retirementMonth) ||
+    normalizeSlashMonth(retirementMonth) ||
     DEFAULT_DATE
   );
 };
@@ -162,6 +178,7 @@ const normalizeOriginalDate = (retirementDate, retirementMonth) => {
   return (
     normalizeSlashDate(retirementDate) ||
     normalizeJapaneseMonth(retirementMonth) ||
+    normalizeSlashMonth(retirementMonth) ||
     DEFAULT_DATE
   );
 };
@@ -175,7 +192,7 @@ const normalizeDepartment = (row) => {
 };
 
 const normalizeStatus = (row) => {
-  const candidate = row?.ステータス ?? row?.status;
+  const candidate = normalizeStatusLabel(row?.ステータス ?? row?.status);
   if (STATUS_SET.has(candidate)) return candidate;
   if (DEPARTMENT_SET.has(candidate)) return DEFAULT_STATUS;
   return DEFAULT_STATUS;

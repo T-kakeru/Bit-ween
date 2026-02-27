@@ -1,7 +1,8 @@
 import type { EmployeeCsvError, EmployeeCsvRawRow } from "../types";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 import {
   EMPLOYEE_CSV_HEADER_MAP,
-  EMPLOYEE_CSV_REQUIRED_FIELDS,
+  EMPLOYEE_CSV_HEADER_SPECS,
   EMPLOYEE_CSV_FIELD_LABELS,
 } from "./employeeCsvConstants";
 
@@ -24,11 +25,7 @@ export const normalizeEmployeeCsvRows = ({
     if (!normalizedHeader) return null;
     const mapped = EMPLOYEE_CSV_HEADER_MAP[normalizedHeader] ?? null;
     if (!mapped) {
-      errors.push({
-        rowNumber: 0,
-        field: "header",
-        message: `許可されていないヘッダー「${String(header ?? "").trim()}」があります。テンプレートCSVのヘッダーを使用してください。`,
-      });
+      // 許可外ヘッダーはエラーにせず、取り込み時に無視する
       return null;
     }
     return mapped;
@@ -42,18 +39,24 @@ export const normalizeEmployeeCsvRows = ({
       errors.push({
         rowNumber: 0,
         field: "header",
-        message: `${EMPLOYEE_CSV_FIELD_LABELS[field]}列が重複しています（${prevIndex + 1}列目と${index + 1}列目）。ヘッダーを修正してください。`,
+        message: ERROR_MESSAGES.CSV.EMPLOYEE.DUPLICATE_HEADER(
+          EMPLOYEE_CSV_FIELD_LABELS[field],
+          prevIndex + 1,
+          index + 1
+        ),
       });
     }
     seen.set(field, index);
   });
 
-  for (const requiredField of EMPLOYEE_CSV_REQUIRED_FIELDS) {
-    if (!headerKeys.includes(requiredField)) {
+  for (const spec of EMPLOYEE_CSV_HEADER_SPECS) {
+    if (!headerKeys.includes(spec.field)) {
       errors.push({
         rowNumber: 0,
         field: "header",
-        message: `${EMPLOYEE_CSV_FIELD_LABELS[requiredField]}列が見つかりません。ヘッダー名を確認してください。`,
+        message: ERROR_MESSAGES.CSV.EMPLOYEE.REQUIRED_HEADER_NOT_FOUND(
+          EMPLOYEE_CSV_FIELD_LABELS[spec.field]
+        ),
       });
     }
   }

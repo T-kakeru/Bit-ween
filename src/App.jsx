@@ -19,15 +19,22 @@ import NotFoundPanel from "@/shared/components/NotFoundPanel";
 import useArticleEntryParentInfo from "./features/articles/hooks/useArticleEntryParentInfo";
 import useSavedArticlesState from "@/features/articles/hooks/useSavedArticlesState";
 import { useAuth } from "@/features/auth/context/AuthContext";
-// 画面に必要なテストデータ（API未接続時の表示用）
-import navItems from "@/shared/data/mock/navItems.json";
+import { probeUsersReadOne } from "@/services/common/supabaseClient";
+
+const userNavItems = [
+  { label: "ホーム", icon: "/img/icon_home.png" },
+  { label: "記事", icon: "/img/icon_article.png" },
+  { label: "通知", icon: "/img/icon_notification.png", badge: 3 },
+  { label: "設定", icon: "/img/icon_settings.png" },
+  { label: "管理画面", icon: "/img/icon_manager.png" },
+];
 
 const AUTH_PATHS = ["/login", "/forgot-password", "/reset-password"];
 
 const normalizeAuthPath = (path) => (AUTH_PATHS.includes(path) ? path : "/login");
 
 function App() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isInitializing, initMessage } = useAuth();
   const savedArticles = useSavedArticlesState();
   const [authPath, setAuthPath] = useState(() =>
     typeof window === "undefined" ? "/login" : normalizeAuthPath(window.location.pathname)
@@ -119,6 +126,32 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!import.meta.env.DEV) return;
+
+    let disposed = false;
+    const runProbe = async () => {
+      const result = await probeUsersReadOne("test1@example.com");
+      if (disposed) return;
+
+      if (!result.ok) {
+        console.warn("[debug][supabase] users read NG", {
+          message: result.errorMessage,
+          code: result.errorCode,
+          details: result.errorDetails,
+        });
+        return;
+      }
+
+      console.info("[debug][supabase] users read OK", result.data);
+    };
+
+    void runProbe();
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
+  useEffect(() => {
     const onPopState = () => {
       if (typeof window === "undefined") return;
       setAppPath(window.location.pathname);
@@ -153,6 +186,19 @@ function App() {
     setAppPath(normalized);
     setAuthPath(normalized);
   };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="text-lg font-semibold text-slate-900">読み込み中...</div>
+          {initMessage ? (
+            <div className="mt-2 text-sm text-slate-600 leading-relaxed">{initMessage}</div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     if (!AUTH_PATHS.includes(appPath)) {
@@ -296,7 +342,7 @@ function App() {
       }
       sidebar={
         <AppSidebar
-          navItems={isAdminMode ? adminNavItems : navItems}
+          navItems={isAdminMode ? adminNavItems : userNavItems}
           activeNav={isAdminMode ? adminNav : activeNav}
           onNavChange={handleNavChange}
           menuTitle={isAdminMode ? "管理者メニュー" : "メニュー"}

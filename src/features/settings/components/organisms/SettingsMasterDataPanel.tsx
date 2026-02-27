@@ -8,7 +8,7 @@ export const SettingsMasterDataPanel = () => {
     <Card className="settings-panel settings-menu-card settings-master-card">
       <div className="settings-card-title-wrap">
         <Heading level={3}>マスタ管理</Heading>
-        <TextCaption>部署・稼働先・稼働状態をこのカード内で管理します。</TextCaption>
+        <TextCaption>部署・稼働先をこのカード内で管理します。稼働状態は固定データのため一覧表示のみです。</TextCaption>
       </div>
 
       <CatalogManagerSection
@@ -29,10 +29,11 @@ export const SettingsMasterDataPanel = () => {
 
       <CatalogManagerSection
         title="稼働状態管理"
-        description="稼働状態の一覧表示・追加・編集・削除を行います。"
+        description="稼働状態の一覧を表示します（固定データのため追加・編集・削除はできません）。"
         keyName="workStatuses"
         itemLabel="稼働状態"
         embedded
+        readOnly
       />
     </Card>
   );

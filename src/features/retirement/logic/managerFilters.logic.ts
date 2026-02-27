@@ -1,6 +1,6 @@
 import { parseSlashDateToMs } from "@/features/retirement/logic/dateParsers";
 import type { ManagerRow } from "@/features/retirement/types";
-export const STATUS_OPTIONS = ["待機", "稼働中", "休職中"] as const;
+export const STATUS_OPTIONS = ["待機", "稼働", "休職"] as const;
 export const DEPARTMENT_OPTIONS = ["人事", "営業", "派遣", "開発"] as const;
 export const REASON_OPTIONS = [
   "ITモチベ低下",
@@ -12,10 +12,6 @@ export const REASON_OPTIONS = [
 ] as const;
 
 export const DEFAULT_MANAGER_FILTERS: any = {
-  employmentStatus: {
-    retired: true,
-    active: false,
-  },
   ageBands: {
     under20: false,
     between20And25: false,
@@ -98,11 +94,6 @@ const matchTenureBand = (months: any, bands: any): boolean => {
   );
 };
 
-const matchEmploymentStatus = (isRetired: boolean, group: any): boolean => {
-  if (!isAnySelected(group)) return true;
-  return (group.retired && isRetired) || (group.active && !isRetired);
-};
-
 const matchMultiSelect = (value: any, group: any, mapping: Record<string, string>): boolean => {
   if (!isAnySelected(group)) return true;
   if (!value) return false;
@@ -130,9 +121,11 @@ const normalizeDepartmentValue = (row: ManagerRow): string | undefined => {
 const normalizeStatusValue = (value: any): string | undefined => {
   if (!value) return undefined;
   const raw = String(value);
-  if (raw === "待機" || raw === "休職中" || raw === "稼働中") return raw;
-  // それ以外は稼働中扱い
-  return "稼働中";
+  if (raw === "稼働中") return "稼働";
+  if (raw === "休職中") return "休職";
+  if (raw === "待機" || raw === "稼働" || raw === "休職") return raw;
+  // それ以外は稼働扱い
+  return "稼働";
 };
 
 const normalizeReasonValue = (value: any): string | undefined => {
@@ -158,10 +151,6 @@ export const applyManagerFilters = (
       | string
       | undefined;
     const retireDate = parseSlashDateToMs(row?.["退職日"]);
-    const isActive = (row as any)?.is_active !== false;
-    const isRetired = !isActive;
-
-    if (!matchEmploymentStatus(isRetired, filters.employmentStatus)) return false;
 
     if (!matchAgeBand(age, filters.ageBands)) return false;
     if (!matchTenureBand(tenure, filters.tenureBands)) return false;
@@ -169,8 +158,8 @@ export const applyManagerFilters = (
     if (
       !matchMultiSelect(status, filters.statuses, {
         waiting: "待機",
-        working: "稼働中",
-        leave: "休職中",
+        working: "稼働",
+        leave: "休職",
       })
     ) {
       return false;

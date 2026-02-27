@@ -1,4 +1,6 @@
 // ローカルテスト用のカタログデータ保存・取得ロジック
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
+
 export type CatalogKey = "departments" | "clients" | "workStatuses";
 
 export type CatalogItem = {
@@ -92,14 +94,14 @@ export const renameCatalogName = ({
   const nextTrimmed = String(nextName ?? "").trim();
   const items = loadCatalogItems(keyName, fallbackItems);
 
-  if (!prevTrimmed) return { ok: false, message: "変更前の名称が不正です", items };
-  if (!nextTrimmed) return { ok: false, message: "名称は必須です", items };
+  if (!prevTrimmed) return { ok: false, message: ERROR_MESSAGES.MASTER.PREV_NAME_INVALID, items };
+  if (!nextTrimmed) return { ok: false, message: ERROR_MESSAGES.MASTER.NAME_REQUIRED, items };
   if (prevTrimmed === nextTrimmed) return { ok: true, items };
   if (!items.some((x) => x.name === prevTrimmed)) {
-    return { ok: false, message: "対象のデータが見つかりません", items };
+    return { ok: false, message: ERROR_MESSAGES.MASTER.DATA_NOT_FOUND, items };
   }
   if (items.some((x) => x.name === nextTrimmed)) {
-    return { ok: false, message: "同じ名称が既に存在します", items };
+    return { ok: false, message: ERROR_MESSAGES.MASTER.NAME_ALREADY_EXISTS, items };
   }
 
   const updated = items.map((x) => (x.name === prevTrimmed ? { ...x, name: nextTrimmed } : x));

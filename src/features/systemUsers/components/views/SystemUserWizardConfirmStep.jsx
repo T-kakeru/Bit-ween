@@ -16,7 +16,7 @@ const renderRow = (label, value) => (
 
 const SystemUserWizardConfirmStep = ({
   basicInfo,
-  analysisPayload,
+  employeePayload,
   onBack,
   onRegister,
   isRegistering,
@@ -25,7 +25,7 @@ const SystemUserWizardConfirmStep = ({
   return (
     <div className="space-y-5">
       <div>
-        <Heading level={3}>Step 3 / 確認</Heading>
+        <Heading level={3}>確認</Heading>
         <TextCaption className="mt-1">入力内容を確認して、問題なければ登録してください。</TextCaption>
       </div>
 
@@ -36,18 +36,16 @@ const SystemUserWizardConfirmStep = ({
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
-        <p className="text-sm font-bold text-slate-900">分析データ紐付け</p>
-        {renderRow("社員ID", analysisPayload?.["社員ID"])}
-        {renderRow("氏名", analysisPayload?.["名前"])}
-        {renderRow("部署", analysisPayload?.["部署"])}
-        {renderRow("性別", analysisPayload?.["性別"])}
-        {renderRow("生年月日", analysisPayload?.["生年月日"])}
-        {renderRow("入社日", analysisPayload?.["入社日"])}
-        {renderRow("在籍状態", analysisPayload?.is_active ? "在籍中" : "退職済")}
-        {!analysisPayload?.is_active ? renderRow("退職日", analysisPayload?.["退職日"]) : null}
-        {!analysisPayload?.is_active ? renderRow("退職理由", analysisPayload?.["退職理由"]) : null}
-        {renderRow("稼働状態", analysisPayload?.["ステータス"])}
-        {renderRow("稼働先", analysisPayload?.["当時のクライアント"])}
+        <p className="text-sm font-bold text-slate-900">社員情報</p>
+        {renderRow("氏名", employeePayload?.["名前"])}
+        {renderRow("性別", employeePayload?.["性別"])}
+        {renderRow("生年月日", employeePayload?.["生年月日"])}
+        {renderRow("社員ID", employeePayload?.["社員ID"])}
+        {renderRow("部署", employeePayload?.["部署"])}
+        {renderRow("入社日", employeePayload?.["入社日"])}
+        {renderRow("在籍状態", "在籍中")}
+        {renderRow("稼働状態", employeePayload?.["ステータス"])}
+        {renderRow("稼働先", employeePayload?.["当時のクライアント"])}
       </section>
 
       {errorMessage ? <p className="text-xs text-rose-600">{errorMessage}</p> : null}

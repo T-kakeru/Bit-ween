@@ -12,9 +12,10 @@ import useEmployeeCsvImport from "../../hooks/useEmployeeCsvImport";
 import { buildEmployeeCsvTemplateText, EMPLOYEE_CSV_TEMPLATE_FILE_NAME } from "../../logic/employeeCsvTemplate";
 import CsvFilePicker from "../molecules/CsvFilePicker";
 import CsvImportErrorList from "../molecules/CsvImportErrorList";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 type EmployeeCsvImportPanelProps = {
-  onImportRows: (rows: ManagerRow[]) => void;
+  onImportRows: (rows: ManagerRow[]) => Promise<{ ok: true; count?: number } | { ok: false; message: string }>;
   allowFutureRetirementDate?: boolean;
   onAfterImport?: () => void;
   title?: string;
@@ -48,6 +49,8 @@ const EmployeeCsvImportPanel = ({
 }: EmployeeCsvImportPanelProps) => {
   const [step, setStep] = useState<Step>("edit");
   const [lastImported, setLastImported] = useState<LastImported | null>(null);
+  const [importError, setImportError] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
 
   const {
     fileName,
@@ -61,7 +64,6 @@ const EmployeeCsvImportPanel = ({
     handleFileSelect,
     addDepartmentAndRevalidate,
     addWorkLocationAndRevalidate,
-    addWorkStatusAndRevalidate,
     reset,
   } = useEmployeeCsvImport({ allowFutureRetirementDate });
 
@@ -73,26 +75,42 @@ const EmployeeCsvImportPanel = ({
 
   const addedCatalogTotal =
     (addedCatalog?.departments?.length ?? 0) +
-    (addedCatalog?.workStatuses?.length ?? 0) +
     (addedCatalog?.workLocations?.length ?? 0);
 
   const handleGoConfirm = () => {
     if (!canImport) return;
+    setImportError("");
     setStep("confirm");
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     if (!canImport) return;
-    onImportRows(mappedRows);
-    setLastImported({ fileName: fileName ?? "(不明)", count: mappedRows.length, previewNames });
-    reset();
-    setStep("success");
-    onAfterImport?.();
+    setIsImporting(true);
+    setImportError("");
+
+    try {
+      const result = await onImportRows(mappedRows);
+      if (!result.ok) {
+        setIsImporting(false);
+        setImportError(result.message || ERROR_MESSAGES.CSV.IMPORT_FAILED_DOT);
+        return;
+      }
+
+      setLastImported({ fileName: fileName ?? "(不明)", count: mappedRows.length, previewNames });
+      reset();
+      setIsImporting(false);
+      setStep("success");
+      onAfterImport?.();
+    } catch (error) {
+      setIsImporting(false);
+      setImportError(ERROR_MESSAGES.CSV.IMPORT_ERROR);
+    }
   };
 
   const handleClear = () => {
     setStep("edit");
     setLastImported(null);
+    setImportError("");
     reset();
   };
 
@@ -143,7 +161,7 @@ const EmployeeCsvImportPanel = ({
               size="md"
               className="manager-import-button"
               onClick={handleGoConfirm}
-              disabled={!canImport || isProcessing}
+              disabled={!canImport || isProcessing || isImporting}
             >
               取り込み
             </Button>
@@ -154,7 +172,7 @@ const EmployeeCsvImportPanel = ({
               size="md"
               className="manager-import-button settings-cancel-button"
               onClick={handleClear}
-              disabled={isProcessing}
+              disabled={isProcessing || isImporting}
             >
               クリア
             </Button>
@@ -174,6 +192,7 @@ const EmployeeCsvImportPanel = ({
           <TextCaption className="manager-import-confirm-meta">
             ファイル: {fileName ?? "(不明)"} / 読み込み: {rowCount}件 / 取り込み: {mappedRows.length}件
           </TextCaption>
+          {importError ? <p className="mt-2 text-xs text-rose-600">{importError}</p> : null}
 
           {addedCatalogTotal > 0 ? (
             <div className="manager-import-confirm-added" aria-label="追加されるマスタの案内">
@@ -189,17 +208,6 @@ const EmployeeCsvImportPanel = ({
                     <ul className="manager-import-confirm-added-list">
                       {addedCatalog.departments.map((v) => (
                         <li key={`dep-${v}`}>{v}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                {addedCatalog.workStatuses.length > 0 ? (
-                  <div>
-                    <p className="manager-import-confirm-added-label">稼働状態（{addedCatalog.workStatuses.length}件）</p>
-                    <ul className="manager-import-confirm-added-list">
-                      {addedCatalog.workStatuses.map((v) => (
-                        <li key={`ws-${v}`}>{v}</li>
                       ))}
                     </ul>
                   </div>
@@ -269,11 +277,12 @@ const EmployeeCsvImportPanel = ({
             <Button
               type="button"
               variant="primary"
-              size="md"
-              onClick={handleConfirmImport}
-              disabled={!canImport || isProcessing}
+              onClick={() => {
+                void handleConfirmImport();
+              }}
+              disabled={isImporting || isProcessing}
             >
-              この内容で取り込む
+              {isImporting ? "取り込み中..." : "この内容で取り込む"}
             </Button>
           </div>
         </div>
@@ -324,7 +333,6 @@ const EmployeeCsvImportPanel = ({
         isProcessing={isProcessing}
         onAddDepartment={addDepartmentAndRevalidate}
         onAddWorkLocation={addWorkLocationAndRevalidate}
-        onAddWorkStatus={addWorkStatusAndRevalidate}
       />
     </section>
   );

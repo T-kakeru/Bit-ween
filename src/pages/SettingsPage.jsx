@@ -1,18 +1,31 @@
-import { useMemo, useState } from "react";
-import settingsData from "@/shared/data/mock/settings.json";
-import departmentsData from "@/shared/data/mock/departments.json";
+import { useEffect, useMemo, useState } from "react";
 import Heading from "@/shared/ui/Heading";
 import Card from "@/shared/ui/Card";
 import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
 import { SettingsMasterDataPanel } from "@/features/settings/components/organisms/SettingsMasterDataPanel";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { fetchDepartmentNames } from "@/services/masterData/masterDataService";
+import { fetchSettingsProfileByEmail } from "@/services/user/usersService";
 
 // pages: 画面単位の状態（画面遷移/表示分岐）を統合する
 const SettingsPage = () => {
-  const { logout } = useAuth();
-  const initial = useMemo(() => settingsData, []);
-  const [settings, setSettings] = useState(initial);
+  const { logout, user } = useAuth();
+  const [settings, setSettings] = useState(() => ({
+    account: {
+      name: "",
+      role: "一般",
+      subtitle: "Bit-ween",
+    },
+    profile: {
+      name: "",
+      department: "",
+      email: "",
+      password: "Password@123",
+      role: "一般",
+    },
+  }));
+  const [departmentMasterNames, setDepartmentMasterNames] = useState([]);
   const [isProfileEditing, setIsProfileEditing] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
 
@@ -22,6 +35,51 @@ const SettingsPage = () => {
     email: settings.profile?.email ?? "",
     password: settings.profile?.password ?? "Password@123",
   }));
+
+  useEffect(() => {
+    let disposed = false;
+
+    const load = async () => {
+      const [departmentNames, profile] = await Promise.all([
+        fetchDepartmentNames(),
+        fetchSettingsProfileByEmail(String(user?.email ?? "")),
+      ]);
+      if (disposed) return;
+
+      setDepartmentMasterNames(Array.isArray(departmentNames) ? departmentNames : []);
+
+      if (!profile) return;
+      setSettings((prev) => ({
+        ...prev,
+        profile: {
+          ...(prev.profile ?? {}),
+          name: profile.name,
+          department: profile.department,
+          email: profile.email,
+          password: profile.password,
+          role: profile.role,
+        },
+        account: {
+          ...(prev.account ?? {}),
+          name: profile.name,
+          role: profile.role,
+          subtitle: profile.department ? `Bit-ween / ${profile.department}` : "Bit-ween",
+        },
+      }));
+      setProfileDraft({
+        name: profile.name,
+        department: profile.department,
+        email: profile.email,
+        password: profile.password,
+      });
+    };
+
+    void load();
+
+    return () => {
+      disposed = true;
+    };
+  }, [user?.email]);
 
   const profileName = settings.profile?.name ?? settings.account?.name ?? "";
   const profileDepartment = settings.profile?.department ?? "";
@@ -34,11 +92,13 @@ const SettingsPage = () => {
     return "＊".repeat(raw.length);
   };
   const departmentOptions = useMemo(() => {
-    const base = Array.isArray(departmentsData) ? departmentsData.map((item) => String(item?.name ?? "").trim()).filter(Boolean) : [];
+    const base = Array.isArray(departmentMasterNames)
+      ? departmentMasterNames.map((name) => String(name ?? "").trim()).filter(Boolean)
+      : [];
     const current = String(isProfileEditing ? profileDraft.department : profileDepartment).trim();
     const merged = current && !base.includes(current) ? [current, ...base] : base;
     return Array.from(new Set(merged));
-  }, [isProfileEditing, profileDepartment, profileDraft.department]);
+  }, [departmentMasterNames, isProfileEditing, profileDepartment, profileDraft.department]);
 
   const startProfileEdit = () => {
     setProfileDraft({

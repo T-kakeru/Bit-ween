@@ -63,6 +63,8 @@ const EDIT_VALIDATION_MESSAGES = {
   retireDateBeforeJoinDate: "退職日は入社日より前の日付にできません",
   retireDateInFuture: "退職日が未来の日付です（退職予定の確認が必要です）",
   retireDateOver50Years: "勤続50年以上のため入力ミスの可能性があります",
+  retireReasonRequiredWhenRetireDatePresent: "退職日を入力した場合は退職理由も入力してください",
+  retireDateRequiredWhenRetireReasonPresent: "退職理由を入力した場合は退職日も入力してください",
   statusTooLong: "稼働状態は20文字以内で入力してください",
   remarkTooLong: "備考は200文字以内で入力してください",
 };
@@ -157,6 +159,12 @@ export const validateEditableCell = ({ row, key, value }) => {
     const retireDate = parseDate(raw);
     if (!retireDate) return EDIT_VALIDATION_MESSAGES.retireDateInvalid;
 
+    // 退職日が入っている場合は、退職理由も必須
+    const retireReason = String(row?.["退職理由"] ?? "").trim();
+    if (!retireReason) {
+      return EDIT_VALIDATION_MESSAGES.retireReasonRequiredWhenRetireDatePresent;
+    }
+
     const joinDateRaw = row?.["入社日"];
     const joinDate = parseDate(joinDateRaw);
 
@@ -175,6 +183,23 @@ export const validateEditableCell = ({ row, key, value }) => {
         return EDIT_VALIDATION_MESSAGES.retireDateOver50Years;
       }
     }
+  }
+
+  if (key === "退職理由") {
+    const str = String(value ?? "").trim();
+    if (!str) {
+      // 退職理由が空でも、退職日が空なら問題なし
+      const retireDateRaw = String(row?.["退職日"] ?? "").trim();
+      if (!retireDateRaw) return undefined;
+      // 退職日が入っているのに退職理由が空ならエラー
+      return EDIT_VALIDATION_MESSAGES.retireReasonRequiredWhenRetireDatePresent;
+    }
+
+    const retireDateRaw = String(row?.["退職日"] ?? "").trim();
+    if (!retireDateRaw) {
+      return EDIT_VALIDATION_MESSAGES.retireDateRequiredWhenRetireReasonPresent;
+    }
+    return undefined;
   }
 
   if (key === "生年月日") {

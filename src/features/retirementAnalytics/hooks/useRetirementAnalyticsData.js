@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import rawRetirements from "@/shared/data/mock/employee.json";
+import { useEffect, useMemo, useState } from "react";
+import { listEmployees } from "@/services/employee/employeesService";
 import {
   buildAnalyticsAggregation,
   filterAnalyticsRows,
@@ -15,7 +15,22 @@ const getRowPeriodKey = (row, axis) => {
 };
 
 const useRetirementAnalyticsData = ({ activeTab, selectedYear, department, statuses, clients, genders, seriesMode }) => {
-  const normalized = useMemo(() => normalizeRetirementData(rawRetirements), []);
+  const [rawRows, setRawRows] = useState([]);
+
+  useEffect(() => {
+    let disposed = false;
+    const load = async () => {
+      const rows = await listEmployees();
+      if (disposed) return;
+      setRawRows(Array.isArray(rows) ? rows : []);
+    };
+    void load();
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
+  const normalized = useMemo(() => normalizeRetirementData(rawRows), [rawRows]);
 
   const clientOptions = useMemo(() => {
     const seen = new Set();

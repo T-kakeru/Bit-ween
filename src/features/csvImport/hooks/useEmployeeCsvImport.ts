@@ -2,14 +2,19 @@ import { useCallback, useMemo, useState } from "react";
 import { parseCsvText } from "../logic/csvParser";
 import { normalizeEmployeeCsvRows } from "../logic/employeeCsvNormalization";
 import { validateEmployeeCsvRows } from "../logic/employeeCsvValidation";
-import { addClientMaster, addDepartmentMaster, addWorkStatusMaster } from "../logic/employeeCsvConstants";
+import {
+  addClientMaster,
+  addDepartmentMaster,
+  initializeEmployeeCsvMasters,
+} from "../logic/employeeCsvConstants";
 import type { EmployeeCsvError, EmployeeCsvNormalizedRow, EmployeeCsvRawRow } from "../types";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const readFileAsText = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("CSVの読み込みに失敗しました。"));
+    reader.onerror = () => reject(new Error(ERROR_MESSAGES.CSV.READ_FAILED_DOT));
     reader.readAsText(file);
   });
 
@@ -20,7 +25,6 @@ type UseEmployeeCsvImportOptions = {
 type AddedCatalog = {
   departments: string[];
   workLocations: string[];
-  workStatuses: string[];
 };
 
 const addUnique = (list: string[], value: string) => {
@@ -41,7 +45,6 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
   const [addedCatalog, setAddedCatalog] = useState<AddedCatalog>({
     departments: [],
     workLocations: [],
-    workStatuses: [],
   });
 
   const reset = useCallback(() => {
@@ -53,7 +56,7 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
     setRowCount(0);
     setIsProcessing(false);
     setInputKey((prev) => prev + 1);
-    setAddedCatalog({ departments: [], workLocations: [], workStatuses: [] });
+    setAddedCatalog({ departments: [], workLocations: [] });
   }, []);
 
   const revalidate = useCallback(
@@ -77,15 +80,16 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
       }
       setIsProcessing(true);
       setFileName(file.name);
-      setAddedCatalog({ departments: [], workLocations: [], workStatuses: [] });
+      setAddedCatalog({ departments: [], workLocations: [] });
 
       try {
+        await initializeEmployeeCsvMasters();
         const text = await readFileAsText(file);
         const { headers, rows } = parseCsvText(text);
 
         if (!headers.length) {
           setErrors([
-            { rowNumber: 0, field: "file", message: "CSVのヘッダーが見つかりません。" },
+            { rowNumber: 0, field: "file", message: ERROR_MESSAGES.CSV.HEADER_NOT_FOUND_DOT },
           ]);
           setValidRows([]);
           setRowCount(0);
@@ -104,7 +108,7 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
           {
             rowNumber: 0,
             field: "file",
-            message: "CSVの読み込みに失敗しました。ファイル形式を確認してください。",
+            message: ERROR_MESSAGES.CSV.READ_FAILED_WITH_HINT_DOT,
           },
         ]);
         setHeaderErrors([]);
@@ -119,11 +123,11 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
   );
 
   const addDepartmentAndRevalidate = useCallback(
-    (value: string) => {
+    async (value: string) => {
       if (!sourceRows.length) return;
       setIsProcessing(true);
       try {
-        addDepartmentMaster(value);
+        await addDepartmentMaster(value);
         setAddedCatalog((prev) => ({ ...prev, departments: addUnique(prev.departments, value) }));
         revalidate(sourceRows);
       } finally {
@@ -134,11 +138,11 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
   );
 
   const addWorkLocationAndRevalidate = useCallback(
-    (value: string) => {
+    async (value: string) => {
       if (!sourceRows.length) return;
       setIsProcessing(true);
       try {
-        addClientMaster(value);
+        await addClientMaster(value);
         setAddedCatalog((prev) => ({ ...prev, workLocations: addUnique(prev.workLocations, value) }));
         revalidate(sourceRows);
       } finally {
@@ -148,20 +152,6 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
     [revalidate, sourceRows]
   );
 
-  const addWorkStatusAndRevalidate = useCallback(
-    (value: string) => {
-      if (!sourceRows.length) return;
-      setIsProcessing(true);
-      try {
-        addWorkStatusMaster(value);
-        setAddedCatalog((prev) => ({ ...prev, workStatuses: addUnique(prev.workStatuses, value) }));
-        revalidate(sourceRows);
-      } finally {
-        setIsProcessing(false);
-      }
-    },
-    [revalidate, sourceRows]
-  );
 
   const canImport = useMemo(() => errors.length === 0 && validRows.length > 0, [errors.length, validRows.length]);
 
@@ -177,7 +167,6 @@ const useEmployeeCsvImport = ({ allowFutureRetirementDate = false }: UseEmployee
     handleFileSelect,
     addDepartmentAndRevalidate,
     addWorkLocationAndRevalidate,
-    addWorkStatusAndRevalidate,
     reset,
   };
 };

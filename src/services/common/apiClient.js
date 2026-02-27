@@ -1,5 +1,7 @@
+import { fetchJson } from "@/shared/api/client";
+
 // APIクライアント（共通）
-// 実務ではここに認証トークン付与やエラーハンドリングを集約します
+// 実務用途: fetchの単一入口（requestId付与 / 例外の正規化）
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const buildUrl = (path) => {
@@ -13,17 +15,8 @@ const getJson = async (path) => {
   // APIのURLが未設定なら取得をスキップ
   if (!url) return null;
 
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`APIエラー: ${response.status}`);
-  }
-
-  return response.json();
+  const result = await fetchJson({ url, scope: "apiClient", action: "getJson" });
+  return result.data;
 };
 
 export default getJson;

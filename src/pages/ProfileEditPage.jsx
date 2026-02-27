@@ -6,6 +6,7 @@ import Button from "@/shared/ui/Button";
 import Input from "@/shared/ui/Input";
 import Select from "@/shared/ui/Select";
 import TextCaption from "@/shared/ui/TextCaption";
+import { ERROR_MESSAGES, NOTIFY_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 // プロフィール編集（マイページから遷移する想定）
 const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
@@ -47,7 +48,7 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
 
   const handleCancel = () => {
     if (isDirty) {
-      const ok = window.confirm("変更を破棄して戻りますか？");
+      const ok = window.confirm(NOTIFY_MESSAGES.SYSTEM.CONFIRM_DISCARD_CHANGES);
       if (!ok) return;
     }
     setForm(initial);
@@ -59,13 +60,13 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      window.alert("画像ファイル（PNG/JPG など）を選択してください");
+      window.alert(ERROR_MESSAGES.PROFILE.IMAGE_FILE_REQUIRED);
       return;
     }
 
     const maxBytes = 2 * 1024 * 1024;
     if (file.size > maxBytes) {
-      window.alert("画像サイズが大きすぎます（2MB以下）");
+      window.alert(ERROR_MESSAGES.PROFILE.IMAGE_TOO_LARGE);
       return;
     }
 

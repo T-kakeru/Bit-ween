@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Card from "@/shared/ui/Card";
 import Heading from "@/shared/ui/Heading";
 import TextCaption from "@/shared/ui/TextCaption";
 import { useSystemUsersCrud } from "@/features/systemUsers/hooks/useSystemUsersCrud";
 import { buildEmployeeCredentials } from "@/features/addRetirement/logic/buildEmployeeCredentials";
+import { createEmployee, findEmployeeIdByEmployeeCode } from "@/services/employee/employeesService";
+import { ERROR_MESSAGES, NOTIFY_MESSAGES } from "@/shared/constants/messages/appMessages";
 
-import SystemUserWizardBasicStep from "@/features/systemUsers/components/views/SystemUserWizardBasicStep";
-import SystemUserWizardAnalysisStep from "@/features/systemUsers/components/views/SystemUserWizardAnalysisStep";
+import SystemUserWizardUnifiedFormStep from "@/features/systemUsers/components/views/SystemUserWizardUnifiedFormStep";
 import SystemUserWizardConfirmStep from "@/features/systemUsers/components/views/SystemUserWizardConfirmStep";
 import SystemUserWizardCompleteStep from "@/features/systemUsers/components/views/SystemUserWizardCompleteStep";
 
@@ -21,17 +22,11 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
   const { createUser } = useSystemUsersCrud({ companyId });
   const [step, setStep] = useState(1);
   const [basicInfo, setBasicInfo] = useState({ email: "", role: "general" });
-  const [analysisPayload, setAnalysisPayload] = useState(null);
+  const [employeePayload, setEmployeePayload] = useState(null);
   const [completionInfo, setCompletionInfo] = useState(null);
   const [basicError, setBasicError] = useState("");
   const [registerError, setRegisterError] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
-
-  const stepLabel = useMemo(() => {
-    if (step === 1) return "基本情報";
-    if (step === 3) return "確認";
-    return "完了";
-  }, [step]);
 
   const handleChangeBasicInfo = (patch) => {
     setBasicInfo((prev) => ({ ...prev, ...patch }));
@@ -43,12 +38,12 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
     const role = String(basicInfo.role ?? "").trim().toLowerCase();
 
     if (!EMAIL_REGEX.test(email)) {
-      setBasicError("メールアドレスの形式を確認してください。");
+      setBasicError(ERROR_MESSAGES.SYSTEM_USERS.EMAIL_FORMAT_CHECK_DOT);
       return false;
     }
 
     if (role !== "admin" && role !== "general") {
-      setBasicError("権限は Admin または General を選択してください。");
+      setBasicError(ERROR_MESSAGES.SYSTEM_USERS.ROLE_SELECT_ADMIN_GENERAL_DOT);
       return false;
     }
 
@@ -57,33 +52,77 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
   };
 
   const handleRegister = async () => {
-    if (!analysisPayload) {
-      setRegisterError("分析データが未設定です。");
+    if (!employeePayload) {
+      setRegisterError(ERROR_MESSAGES.SYSTEM_USERS.EMPLOYEE_INFO_NOT_SET_DOT);
       return;
     }
 
     setIsRegistering(true);
     setRegisterError("");
 
-    const result = createUser({
+    const baseEmployeeCode = String(employeePayload["社員ID"] ?? "").trim();
+    const fullName = String(employeePayload["名前"] ?? "").trim();
+    const gender = String(employeePayload["性別"] ?? "").trim();
+    const birthDate = String(employeePayload["生年月日"] ?? "").trim();
+    const joinDate = String(employeePayload["入社日"] ?? "").trim();
+    const departmentName = String(employeePayload["部署"] ?? "").trim();
+    const workStatusName = String(employeePayload["ステータス"] ?? "").trim();
+    const clientName = String(employeePayload["当時のクライアント"] ?? "").trim();
+
+    // 既存社員の入力を想定するが、DB上にまだ無い場合はここで追加する
+    let employeeCode = baseEmployeeCode;
+    try {
+      const existingEmployeeId = await findEmployeeIdByEmployeeCode(employeeCode);
+      if (!existingEmployeeId) {
+        const created = await createEmployee({
+          employeeCode,
+          fullName,
+          gender: gender || null,
+          birthDate: birthDate || null,
+          joinDate: joinDate || null,
+          retireDate: null,
+          departmentName,
+          workStatusName,
+          clientName: clientName || null,
+          retirementReasonName: null,
+          retirementReasonText: null,
+        });
+        if (!created.ok) {
+          setIsRegistering(false);
+          setRegisterError(created.message || ERROR_MESSAGES.EMPLOYEE.UI_CREATE_FAILED_DOT);
+          return;
+        }
+
+        // createEmployee が重複回避で社員IDを自動採番した場合は、以降の処理にも反映する
+        const createdEmployeeCode = String(created.employee?.["社員ID"] ?? "").trim();
+        if (createdEmployeeCode) {
+          employeeCode = createdEmployeeCode;
+        }
+      }
+    } catch (e) {
+      setIsRegistering(false);
+      setRegisterError(ERROR_MESSAGES.EMPLOYEE.UI_CREATE_FAILED_DOT);
+      return;
+    }
+
+    const credentials = buildEmployeeCredentials({ ...employeePayload, "社員ID": employeeCode });
+
+    const result = await createUser({
       email: String(basicInfo.email ?? "").trim(),
       role: String(basicInfo.role ?? "general").trim().toLowerCase(),
-      employeeCode: String(analysisPayload["社員ID"] ?? "").trim(),
-      employeeName: String(analysisPayload["名前"] ?? "").trim(),
-      displayName: String(analysisPayload["名前"] ?? "").trim(),
-      analysisProfile: analysisPayload,
+      employeeCode,
+      password: credentials.initialPassword,
     });
 
     if (!result.ok) {
       setIsRegistering(false);
-      setRegisterError(result.message || "登録に失敗しました。");
+      setRegisterError(result.message || ERROR_MESSAGES.SYSTEM_USERS.REGISTER_FAILED_DOT);
       return;
     }
 
-    const credentials = buildEmployeeCredentials(analysisPayload);
     const inviteLink = buildInviteLink(result.user?.id);
     const copyText = [
-      `${analysisPayload["名前"] || "ご担当者"} 様`,
+      `${employeePayload["名前"] || "ご担当者"} 様`,
       "",
       "アカウント登録が完了しました。",
       `メールアドレス: ${String(basicInfo.email ?? "").trim()}`,
@@ -101,7 +140,7 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
     });
 
     setIsRegistering(false);
-    setStep(4);
+    setStep(3);
   };
 
   const handleCopy = async () => {
@@ -111,7 +150,7 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
     try {
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
-        window.alert("招待情報をコピーしました。");
+        window.alert(NOTIFY_MESSAGES.SYSTEM_USERS.INVITE_COPIED);
         return;
       }
     } catch {
@@ -128,61 +167,52 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
       textarea.select();
       document.execCommand("copy");
       document.body.removeChild(textarea);
-      window.alert("招待情報をコピーしました。");
+      window.alert(NOTIFY_MESSAGES.SYSTEM_USERS.INVITE_COPIED);
     } catch {
-      window.alert("コピーに失敗しました。手動でコピーしてください。");
+      window.alert(NOTIFY_MESSAGES.SYSTEM_USERS.COPY_FAILED);
     }
   };
 
   return (
     <div className="system-user-wizard-stack">
       {step === 1 ? (
-        <>
-          <Card className="settings-panel">
-            <div className="settings-row">
-              <div>
-                <Heading level={3} className="manager-card-title">アカウントの登録１</Heading>
-                <TextCaption>アカウント一覧と分離した登録フローです。</TextCaption>
-                <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
-              </div>
-            </div>
-
-            <div className="px-6 pb-5">
-              <SystemUserWizardBasicStep
-                basicInfo={basicInfo}
-                onChangeBasicInfo={handleChangeBasicInfo}
-                errorMessage={basicError}
-              />
-            </div>
-          </Card>
-
-          <SystemUserWizardAnalysisStep
-            initialPayload={analysisPayload}
-            onBack={onCancel}
-            submitLabel="確認の画面へ"
-            onNext={(payload) => {
-              if (!validateBasicInfo()) return;
-              setAnalysisPayload(payload);
-              setStep(3);
-            }}
-          />
-        </>
-      ) : null}
-
-      {step === 3 ? (
         <Card className="settings-panel">
           <div className="settings-row">
             <div>
-              <Heading level={3} className="manager-card-title">アカウントの登録１</Heading>
-              <TextCaption>アカウント一覧と分離した登録フローです。</TextCaption>
-              <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
+              <Heading level={3} className="manager-card-title">アカウント登録</Heading>
+            </div>
+          </div>
+
+          <div className="px-6 pb-5 space-y-4">
+            <SystemUserWizardUnifiedFormStep
+              basicInfo={basicInfo}
+              onChangeBasicInfo={handleChangeBasicInfo}
+              basicErrorMessage={basicError}
+              validateBasicInfo={validateBasicInfo}
+              initialEmployeePayload={employeePayload}
+              onCancel={onCancel}
+              onNext={(payload) => {
+                setEmployeePayload(payload);
+                setStep(2);
+              }}
+              submitLabel="確認の画面へ"
+            />
+          </div>
+        </Card>
+      ) : null}
+
+      {step === 2 ? (
+        <Card className="settings-panel">
+          <div className="settings-row">
+            <div>
+              <Heading level={3} className="manager-card-title">アカウント登録</Heading>
             </div>
           </div>
 
           <div className="px-6 pb-5">
             <SystemUserWizardConfirmStep
               basicInfo={basicInfo}
-              analysisPayload={analysisPayload}
+              employeePayload={employeePayload}
               onBack={() => setStep(1)}
               onRegister={handleRegister}
               isRegistering={isRegistering}
@@ -192,13 +222,11 @@ const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel,
         </Card>
       ) : null}
 
-      {step === 4 && completionInfo ? (
+      {step === 3 && completionInfo ? (
         <Card className="settings-panel">
           <div className="settings-row">
             <div>
-              <Heading level={3} className="manager-card-title">アカウントの登録１</Heading>
-              <TextCaption>アカウント一覧と分離した登録フローです。</TextCaption>
-              <TextCaption className="mt-1">現在のステップ: Step {step} / {stepLabel}</TextCaption>
+              <Heading level={3} className="manager-card-title">アカウント登録</Heading>
             </div>
           </div>
 

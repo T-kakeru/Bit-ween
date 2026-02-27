@@ -6,7 +6,7 @@ const SystemUserWizardCompleteStep = ({ completionInfo, onCopy, onBackToList }) 
   return (
     <div className="space-y-5">
       <div>
-        <Heading level={3}>Step 4 / 完了・招待</Heading>
+        <Heading level={3}>登録完了・招待情報</Heading>
         <TextCaption className="mt-1">アカウントの登録が完了しました。以下の情報を招待時にご利用ください。</TextCaption>
       </div>
 

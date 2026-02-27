@@ -1,14 +1,15 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, "パスワードは8文字以上で入力してください"),
-    confirmPassword: z.string().min(1, "確認用パスワードは必須です"),
+    password: z.string().min(8, ERROR_MESSAGES.AUTH.PASSWORD_MIN_8),
+    confirmPassword: z.string().min(1, ERROR_MESSAGES.AUTH.CONFIRM_PASSWORD_REQUIRED),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "パスワードが一致しません",
+    message: ERROR_MESSAGES.AUTH.PASSWORD_MISMATCH,
     path: ["confirmPassword"],
   });
 

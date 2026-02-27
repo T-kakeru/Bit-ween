@@ -3,6 +3,8 @@ import ManagerAddPage from "@/pages/manager/ManagerAddPage";
 import useManagerEmployees from "@/features/retirement/hooks/useManagerEmployees";
 import useManagerPageController from "@/pages/manager/useManagerPageController";
 import { useSystemUsersCrud } from "@/features/systemUsers/hooks/useSystemUsersCrud";
+import { buildEmployeeCredentials } from "@/features/addRetirement/logic/buildEmployeeCredentials";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 // pages: 画面全体の責務（配線/遷移）だけを持ち、表示は features 側へ寄せる
 import { useEffect, useState } from "react";
@@ -66,7 +68,7 @@ const ManagerPage = () => {
           setPendingUserRole("general");
           setIsIntegratedFlow(false);
         }}
-        onSave={(input) => {
+        onSave={async (input) => {
           handleSave(input);
 
           if (!isIntegratedFlow) return;
@@ -75,16 +77,26 @@ const ManagerPage = () => {
           const employeeName = String(input?.["名前"] ?? "").trim();
           const email = String(pendingUserEmail ?? "").trim();
           if (!email || !employeeCode || !employeeName) return;
+          const credentials = buildEmployeeCredentials(input);
 
-          const result = createUser({
+          const result = await createUser({
             email,
             role: pendingUserRole,
             employeeCode,
+            password: credentials.initialPassword,
             employeeName,
+            displayName: employeeName,
+            analysisProfile: {
+              ...input,
+              is_active: true,
+              "退職日": "",
+              "退職理由": "",
+              "備考": "",
+            },
           });
 
           if (!result.ok) {
-            window.alert(result.message || "アカウント登録に失敗しました");
+            window.alert(result.message || ERROR_MESSAGES.SYSTEM_USERS.ACCOUNT_REGISTER_FAILED);
           }
 
           setPendingUserEmail("");

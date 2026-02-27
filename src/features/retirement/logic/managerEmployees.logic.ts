@@ -2,7 +2,22 @@
 
 import type { ManagerColumn, ManagerRow } from "@/features/retirement/types";
 
-const toIsActive = (value: any): boolean => value !== false;
+const isBlankCell = (value: any): boolean => {
+  if (value == null) return true;
+  const text = String(value).trim();
+  if (!text) return true;
+  if (text === "-") return true;
+  return false;
+};
+
+const toIsActive = (employeeLike: any): boolean => {
+  const raw = employeeLike?.is_active;
+  if (typeof raw === "boolean") return raw;
+
+  // is_active が無い場合は、退職日が空なら在籍扱い
+  const retireDate = employeeLike?.["退職日"];
+  return isBlankCell(retireDate);
+};
 
 export const normalizeEmployeeCell = (value: any): string => {
   if (value == null) return "-";
@@ -23,15 +38,10 @@ export const buildManagerEmployeeRows = ({ employees, columns }: { employees: an
     .map((emp) => {
       const normalized: ManagerRow = { id: emp?.id };
 
-      // 在籍状態の判定は「is_active」を唯一の根拠にする
-      const isActive = toIsActive(emp?.is_active);
+      const isActive = toIsActive(emp);
       (normalized as any).is_active = isActive;
 
       for (const col of columns ?? []) {
-        if (col.key === "在籍状態") {
-          normalized[col.key] = isActive ? "在籍中" : "退職済";
-          continue;
-        }
         normalized[col.key] = normalizeEmployeeCell(emp?.[col.key]);
       }
       return normalized;

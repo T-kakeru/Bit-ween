@@ -26,14 +26,20 @@ const EditableEmployeeTable = ({
     isConfirmOpen,
     pendingChanges,
     hasErrors,
+    selectedRowIds,
+    saveError,
     startEditing,
     cancelEditing,
     changeCell,
     requestSave,
+    toggleRowSelection,
     closeConfirm,
     confirmSave,
     getCellError,
     clientOptions,
+    departmentOptions,
+    statusOptions,
+    reasonOptions,
     addClientOption,
   } = useEditableEmployeeTableSession({ rows, columns, normalizeCell, onSaveRows });
 
@@ -61,15 +67,21 @@ const EditableEmployeeTable = ({
       onCellChange={changeCell}
       getCellError={getCellError}
       clientOptions={clientOptions}
+      departmentOptions={departmentOptions}
+      statusOptions={statusOptions}
+      reasonOptions={reasonOptions}
       onAddClientOption={addClientOption}
       onEditStart={startEditing}
       onSaveRequest={requestSave}
       isSaveDisabled={hasErrors}
       onCancel={cancelEditing}
+      selectedRowIds={selectedRowIds}
+      onToggleRowSelection={toggleRowSelection}
       isConfirmOpen={isConfirmOpen}
       pendingChanges={pendingChanges}
       onCloseConfirm={closeConfirm}
-      onConfirmSave={confirmSave}
+      onConfirmSave={() => void confirmSave()}
+      saveError={saveError}
     />
   );
 };

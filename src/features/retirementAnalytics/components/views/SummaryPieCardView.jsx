@@ -67,6 +67,12 @@ const SummaryPieCardView = ({
   onSliceClick,
   layoutMode = "single",
 }) => {
+  // 最大化時にCSSで非表示にするだけだと、Recharts(ResponsiveContainer)が width/height 0 で警告を出す。
+  // UIとしては非表示なので、描画自体をスキップしてノイズを止める。
+  if (isChartMaximized && layoutMode !== "triple-row") {
+    return null;
+  }
+
   const safeGroups = Array.isArray(pieGroups) ? pieGroups : [];
   const displayGroup = safeGroups.find((group) => group.id === "filtered") ?? safeGroups[0];
   const miniFirstGroup = safeGroups.find((group) => group.id === "eligible-window") ?? safeGroups[1];

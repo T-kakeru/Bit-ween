@@ -24,19 +24,6 @@ const FilterAccordionSection = ({ title, children }) => {
 const ManagerMainFilters = ({ filters, onToggleGroup, onReset, departmentOptions, reasonOptions, clientOptions }) => {
   return (
     <div className="manager-filter-grid">
-      <FilterAccordionSection title="在籍状態">
-        <FilterCheckbox
-          label="退職済の社員"
-          checked={filters.employmentStatus.retired}
-          onChange={() => onToggleGroup("employmentStatus", "retired")}
-        />
-        <FilterCheckbox
-          label="在籍中の社員"
-          checked={filters.employmentStatus.active}
-          onChange={() => onToggleGroup("employmentStatus", "active")}
-        />
-      </FilterAccordionSection>
-
       <FilterAccordionSection title="年齢">
         <FilterCheckbox
           label="20代未満"
@@ -171,12 +158,12 @@ const ManagerMainFilters = ({ filters, onToggleGroup, onReset, departmentOptions
           onChange={() => onToggleGroup("statuses", "waiting")}
         />
         <FilterCheckbox
-          label="稼働中"
+          label="稼働"
           checked={filters.statuses.working}
           onChange={() => onToggleGroup("statuses", "working")}
         />
         <FilterCheckbox
-          label="休職中"
+          label="休職"
           checked={filters.statuses.leave}
           onChange={() => onToggleGroup("statuses", "leave")}
         />
