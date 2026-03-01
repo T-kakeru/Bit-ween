@@ -27,6 +27,7 @@ export const ERROR_MESSAGES = {
     PASSWORD_MISMATCH: "パスワードが一致しません",
     REQUEST_PASSWORD_RESET_FAILED: "送信に失敗しました",
     PASSWORD_UPDATE_FAILED: "パスワード更新に失敗しました",
+    PERMISSION_DENIED_DOT: "権限がないため操作できません。",
   },
 
   EMPLOYEE: {

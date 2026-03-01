@@ -98,14 +98,14 @@ const buildChartSelectionChip = (segment) => {
   return `円グラフ: ${scopeLabel} / ${segmentLabel}`;
 };
 
-const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen }) => {
+const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAddOpen, readOnly = false, canWrite = true }) => {
   const { query, setQuery, searchedRows } = useManagerSearch(rows);
   const { filters, filteredRows, toggleGroup, updateDetail, resetFilters, departmentOptions, reasonOptions, clientOptions } =
     useManagerFilters(searchedRows);
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows });
+  const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows, canWrite });
   const [quickStatusFilter, setQuickStatusFilter] = useState("all");
 
   const handleDisplaySegmentClick = (segment) => {
@@ -315,6 +315,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           onToggleFilter={() => setIsFilterOpen((prev) => !prev)}
           onSaveRows={saveRows}
           filterSummaryChips={selectedFilterChips}
+          readOnly={readOnly}
           trailingContent={
             <div className="ml-auto flex items-center gap-2">
               <CsvDownloadButton
@@ -324,10 +325,12 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
                 ariaLabel="対象社員リストをダウンロード"
                 iconNode={<ClipboardCopy className="manager-edit-icon" size={16} aria-hidden="true" />}
               />
-              <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
-                <ClipboardPlus className="manager-edit-icon" size={16} aria-hidden="true" />
-                分析データの追加
-              </Button>
+              {readOnly ? null : (
+                <Button type="button" variant="outline" className="manager-action-button" onClick={onAddOpen}>
+                  <ClipboardPlus className="manager-edit-icon" size={16} aria-hidden="true" />
+                  分析データの追加
+                </Button>
+              )}
             </div>
           }
           onVisibleRowsChange={(visible) => setVisibleRowsForCsv(visible)}

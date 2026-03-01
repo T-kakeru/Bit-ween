@@ -3,7 +3,11 @@ import Card from "@/shared/ui/Card";
 import TextCaption from "@/shared/ui/TextCaption";
 import { CatalogManagerSection } from "@/features/settings/components/organisms/CatalogManagerSection";
 
-export const SettingsMasterDataPanel = () => {
+type Props = {
+  readOnly?: boolean;
+};
+
+export const SettingsMasterDataPanel = ({ readOnly = false }: Props) => {
   return (
     <Card className="settings-panel settings-menu-card settings-master-card">
       <div className="settings-card-title-wrap">
@@ -17,6 +21,7 @@ export const SettingsMasterDataPanel = () => {
         keyName="departments"
         itemLabel="部署"
         embedded
+        readOnly={readOnly}
       />
 
       <CatalogManagerSection
@@ -25,6 +30,7 @@ export const SettingsMasterDataPanel = () => {
         keyName="clients"
         itemLabel="稼働先"
         embedded
+        readOnly={readOnly}
       />
 
       <CatalogManagerSection

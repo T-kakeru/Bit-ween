@@ -5,12 +5,19 @@ import TextCaption from "@/shared/ui/TextCaption";
 import Button from "@/shared/ui/Button";
 import { SettingsMasterDataPanel } from "@/features/settings/components/organisms/SettingsMasterDataPanel";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import useAuthorization from "@/features/auth/hooks/useAuthorization";
 import { fetchDepartmentNames } from "@/services/masterData/masterDataService";
 import { fetchSettingsProfileByEmail } from "@/services/user/usersService";
 
 // pages: 画面単位の状態（画面遷移/表示分岐）を統合する
 const SettingsPage = () => {
   const { logout, user } = useAuth();
+  const { permissions } = useAuthorization();
+  const canWriteProfile = Boolean(permissions?.profileWrite);
+  const canWriteCredentials = Boolean(permissions?.profileCredentialsWrite);
+  const canWriteMasterData = Boolean(permissions?.masterDataWrite);
+  const canEditProfile = canWriteProfile || canWriteCredentials;
+  const readOnly = !canEditProfile;
   const [settings, setSettings] = useState(() => ({
     account: {
       name: "",
@@ -101,6 +108,7 @@ const SettingsPage = () => {
   }, [departmentMasterNames, isProfileEditing, profileDepartment, profileDraft.department]);
 
   const startProfileEdit = () => {
+    if (!canEditProfile) return;
     setProfileDraft({
       name: profileName,
       department: profileDepartment,
@@ -112,6 +120,7 @@ const SettingsPage = () => {
   };
 
   const cancelProfileEdit = () => {
+    if (!canEditProfile) return;
     setProfileDraft({
       name: profileName,
       department: profileDepartment,
@@ -123,10 +132,18 @@ const SettingsPage = () => {
   };
 
   const saveProfileEdit = () => {
-    const nextName = String(profileDraft.name ?? "").trim();
-    const nextDepartment = String(profileDraft.department ?? "").trim();
-    const nextEmail = String(profileDraft.email ?? "").trim();
-    const nextPassword = String(profileDraft.password ?? "").trim();
+    if (!canEditProfile) return;
+
+    const nextName = canWriteProfile ? String(profileDraft.name ?? "").trim() : String(profileName ?? "").trim();
+    const nextDepartment = canWriteProfile
+      ? String(profileDraft.department ?? "").trim()
+      : String(profileDepartment ?? "").trim();
+    const nextEmail = canWriteCredentials
+      ? String(profileDraft.email ?? "").trim()
+      : String(profileEmail ?? "").trim();
+    const nextPassword = canWriteCredentials
+      ? String(profileDraft.password ?? "").trim()
+      : String(profilePassword ?? "").trim();
 
     setSettings((prev) => {
       const nextProfile = {
@@ -155,6 +172,7 @@ const SettingsPage = () => {
   };
 
   const handleProfileDraftChange = (field, value) => {
+    if (!canWriteProfile) return;
     setProfileDraft((prev) => ({
       ...prev,
       [field]: value,
@@ -163,6 +181,7 @@ const SettingsPage = () => {
   };
 
   const handleRequestEmailChange = () => {
+    if (!canWriteCredentials) return;
     const currentEmail = isProfileEditing ? profileDraft.email : profileEmail;
     const nextEmail = window.prompt("新しいメールアドレスを入力してください", currentEmail ?? "");
     if (nextEmail == null) return;
@@ -191,6 +210,7 @@ const SettingsPage = () => {
   };
 
   const handleResetPassword = () => {
+    if (!canWriteCredentials) return;
     const resetValue = "Password@123";
     if (isProfileEditing) {
       setProfileDraft((prev) => ({
@@ -243,18 +263,28 @@ const SettingsPage = () => {
                     size="md"
                     className="settings-action-button settings-cancel-button"
                     onClick={cancelProfileEdit}
+                    disabled={readOnly}
                   >
                     キャンセル
                   </Button>
-                  <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={saveProfileEdit}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    className="settings-action-button"
+                    onClick={saveProfileEdit}
+                    disabled={readOnly}
+                  >
                     保存
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={startProfileEdit}>
-                    編集
-                  </Button>
+                  {canEditProfile ? (
+                    <Button type="button" variant="outline" size="md" className="settings-action-button" onClick={startProfileEdit}>
+                      編集
+                    </Button>
+                  ) : null}
                 </>
               )}
             </div>
@@ -271,6 +301,7 @@ const SettingsPage = () => {
                     onChange={(e) => handleProfileDraftChange("name", e.target.value)}
                     className="settings-text-input"
                     placeholder="氏名"
+                    disabled={readOnly || !canWriteProfile}
                   />
                 </label>
 
@@ -285,6 +316,7 @@ const SettingsPage = () => {
                     value={profileDraft.department}
                     onChange={(e) => handleProfileDraftChange("department", e.target.value)}
                     className="settings-text-input"
+                    disabled={readOnly || !canWriteProfile}
                   >
                     {departmentOptions.map((departmentName) => (
                       <option key={departmentName} value={departmentName}>
@@ -298,15 +330,18 @@ const SettingsPage = () => {
                   <span className="settings-field-label">メールアドレス</span>
                   <div className="settings-inline-action-row">
                     <TextCaption className="settings-inline-plain-value">{profileDraft.email || "-"}</TextCaption>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="md"
-                      className="settings-action-button"
-                      onClick={handleRequestEmailChange}
-                    >
-                      メールアドレスを変更
-                    </Button>
+                    {canWriteCredentials ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="md"
+                        className="settings-action-button"
+                        onClick={handleRequestEmailChange}
+                        disabled={readOnly}
+                      >
+                        メールアドレスを変更
+                      </Button>
+                    ) : null}
                   </div>
                 </label>
 
@@ -316,15 +351,18 @@ const SettingsPage = () => {
                     <TextCaption className="settings-inline-plain-value settings-inline-plain-value--muted">
                       {toMaskedPassword(profileDraft.password)}
                     </TextCaption>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="md"
-                      className="settings-action-button"
-                      onClick={handleResetPassword}
-                    >
-                      パスワードをリセット
-                    </Button>
+                    {canWriteCredentials ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="md"
+                        className="settings-action-button"
+                        onClick={handleResetPassword}
+                        disabled={readOnly}
+                      >
+                        パスワードをリセット
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
               </>
@@ -349,15 +387,6 @@ const SettingsPage = () => {
                   <span className="settings-field-label">メールアドレス</span>
                   <div className="settings-inline-action-row">
                     <TextCaption className="settings-inline-plain-value">{profileEmail || "-"}</TextCaption>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="md"
-                      className="settings-action-button"
-                      onClick={handleRequestEmailChange}
-                    >
-                      メールアドレスを変更
-                    </Button>
                   </div>
                 </div>
 
@@ -367,15 +396,6 @@ const SettingsPage = () => {
                     <TextCaption className="settings-inline-plain-value settings-inline-plain-value--muted">
                       {toMaskedPassword(profilePassword)}
                     </TextCaption>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="md"
-                      className="settings-action-button"
-                      onClick={handleResetPassword}
-                    >
-                      パスワードをリセット
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -385,7 +405,7 @@ const SettingsPage = () => {
           </div>
           </Card>
 
-          <SettingsMasterDataPanel />
+          <SettingsMasterDataPanel readOnly={!canWriteMasterData} />
         </div>
 
         <aside className="settings-right-column">

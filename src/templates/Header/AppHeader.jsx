@@ -1,5 +1,9 @@
+import { useCompanyName } from "@/shared/hooks/useCompanyName";
+
 // ヘッダー：ロゴとユーザー情報を表示
 const AppHeader = ({ user, onMenuToggle, isMenuOpen, showMenu = true }) => {
+  const { companyName } = useCompanyName();
+
   return (
     <header className="header">
       <div className="brand">
@@ -18,7 +22,7 @@ const AppHeader = ({ user, onMenuToggle, isMenuOpen, showMenu = true }) => {
       </div>
       {/* header search removed - per request the per-page search is used instead */}
       <div className="header-status">
-        <span className="status-company">Reach</span>
+        <span className="status-company">{companyName}</span>
       </div>
     </header>
   );

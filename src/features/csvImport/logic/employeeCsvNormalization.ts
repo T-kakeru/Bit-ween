@@ -50,6 +50,7 @@ export const normalizeEmployeeCsvRows = ({
   });
 
   for (const spec of EMPLOYEE_CSV_HEADER_SPECS) {
+    if (!spec.required) continue;
     if (!headerKeys.includes(spec.field)) {
       errors.push({
         rowNumber: 0,

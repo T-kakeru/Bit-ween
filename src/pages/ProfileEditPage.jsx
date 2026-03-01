@@ -7,9 +7,14 @@ import Input from "@/shared/ui/Input";
 import Select from "@/shared/ui/Select";
 import TextCaption from "@/shared/ui/TextCaption";
 import { ERROR_MESSAGES, NOTIFY_MESSAGES } from "@/shared/constants/messages/appMessages";
+import useAuthorization from "@/features/auth/hooks/useAuthorization";
 
 // プロフィール編集（マイページから遷移する想定）
 const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
+  const { permissions } = useAuthorization();
+  const canWriteProfile = Boolean(permissions?.profileWrite);
+  const readOnly = !canWriteProfile;
+
   const initial = useMemo(
     () => ({
       name: profile?.name ?? "",
@@ -38,11 +43,16 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
   }, [form, initial]);
 
   const handleChange = (key) => (event) => {
+    if (readOnly) return;
     setForm((prev) => ({ ...prev, [key]: event.target.value }));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (readOnly) {
+      window.alert(ERROR_MESSAGES.AUTH.PERMISSION_DENIED_DOT);
+      return;
+    }
     onSave?.(form);
   };
 
@@ -56,6 +66,7 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
   };
 
   const handleAvatarFile = (event) => {
+    if (readOnly) return;
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -89,14 +100,16 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
           <Button type="button" variant="danger" className="settings-cancel-button" onClick={handleCancel}>
             キャンセル
           </Button>
-          <Button
-            type="submit"
-            form="profile-edit-form"
-            variant="primary"
-            disabled={!isDirty}
-          >
-            保存
-          </Button>
+          {readOnly ? null : (
+            <Button
+              type="submit"
+              form="profile-edit-form"
+              variant="primary"
+              disabled={!isDirty}
+            >
+              保存
+            </Button>
+          )}
         </div>
       </header>
 
@@ -105,23 +118,23 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
       <Card as="form" id="profile-edit-form" className="profile-edit-form" onSubmit={handleSubmit}>
         <div className="form-row">
           <label className="form-label">名前</label>
-          <Input type="text" value={form.name} onChange={handleChange("name")} />
+          <Input type="text" value={form.name} onChange={handleChange("name")} disabled={readOnly} />
         </div>
         <div className="form-row">
           <label className="form-label">部署</label>
-          <Input type="text" value={form.department} onChange={handleChange("department")} />
+          <Input type="text" value={form.department} onChange={handleChange("department")} disabled={readOnly} />
         </div>
         <div className="form-row">
           <label className="form-label">役割</label>
-          <Input type="text" value={form.role} onChange={handleChange("role")} />
+          <Input type="text" value={form.role} onChange={handleChange("role")} disabled={readOnly} />
         </div>
         <div className="form-row">
           <label className="form-label">チーム</label>
-          <Input type="text" value={form.team} onChange={handleChange("team")} />
+          <Input type="text" value={form.team} onChange={handleChange("team")} disabled={readOnly} />
         </div>
         <div className="form-row">
           <label className="form-label">ステータス</label>
-          <Select value={form.status} onChange={handleChange("status")}>
+          <Select value={form.status} onChange={handleChange("status")} disabled={readOnly}>
             {['オンライン', 'オフライン', '取り込み中'].map((status) => (
               <option key={status} value={status}>{status}</option>
             ))}
@@ -129,14 +142,14 @@ const ProfileEditPage = ({ profile, onSave, onCancel, onBack }) => {
         </div>
         <div className="form-row">
           <label className="form-label">プロフィール画像</label>
-          <Input type="file" accept="image/*" onChange={handleAvatarFile} />
+          <Input type="file" accept="image/*" onChange={handleAvatarFile} disabled={readOnly} />
           {form.avatar ? (
             <img src={form.avatar} alt="プロフィール" className="avatar-preview" />
           ) : null}
         </div>
         <div className="form-row">
           <label className="form-label">自己紹介</label>
-          <textarea rows={4} value={form.bio} onChange={handleChange("bio")} />
+          <textarea rows={4} value={form.bio} onChange={handleChange("bio")} disabled={readOnly} />
         </div>
       </Card>
     </section>

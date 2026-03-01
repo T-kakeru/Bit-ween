@@ -11,6 +11,7 @@ import {
   hasWorkStatusMaster,
   hasClientMaster,
   hasDepartmentMaster,
+  getWorkStatusMasterList,
 } from "./employeeCsvConstants";
 
 const MAX_NAME_LENGTH = 100;
@@ -37,6 +38,45 @@ const normalizeGender = (value: string) => {
   if (value === "男") return "男性";
   if (value === "女") return "女性";
   return value;
+};
+
+const normalizeWorkStatusValue = (rawValue: string) => {
+  const value = normalizeValue(rawValue);
+  if (!value) return "";
+  if (hasWorkStatusMaster(value)) return value;
+
+  const masters = getWorkStatusMasterList();
+  if (masters.length === 0) return value;
+
+  // 旧ReachのCSVで「派遣/開発/陸特」などが入っているケースは、現行の稼働状態マスタに寄せる。
+  // - 待機っぽい → 待機
+  // - 休職っぽい → 休職
+  // - それ以外 → 稼働
+  const preferByKeyword = (keyword: string) => masters.find((x) => String(x).includes(keyword)) ?? null;
+
+  const lower = value.toLowerCase();
+  const isWaitingLike = value.includes("待") || lower.includes("wait");
+  const isLeaveLike = value.includes("休") || lower.includes("leave") || lower.includes("off");
+
+  if (isLeaveLike) {
+    return (
+      preferByKeyword("休") ??
+      preferByKeyword("休職") ??
+      preferByKeyword("オフ") ??
+      masters[0]
+    );
+  }
+
+  if (isWaitingLike) {
+    return (
+      preferByKeyword("待") ??
+      preferByKeyword("待機") ??
+      preferByKeyword("ベンチ") ??
+      masters[0]
+    );
+  }
+
+  return preferByKeyword("稼") ?? preferByKeyword("稼働") ?? masters[0];
 };
 
 const pad2 = (value: number) => String(value).padStart(2, "0");
@@ -119,7 +159,7 @@ export const validateEmployeeCsvRow = ({
   const department = normalizeValue(row.department) || null;
   const joinDateRaw = normalizeValue(row.joinDate);
   const employmentStatusRaw = normalizeValue((row as any).employmentStatus);
-  const workStatus = normalizeValue(row.workStatus);
+  const workStatus = normalizeWorkStatusValue(String(row.workStatus ?? ""));
   const workLocation = normalizeValue(row.workLocation) || null;
   const retirementDateRaw = normalizeValue(row.retirementDate);
   const retirementReason = normalizeValue(row.retirementReason);

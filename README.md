@@ -27,6 +27,22 @@ ESLint: npm run lint
 - `.env.local.example` をコピーして `.env.local` を作成
 - `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` を設定
 
+本番デプロイ（Vercel等）では、プロジェクトの環境変数にも同じ値を必ず設定してください。
+
+- 必須: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- 互換（任意）: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+> 注意: Vite はビルド時に環境変数を埋め込みます。環境変数を追加・変更したら **再デプロイ（再ビルド）** が必要です。
+
+### Vercel デプロイ時のチェックリスト
+
+1. Vercel Project Settings → Environment Variables で以下を設定
+	- `VITE_SUPABASE_URL`
+	- `VITE_SUPABASE_ANON_KEY`
+2. Environment は少なくとも `Production` に適用（必要なら `Preview` / `Development` も）
+3. Save 後に `Redeploy` を実行
+4. ブラウザで `/login` を開き、`DB接続が未設定です` が消えることを確認
+
 例:
 
 ```bash

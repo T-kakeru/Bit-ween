@@ -20,6 +20,9 @@ const EditableEmployeeTableView = ({
   filterSummaryChips,
   trailingContent,
 
+  // permission
+  canEdit = true,
+
   // edit
   isEditing,
   visibleRows,
@@ -91,13 +94,15 @@ const EditableEmployeeTableView = ({
 
       <div className="manager-table-action-row">
         {trailingContent}
-        <EditModeControls
-          isEditing={isEditing}
-          onEditStart={onEditStart}
-          onSaveRequest={onSaveRequest}
-          isSaveDisabled={Boolean(isSaveDisabled)}
-          onCancel={onCancel}
-        />
+        {canEdit ? (
+          <EditModeControls
+            isEditing={isEditing}
+            onEditStart={onEditStart}
+            onSaveRequest={onSaveRequest}
+            isSaveDisabled={Boolean(isSaveDisabled)}
+            onCancel={onCancel}
+          />
+        ) : null}
       </div>
 
       {saveError ? <p className="mt-2 text-xs text-rose-600">{saveError}</p> : null}

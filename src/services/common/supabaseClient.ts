@@ -1,8 +1,22 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
 
-const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? "").trim();
-const supabaseAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? "").trim();
+const getEnv = (...candidates: unknown[]) => {
+  for (const value of candidates) {
+    const normalized = String(value ?? "").trim();
+    if (normalized) return normalized;
+  }
+  return "";
+};
+
+const supabaseUrl = getEnv(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL,
+);
+const supabaseAnonKey = getEnv(
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+);
 
 const hasSupabaseEnv = Boolean(supabaseUrl) && Boolean(supabaseAnonKey);
 

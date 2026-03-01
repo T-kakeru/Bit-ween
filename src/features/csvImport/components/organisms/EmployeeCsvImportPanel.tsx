@@ -146,11 +146,12 @@ const EmployeeCsvImportPanel = ({
             inputKey={inputKey}
             buttonLabel="アップロード"
             iconOnly
+            multiple
             disabled={isProcessing}
-            onFileChange={(file: File | null) => {
+            onFileChange={(files: File[] | null) => {
               setStep("edit");
               setLastImported(null);
-              handleFileSelect(file);
+              handleFileSelect(files);
             }}
           />
 

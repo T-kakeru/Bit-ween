@@ -219,7 +219,12 @@ const ManagerAddPage = ({ columns, rows, onCancel, onSave, enableCsvImport = tru
 			csvImportSection={
 				enableCsvImport ? (
 					<div ref={csvImportAnchorRef}>
-						<EmployeeCsvImportPanel title="一括登録" onImportRows={handleImportRows} onAfterImport={handleAfterCsvImport} />
+						<EmployeeCsvImportPanel
+							title="一括登録"
+							allowFutureRetirementDate
+							onImportRows={handleImportRows}
+							onAfterImport={handleAfterCsvImport}
+						/>
 					</div>
 				) : undefined
 			}

@@ -8,7 +8,8 @@ type CsvFilePickerProps = {
   buttonLabel?: string;
   disabled?: boolean;
   iconOnly?: boolean;
-  onFileChange: (file: File | null) => void;
+  multiple?: boolean;
+  onFileChange: (files: File[] | null) => void;
 };
 
 const CsvFilePicker = ({
@@ -17,6 +18,7 @@ const CsvFilePicker = ({
   buttonLabel = "CSVファイルをアップロード",
   disabled = false,
   iconOnly = false,
+  multiple = false,
   onFileChange,
 }: CsvFilePickerProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -29,9 +31,10 @@ const CsvFilePicker = ({
         key={inputKey}
         type="file"
         accept=".csv,text/csv"
+        multiple={multiple}
         disabled={disabled}
         onChange={(event) =>
-          onFileChange(event.currentTarget.files?.[0] ?? null)
+          onFileChange(event.currentTarget.files ? Array.from(event.currentTarget.files) : null)
         }
       />
       <Button

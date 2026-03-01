@@ -30,12 +30,12 @@ const toSortableValue = (systemUser, key) => {
 
 const SystemUsersManager = ({
   companyId = "company-default",
-  currentRole = "admin",
+  canWrite = false,
   canStartRegister = true,
   onDone,
   onStartRegister,
 }) => {
-  const canEdit = currentRole === "admin";
+  const canEdit = Boolean(canWrite);
   const { users, updateUser, removeUser, resetSystemUserPassword } = useSystemUsersCrud({ companyId });
 
   const [error, setError] = useState("");

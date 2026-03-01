@@ -18,6 +18,7 @@ const EditableEmployeeTable = ({
   filterSummaryChips,
   trailingContent,
   onVisibleRowsChange,
+  readOnly = false,
 }) => {
   const {
     isEditing,
@@ -45,6 +46,8 @@ const EditableEmployeeTable = ({
 
   const visibleRows = isEditing ? draftRows : rows;
 
+  const canEdit = !readOnly;
+
   // notify parent about currently visible rows (filters/sort/editing applied)
   useEffect(() => {
     if (typeof onVisibleRowsChange === "function") onVisibleRowsChange(visibleRows);
@@ -60,6 +63,7 @@ const EditableEmployeeTable = ({
       leadingContent={leadingContent}
       filterSummaryChips={filterSummaryChips}
       trailingContent={trailingContent}
+      canEdit={canEdit}
       isEditing={isEditing}
       visibleRows={visibleRows}
       originalRowMap={originalRowMap}
@@ -71,16 +75,16 @@ const EditableEmployeeTable = ({
       statusOptions={statusOptions}
       reasonOptions={reasonOptions}
       onAddClientOption={addClientOption}
-      onEditStart={startEditing}
-      onSaveRequest={requestSave}
+      onEditStart={canEdit ? startEditing : undefined}
+      onSaveRequest={canEdit ? requestSave : undefined}
       isSaveDisabled={hasErrors}
-      onCancel={cancelEditing}
+      onCancel={canEdit ? cancelEditing : undefined}
       selectedRowIds={selectedRowIds}
-      onToggleRowSelection={toggleRowSelection}
+      onToggleRowSelection={canEdit ? toggleRowSelection : undefined}
       isConfirmOpen={isConfirmOpen}
       pendingChanges={pendingChanges}
       onCloseConfirm={closeConfirm}
-      onConfirmSave={() => void confirmSave()}
+      onConfirmSave={canEdit ? (() => void confirmSave()) : undefined}
       saveError={saveError}
     />
   );

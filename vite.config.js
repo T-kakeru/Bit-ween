@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  envPrefix: ["VITE_", "NEXT_PUBLIC_"],
   server: {
     // localhost が IPv6 (::1) に解決される環境でも接続できるようにする
     host: "::",

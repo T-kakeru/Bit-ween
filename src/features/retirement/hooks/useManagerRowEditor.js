@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { mergeEditedRows } from "@/features/retirement/logic/managerRowEditor.logic";
 import { updateEmployee } from "@/services/employee/employeesService";
 import { isSupabaseConfigured } from "@/services/common/supabaseClient";
+import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const EDITABLE_KEYS = [
   "社員ID",
@@ -32,10 +33,14 @@ const hasEditableChange = ({ originalRow, draftRow, normalizeCell }) => {
 };
 
 // 編集結果を行データへ反映するためのフック
-const useManagerRowEditor = ({ columns, normalizeCell, setRows }) => {
+const useManagerRowEditor = ({ columns, normalizeCell, setRows, canWrite = true }) => {
   const saveRows = useCallback(
     async (draftRows, originalRows) => {
       if (!setRows) return;
+
+      if (!canWrite) {
+        return { ok: false, message: ERROR_MESSAGES.AUTH.PERMISSION_DENIED_DOT };
+      }
 
       const previousRows = Array.isArray(originalRows) ? originalRows : [];
 
@@ -80,7 +85,7 @@ const useManagerRowEditor = ({ columns, normalizeCell, setRows }) => {
 
       return { ok: true };
     },
-    [columns, normalizeCell, setRows]
+    [canWrite, columns, normalizeCell, setRows]
   );
 
   return { saveRows };

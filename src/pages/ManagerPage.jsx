@@ -5,11 +5,15 @@ import useManagerPageController from "@/pages/manager/useManagerPageController";
 import { useSystemUsersCrud } from "@/features/systemUsers/hooks/useSystemUsersCrud";
 import { buildEmployeeCredentials } from "@/features/addRetirement/logic/buildEmployeeCredentials";
 import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
+import useAuthorization from "@/features/auth/hooks/useAuthorization";
 
 // pages: 画面全体の責務（配線/遷移）だけを持ち、表示は features 側へ寄せる
 import { useEffect, useState } from "react";
 
 const ManagerPage = () => {
+  const { permissions } = useAuthorization();
+  const canWrite = Boolean(permissions?.employeeWrite);
+  const readOnly = !canWrite;
   const { columns, rows, setRows, metrics, normalizeCell } = useManagerEmployees();
   const { isAddOpen, openAdd, closeAdd, handleSave } = useManagerPageController({
     columns,
@@ -21,6 +25,15 @@ const ManagerPage = () => {
   const [pendingUserEmail, setPendingUserEmail] = useState("");
   const [pendingUserRole, setPendingUserRole] = useState("general");
   const [isIntegratedFlow, setIsIntegratedFlow] = useState(false);
+
+  useEffect(() => {
+    if (!canWrite && isAddOpen) {
+      closeAdd();
+      setPendingUserEmail("");
+      setPendingUserRole("general");
+      setIsIntegratedFlow(false);
+    }
+  }, [canWrite, closeAdd, isAddOpen]);
 
   // 画面遷移時に追加モーダルを閉じる
   useEffect(() => {
@@ -46,6 +59,12 @@ const ManagerPage = () => {
       const email = String(event?.detail?.email ?? "").trim();
       const role = String(event?.detail?.role ?? "general").trim().toLowerCase();
       if (!email) return;
+
+      if (!canWrite) {
+        window.alert(ERROR_MESSAGES.AUTH.PERMISSION_DENIED_DOT);
+        return;
+      }
+
       setPendingUserEmail(email);
       setPendingUserRole(role === "admin" ? "admin" : "general");
       setIsIntegratedFlow(true);
@@ -54,7 +73,15 @@ const ManagerPage = () => {
 
     window.addEventListener("systemUsers:startIntegratedRegister", handler);
     return () => window.removeEventListener("systemUsers:startIntegratedRegister", handler);
-  }, [openAdd]);
+  }, [canWrite, openAdd]);
+
+  const handleRequestOpenAdd = () => {
+    if (!canWrite) {
+      window.alert(ERROR_MESSAGES.AUTH.PERMISSION_DENIED_DOT);
+      return;
+    }
+    openAdd();
+  };
 
   if (isAddOpen) {
     return (
@@ -69,6 +96,11 @@ const ManagerPage = () => {
           setIsIntegratedFlow(false);
         }}
         onSave={async (input) => {
+          if (!canWrite) {
+            window.alert(ERROR_MESSAGES.AUTH.PERMISSION_DENIED_DOT);
+            return;
+          }
+
           handleSave(input);
 
           if (!isIntegratedFlow) return;
@@ -114,7 +146,9 @@ const ManagerPage = () => {
       setRows={setRows}
       metrics={metrics}
       normalizeCell={normalizeCell}
-      onAddOpen={openAdd}
+      onAddOpen={handleRequestOpenAdd}
+      readOnly={readOnly}
+      canWrite={canWrite}
     />
   );
 };
