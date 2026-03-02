@@ -1,5 +1,5 @@
 import { supabaseClient } from "@/services/common/supabaseClient";
-import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
+import { getSessionCompanyId } from "@/services/common/sessionCompany";
 import { logSupabaseErrorOnce } from "@/shared/errors/supabaseError";
 import type { ManagerRow } from "@/features/retirement/types";
 import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
@@ -109,14 +109,60 @@ const invertNameMap = (idToName: Map<string, string>): Map<string, string> => {
   return nameToId;
 };
 
+const fetchDepartmentNameMap = async (): Promise<Map<string, string>> => {
+  if (!supabaseClient) return EMPTY_MAP;
+
+  const companyId = getSessionCompanyId();
+  const { data, error } = await supabaseClient
+    .from(DEPARTMENT_TABLE)
+    .select("id, name")
+    .eq("company_id", companyId);
+
+  if (error) return EMPTY_MAP;
+  if (!Array.isArray(data)) return EMPTY_MAP;
+
+  const mapped = new Map<string, string>();
+  for (const row of data) {
+    const id = String((row as any)?.id ?? "").trim();
+    const name = String((row as any)?.name ?? "").trim();
+    if (!id || !name) continue;
+    mapped.set(id, name);
+  }
+  return mapped;
+};
+
+const fetchClientNameMap = async (): Promise<Map<string, string>> => {
+  if (!supabaseClient) return EMPTY_MAP;
+
+  const companyId = getSessionCompanyId();
+  const { data, error } = await supabaseClient
+    .from(CLIENT_TABLE)
+    .select("id, name")
+    .eq("company_id", companyId);
+
+  if (error) return EMPTY_MAP;
+  if (!Array.isArray(data)) return EMPTY_MAP;
+
+  const mapped = new Map<string, string>();
+  for (const row of data) {
+    const id = String((row as any)?.id ?? "").trim();
+    const name = String((row as any)?.name ?? "").trim();
+    if (!id || !name) continue;
+    mapped.set(id, name);
+  }
+  return mapped;
+};
+
 const findOrCreateDepartmentIdByName = async (name: string): Promise<string | null> => {
   const normalized = String(name ?? "").trim();
   if (!normalized || !supabaseClient) return null;
 
+  const companyId = getSessionCompanyId();
+
   const { data: currentRows, error: currentError } = await supabaseClient
     .from(DEPARTMENT_TABLE)
     .select("id")
-    .eq("company_id", DEFAULT_COMPANY_ID)
+    .eq("company_id", companyId)
     .eq("name", normalized)
     .limit(1);
 
@@ -124,12 +170,12 @@ const findOrCreateDepartmentIdByName = async (name: string): Promise<string | nu
     return String((currentRows[0] as any).id ?? "").trim() || null;
   }
 
-  await supabaseClient.from(DEPARTMENT_TABLE).insert({ company_id: DEFAULT_COMPANY_ID, name: normalized });
+  await supabaseClient.from(DEPARTMENT_TABLE).insert({ company_id: companyId, name: normalized });
 
   const { data: rowsAfterInsert, error: afterError } = await supabaseClient
     .from(DEPARTMENT_TABLE)
     .select("id")
-    .eq("company_id", DEFAULT_COMPANY_ID)
+    .eq("company_id", companyId)
     .eq("name", normalized)
     .limit(1);
 
@@ -148,6 +194,8 @@ const toNullableIso = (value: unknown): string | null => {
 const fetchEmployeeCodesByJoinYear = async (joinDate: string | null): Promise<string[]> => {
   if (!supabaseClient) return [];
 
+  const companyId = getSessionCompanyId();
+
   const today = new Date();
   const raw = String(joinDate ?? "").trim();
   const normalized = raw.includes("/") ? raw.replaceAll("/", "-") : raw;
@@ -160,7 +208,8 @@ const fetchEmployeeCodesByJoinYear = async (joinDate: string | null): Promise<st
   // 形式A: YYYY00001 / 形式B: YY-00001 の両方を拾う
   const { data, error } = await supabaseClient
     .from(EMPLOYEE_TABLE)
-    .select("employee_code")
+    .select("employee_code, departments!inner(company_id)")
+    .eq("departments.company_id", companyId)
     .or(`employee_code.like.${year4}%,employee_code.like.${year2}-%`);
 
   if (error || !Array.isArray(data)) return [];
@@ -174,9 +223,12 @@ const isEmployeeCodeUsed = async (employeeCode: string): Promise<boolean> => {
   if (!code) return false;
   if (!supabaseClient) return false;
 
+  const companyId = getSessionCompanyId();
+
   const { data, error } = await supabaseClient
     .from(EMPLOYEE_TABLE)
-    .select("id")
+    .select("id, departments!inner(company_id)")
+    .eq("departments.company_id", companyId)
     .eq("employee_code", code)
     .limit(1);
 
@@ -207,7 +259,12 @@ const resolveUniqueEmployeeCode = async ({
 const fetchEmployeeRows = async (): Promise<any[] | null> => {
   if (!supabaseClient) return null;
 
-  const { data, error } = await supabaseClient.from(EMPLOYEE_TABLE).select("*");
+  const companyId = getSessionCompanyId();
+
+  const { data, error } = await supabaseClient
+    .from(EMPLOYEE_TABLE)
+    .select("*, departments!inner(company_id)")
+    .eq("departments.company_id", companyId);
   if (error) return null;
   if (!Array.isArray(data)) return [];
   return data;
@@ -270,8 +327,8 @@ const fetchEmployeesFromSupabase = async (): Promise<EmployeeUiRecord[] | null> 
 
   const [departmentNameById, clientNameById, workStatusNameById, retirementReasonNameById] =
     await Promise.all([
-      fetchMasterNameMap(DEPARTMENT_TABLE),
-      fetchMasterNameMap(CLIENT_TABLE),
+      fetchDepartmentNameMap(),
+      fetchClientNameMap(),
       fetchMasterNameMap(WORK_STATUS_TABLE),
       fetchMasterNameMap(RETIREMENT_REASON_TABLE),
     ]);
@@ -338,8 +395,8 @@ export const createEmployee = async (
 
   const [departmentNameById, clientNameById, workStatusNameById, retirementReasonNameById] =
     await Promise.all([
-      fetchMasterNameMap(DEPARTMENT_TABLE),
-      fetchMasterNameMap(CLIENT_TABLE),
+      fetchDepartmentNameMap(),
+      fetchClientNameMap(),
       fetchMasterNameMap(WORK_STATUS_TABLE),
       fetchMasterNameMap(RETIREMENT_REASON_TABLE),
     ]);
@@ -451,8 +508,8 @@ export const updateEmployee = async (
 
   const [departmentNameById, clientNameById, workStatusNameById, retirementReasonNameById] =
     await Promise.all([
-      fetchMasterNameMap(DEPARTMENT_TABLE),
-      fetchMasterNameMap(CLIENT_TABLE),
+      fetchDepartmentNameMap(),
+      fetchClientNameMap(),
       fetchMasterNameMap(WORK_STATUS_TABLE),
       fetchMasterNameMap(RETIREMENT_REASON_TABLE),
     ]);
@@ -587,9 +644,12 @@ export const findEmployeeIdByEmployeeCode = async (employeeCode: string): Promis
   if (!code) return null;
   if (!supabaseClient) return null;
 
+  const companyId = getSessionCompanyId();
+
   const { data, error } = await supabaseClient
     .from(EMPLOYEE_TABLE)
-    .select("id")
+    .select("id, departments!inner(company_id)")
+    .eq("departments.company_id", companyId)
     .eq("employee_code", code)
     .order("updated_at", { ascending: false })
     .limit(1)

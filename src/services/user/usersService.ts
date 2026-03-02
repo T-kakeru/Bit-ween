@@ -1,6 +1,5 @@
 import type { AppUserRecord, UserRole } from "@/shared/types/erModels";
 import { supabaseClient } from "@/services/common/supabaseClient";
-import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
 
 export type EmploymentStatus = "active" | "retired";
 
@@ -37,7 +36,6 @@ const findUserFromSupabaseByEmail = async (email: string): Promise<any | null> =
   const { data, error } = await supabaseClient
     .from("users")
     .select("id, company_id, employee_id, email, password, role")
-    .eq("company_id", DEFAULT_COMPANY_ID)
     .eq("email", email)
     .maybeSingle();
   if (error) return null;

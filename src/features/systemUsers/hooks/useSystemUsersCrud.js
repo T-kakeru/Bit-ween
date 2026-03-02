@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabaseClient } from "@/services/common/supabaseClient";
-import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
+import { getSessionCompanyId } from "@/services/common/sessionCompany";
 import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const nowIso = () => new Date().toISOString();
@@ -14,13 +14,15 @@ const isRole = (role) => ["admin", "general"].includes(toText(role).toLowerCase(
 
 const toSortableDisplayName = ({ employee_name, email }) => toText(employee_name || email);
 
-const loadSystemUsersFromSupabase = async () => {
+const loadSystemUsersFromSupabase = async (companyId) => {
   if (!supabaseClient) return [];
+
+  const resolvedCompanyId = toText(companyId) || getSessionCompanyId();
 
   const { data: users, error: usersError } = await supabaseClient
     .from("users")
     .select("id, company_id, employee_id, email, role, password, last_login_at, created_at, updated_at")
-    .eq("company_id", DEFAULT_COMPANY_ID);
+    .eq("company_id", resolvedCompanyId);
   if (usersError || !Array.isArray(users)) return [];
 
   const employeeIds = users
@@ -70,13 +72,16 @@ const loadSystemUsersFromSupabase = async () => {
   });
 };
 
-const findEmployeeIdByEmployeeCode = async (employeeCode) => {
+const findEmployeeIdByEmployeeCode = async ({ employeeCode, companyId }) => {
   const code = toText(employeeCode);
   if (!code) return null;
   if (!supabaseClient) return null;
+
+  const resolvedCompanyId = toText(companyId) || getSessionCompanyId();
   const { data, error } = await supabaseClient
     .from("employees")
-    .select("id")
+    .select("id, departments!inner(company_id)")
+    .eq("departments.company_id", resolvedCompanyId)
     .eq("employee_code", code)
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -85,13 +90,13 @@ const findEmployeeIdByEmployeeCode = async (employeeCode) => {
   return toText(data?.id) || null;
 };
 
-export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
+export const useSystemUsersCrud = ({ companyId } = {}) => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
     let disposed = false;
     const load = async () => {
-      const next = await loadSystemUsersFromSupabase();
+      const next = await loadSystemUsersFromSupabase(companyId);
       if (disposed) return;
       setUsers(Array.isArray(next) ? next : []);
     };
@@ -99,10 +104,9 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
     return () => {
       disposed = true;
     };
-  }, []);
+  }, [companyId]);
 
   const companyUsers = useMemo(() => {
-    // 引数 companyId はUI都合の識別子だが、実データはDEFAULT_COMPANY_IDに固定して取得する
     const id = toText(companyId);
     if (!id) return users;
     return users;
@@ -117,11 +121,12 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
   };
 
   const reload = async () => {
-    const next = await loadSystemUsersFromSupabase();
+    const next = await loadSystemUsersFromSupabase(companyId);
     setUsers(Array.isArray(next) ? next : []);
   };
 
   const createUser = async ({ email, role, employeeCode, password }) => {
+      const resolvedCompanyId = toText(companyId) || getSessionCompanyId();
     const normalizedEmail = toEmail(email);
     const normalizedRole = toText(role).toLowerCase();
     const rawPassword = toText(password);
@@ -134,12 +139,12 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
       return { ok: false, message: ERROR_MESSAGES.SYSTEM_USERS.EMAIL_DUPLICATE };
     }
 
-    const employeeId = await findEmployeeIdByEmployeeCode(employeeCode);
+    const employeeId = await findEmployeeIdByEmployeeCode({ employeeCode, companyId: resolvedCompanyId });
 
     const { data, error } = await supabaseClient
       .from("users")
       .insert({
-        company_id: DEFAULT_COMPANY_ID,
+        company_id: resolvedCompanyId,
         employee_id: employeeId,
         email: normalizedEmail,
         password: rawPassword,
@@ -159,6 +164,8 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
   const updateUser = async (id, patch) => {
     if (!supabaseClient) return { ok: false, message: ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED };
 
+    const resolvedCompanyId = toText(companyId) || getSessionCompanyId();
+
     const userId = toText(id);
     if (!userId) return { ok: false, message: ERROR_MESSAGES.SYSTEM_USERS.USER_NOT_FOUND };
 
@@ -172,7 +179,9 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
       return { ok: false, message: ERROR_MESSAGES.SYSTEM_USERS.EMAIL_DUPLICATE };
     }
 
-    const employeeId = nextEmployeeCode ? await findEmployeeIdByEmployeeCode(nextEmployeeCode) : null;
+    const employeeId = nextEmployeeCode
+      ? await findEmployeeIdByEmployeeCode({ employeeCode: nextEmployeeCode, companyId: resolvedCompanyId })
+      : null;
     if (nextEmployeeCode && !employeeId) {
       return { ok: false, message: ERROR_MESSAGES.SYSTEM_USERS.EMPLOYEE_CODE_NOT_FOUND };
     }
@@ -187,7 +196,7 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
     const { error } = await supabaseClient
       .from("users")
       .update(payload)
-      .eq("company_id", DEFAULT_COMPANY_ID)
+      .eq("company_id", resolvedCompanyId)
       .eq("id", userId);
     if (error) return { ok: false, message: error.message };
 
@@ -197,13 +206,14 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
 
   const removeUser = async (id) => {
     if (!supabaseClient) return { ok: false, message: ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED };
+    const resolvedCompanyId = toText(companyId) || getSessionCompanyId();
     const userId = toText(id);
     if (!userId) return { ok: false, message: ERROR_MESSAGES.SYSTEM_USERS.USER_NOT_FOUND };
 
     const { error } = await supabaseClient
       .from("users")
       .delete()
-      .eq("company_id", DEFAULT_COMPANY_ID)
+      .eq("company_id", resolvedCompanyId)
       .eq("id", userId);
     if (error) return { ok: false, message: error.message };
     await reload();
@@ -217,6 +227,7 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
 
   const resetSystemUserPassword = async (id) => {
     if (!supabaseClient) return { ok: false, message: ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED };
+    const resolvedCompanyId = toText(companyId) || getSessionCompanyId();
     const userId = toText(id);
     if (!userId) return { ok: false, message: ERROR_MESSAGES.SYSTEM_USERS.ACCOUNT_NOT_FOUND };
 
@@ -224,7 +235,7 @@ export const useSystemUsersCrud = ({ companyId = "company-default" } = {}) => {
     const { error } = await supabaseClient
       .from("users")
       .update({ password: nextPassword, updated_at: nowIso() })
-      .eq("company_id", DEFAULT_COMPANY_ID)
+      .eq("company_id", resolvedCompanyId)
       .eq("id", userId);
     if (error) return { ok: false, message: error.message };
     await reload();

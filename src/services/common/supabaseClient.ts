@@ -1,5 +1,4 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
 
 const getEnv = (...candidates: unknown[]) => {
   for (const value of candidates) {
@@ -68,7 +67,6 @@ export const probeUsersReadOne = async (
   const { data, error } = await supabaseClient
     .from("users")
     .select("id, email, company_id, role")
-    .eq("company_id", DEFAULT_COMPANY_ID)
     .eq("email", normalizedEmail)
     .limit(1);
 

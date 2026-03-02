@@ -4,7 +4,13 @@
 -- 目的:
 --   1) Reachemployees.csv + 旧Reachemployees.csv を統合した約150件の社員データ投入
 --   2) 必要な部署・クライアントを自動追加
---   3) 「馬場雄大（社員ID:2600001）」を管理者ユーザーに関連付け
+--   3) 指定3名（馬場/竹花/三部）を従業員と関連付けて users 作成
+--   ※ アプリ画面は「ログイン中ユーザーの company_id」で絞り込むため、
+--      test2(Reach=1111...) と test3(テストカンパニー1=2222...) は合算表示されません。
+-- Reach : 管理対象 153 名 / 現在在籍 11 名
+-- 管理者: y.baba@maisonmarc.com / testpassword1
+-- 管理者: k.takehana@maisonmarc.com / testpassword1
+-- 一般  : r.mitsube@maisonmarc.com / testpassword1
 -- ==========================================
 
 BEGIN;
@@ -14,6 +20,7 @@ INSERT INTO companies (id, company_name)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Reach')
 ON CONFLICT (id) DO UPDATE SET company_name = EXCLUDED.company_name;
 
+CREATE TEMP TABLE seed_test2_prepared ON COMMIT DROP AS
 WITH src_raw (
   full_name,
   gender,
@@ -222,104 +229,205 @@ prepared AS (
     END AS retirement_reason_name,
     note
   FROM normalized
-),
-ensure_departments AS (
-  INSERT INTO departments (company_id, code, name)
-  SELECT
-    '11111111-1111-1111-1111-111111111111',
-    NULL,
-    src.department_name
-  FROM (SELECT DISTINCT department_name FROM prepared WHERE department_name IS NOT NULL) src
-  WHERE NOT EXISTS (
+)
+SELECT *
+FROM prepared;
+
+-- 必須マスタ（最小）
+INSERT INTO work_statuses (name)
+SELECT v.name
+FROM (VALUES ('稼働'::text), ('待機'::text), ('休職'::text)) v(name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM work_statuses ws WHERE ws.name = v.name
+);
+
+-- 退職理由は不足分のみ補完（NULLは除外）
+INSERT INTO retirement_reasons (name)
+SELECT DISTINCT p.retirement_reason_name
+FROM seed_test2_prepared p
+WHERE p.retirement_reason_name IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM retirement_reasons rr WHERE rr.name = p.retirement_reason_name
+  );
+
+-- 部署を追加
+INSERT INTO departments (company_id, name)
+SELECT DISTINCT
+  '11111111-1111-1111-1111-111111111111'::uuid,
+  p.department_name
+FROM seed_test2_prepared p
+WHERE p.department_name IS NOT NULL
+  AND NOT EXISTS (
     SELECT 1
     FROM departments d
-    WHERE d.company_id = '11111111-1111-1111-1111-111111111111'
-      AND d.name = src.department_name
-  )
-  RETURNING id
-),
-ensure_clients AS (
-  INSERT INTO clients (company_id, name)
-  SELECT
-    '11111111-1111-1111-1111-111111111111',
-    src.client_name
-  FROM (SELECT DISTINCT client_name FROM prepared WHERE client_name IS NOT NULL) src
-  WHERE NOT EXISTS (
+    WHERE d.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+      AND d.name = p.department_name
+  );
+
+-- クライアントを追加
+INSERT INTO clients (company_id, name)
+SELECT DISTINCT
+  '11111111-1111-1111-1111-111111111111'::uuid,
+  p.client_name
+FROM seed_test2_prepared p
+WHERE p.client_name IS NOT NULL
+  AND NOT EXISTS (
     SELECT 1
     FROM clients c
-    WHERE c.company_id = '11111111-1111-1111-1111-111111111111'
-      AND c.name = src.client_name
-  )
-  RETURNING id
-),
-delete_existing_employees AS (
-  DELETE FROM employees e
-  USING prepared p
-  WHERE e.employee_code = p.employee_code
-  RETURNING e.id
-),
-inserted_employees AS (
-  INSERT INTO employees (
-    employee_code,
-    full_name,
-    gender,
-    birth_date,
-    join_date,
-    retire_date,
-    retirement_reason_id,
-    retirement_reason_text,
-    department_id,
-    work_status_id,
-    client_id
-  )
-  SELECT
-    p.employee_code,
-    p.full_name,
-    p.gender,
-    p.birth_date,
-    p.join_date,
-    p.retire_date,
-    rr.id,
-    CASE
-      WHEN rr.id IS NULL THEN p.retirement_reason_name
-      ELSE NULL
-    END AS retirement_reason_text,
-    d.id AS department_id,
-    ws.id AS work_status_id,
-    c.id AS client_id
-  FROM prepared p
-  JOIN departments d
-    ON d.company_id = '11111111-1111-1111-1111-111111111111'
-   AND d.name = p.department_name
-  JOIN work_statuses ws
-    ON ws.name = p.work_status_name
-  LEFT JOIN clients c
-    ON c.company_id = '11111111-1111-1111-1111-111111111111'
-   AND c.name = p.client_name
-  LEFT JOIN retirement_reasons rr
-    ON rr.name = p.retirement_reason_name
-  RETURNING id, employee_code, full_name
-),
-delete_admin_user AS (
-  DELETE FROM users
-  WHERE company_id = '11111111-1111-1111-1111-111111111111'
-    AND email = 'test1@example.com'
-  RETURNING id
+    WHERE c.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+      AND c.name = p.client_name
+  );
+
+-- 社員を追加（同一会社内で employee_code 重複はスキップ）
+INSERT INTO employees (
+  employee_code,
+  full_name,
+  gender,
+  birth_date,
+  join_date,
+  retire_date,
+  retirement_reason_id,
+  retirement_reason_text,
+  department_id,
+  work_status_id,
+  client_id
+)
+SELECT
+  p.employee_code,
+  p.full_name,
+  p.gender,
+  p.birth_date,
+  p.join_date,
+  p.retire_date,
+  rr.id,
+  CASE WHEN rr.id IS NULL THEN p.retirement_reason_name ELSE NULL END AS retirement_reason_text,
+  d.id AS department_id,
+  ws.id AS work_status_id,
+  c.id AS client_id
+FROM seed_test2_prepared p
+JOIN departments d
+  ON d.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+ AND d.name = p.department_name
+JOIN work_statuses ws
+  ON ws.name = p.work_status_name
+LEFT JOIN clients c
+  ON c.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+ AND c.name = p.client_name
+LEFT JOIN retirement_reasons rr
+  ON rr.name = p.retirement_reason_name
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM employees e2
+  JOIN departments d2 ON d2.id = e2.department_id
+  WHERE d2.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+    AND e2.employee_code = p.employee_code
+);
+
+-- 対象ユーザーを再作成
+WITH target_users AS (
+  SELECT *
+  FROM (
+    VALUES
+      ('2600001'::text, '馬場雄大'::text, 'y.baba@maisonmarc.com'::text, 'admin'::text),
+      ('2600016'::text, '三部涼太'::text, 'r.mitsube@maisonmarc.com'::text, 'general'::text),
+      ('2600031'::text, '竹花翔'::text, 'k.takehana@maisonmarc.com'::text, 'admin'::text)
+  ) AS t(employee_code, full_name, email, role)
+)
+DELETE FROM users
+WHERE company_id = '11111111-1111-1111-1111-111111111111'::uuid
+  AND (
+    email IN (SELECT tu.email FROM target_users tu)
+    OR employee_id IN (
+      SELECT e.id
+      FROM employees e
+      JOIN departments d ON d.id = e.department_id
+      JOIN target_users tu ON tu.employee_code = e.employee_code
+      WHERE d.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+    )
+  );
+
+WITH target_users AS (
+  SELECT *
+  FROM (
+    VALUES
+      ('2600001'::text, '馬場雄大'::text, 'y.baba@maisonmarc.com'::text, 'admin'::text),
+      ('2600016'::text, '三部涼太'::text, 'r.mitsube@maisonmarc.com'::text, 'general'::text),
+      ('2600031'::text, '竹花翔'::text, 'k.takehana@maisonmarc.com'::text, 'admin'::text)
+  ) AS t(employee_code, full_name, email, role)
 )
 INSERT INTO users (company_id, employee_id, email, password, role)
 SELECT
-  '11111111-1111-1111-1111-111111111111',
+  '11111111-1111-1111-1111-111111111111'::uuid,
   e.id,
-  'test1@example.com',
+  tu.email,
   'testpassword1',
-  'admin'
-FROM employees e
-WHERE e.employee_code = '2600001'
-LIMIT 1;
+  tu.role
+FROM target_users tu
+JOIN employees e ON e.employee_code = tu.employee_code
+JOIN departments d ON d.id = e.department_id
+WHERE d.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+  AND NOT EXISTS (
+    SELECT 1
+    FROM users ux
+    WHERE ux.company_id = '11111111-1111-1111-1111-111111111111'::uuid
+      AND ux.email = tu.email
+  );
+
+-- ==========================================
+-- 実行結果チェック（「test2が実行されていない」を即判定）
+-- ==========================================
+
+-- 1) Reach会社への投入状況サマリ
+SELECT
+  '11111111-1111-1111-1111-111111111111'::uuid AS company_id,
+  153 AS expected_min_employee_count,
+  (
+    SELECT COUNT(*)
+    FROM employees e
+    JOIN departments d ON d.id = e.department_id
+    WHERE d.company_id = '11111111-1111-1111-1111-111111111111'
+  ) AS actual_employee_count,
+  (
+    SELECT COUNT(*)
+    FROM users u
+    WHERE u.company_id = '11111111-1111-1111-1111-111111111111'
+      AND u.email IN ('y.baba@maisonmarc.com', 'k.takehana@maisonmarc.com', 'r.mitsube@maisonmarc.com')
+  ) AS target_user_count;
+
+-- 2) 社員が不足していたら例外（部分成功を防ぐ）
+DO $$
+DECLARE
+  v_company_id uuid := '11111111-1111-1111-1111-111111111111'::uuid;
+  v_expected_min int := 153;
+  v_actual int;
+  v_target_users int;
+BEGIN
+  SELECT COUNT(*) INTO v_actual
+  FROM employees e
+  JOIN departments d ON d.id = e.department_id
+  WHERE d.company_id = v_company_id;
+
+  SELECT COUNT(*) INTO v_target_users
+  FROM users u
+  WHERE u.company_id = v_company_id
+    AND u.email IN ('y.baba@maisonmarc.com', 'k.takehana@maisonmarc.com', 'r.mitsube@maisonmarc.com');
+
+  IF v_actual < v_expected_min THEN
+    RAISE EXCEPTION 'DDL_test2 seed is incomplete: expected at least % employees in Reach(1111...) but got %. Likely causes: SQL was partially executed/truncated, or rows were skipped by constraints/conflicts.',
+      v_expected_min, v_actual;
+  END IF;
+
+  IF v_target_users < 3 THEN
+    RAISE EXCEPTION 'DDL_test2 users are incomplete: expected 3 target users (y.baba / k.takehana / r.mitsube) but got %.',
+      v_target_users;
+  END IF;
+END $$;
 
 COMMIT;
 
 -- 確認用クエリ
 -- SELECT COUNT(*) AS employee_count FROM employees;
--- SELECT full_name, employee_code FROM employees WHERE employee_code = '2600001';
--- SELECT email, role, employee_id FROM users WHERE email = 'test1@example.com';
+-- SELECT full_name, employee_code FROM employees WHERE employee_code IN ('2600001','2600016','2600031');
+-- SELECT email, role, employee_id FROM users WHERE email IN ('y.baba@maisonmarc.com','k.takehana@maisonmarc.com','r.mitsube@maisonmarc.com');
+
+

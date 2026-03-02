@@ -1,6 +1,6 @@
 import type { CatalogItem } from "@/shared/logic/catalogStorage";
 import { supabaseClient } from "@/services/common/supabaseClient";
-import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
+import { getSessionCompanyId } from "@/services/common/sessionCompany";
 import { toCatalogItems } from "@/services/common/catalogNormalizer";
 import { sortJaCatalogItems } from "@/services/common/catalogSorter";
 import { logSupabaseErrorOnce } from "@/shared/errors/supabaseError";
@@ -12,10 +12,12 @@ const DEPARTMENT_TABLE = "departments";
 const fetchDepartmentsFromSupabase = async (): Promise<CatalogItem[] | null> => {
   if (!supabaseClient) return null;
 
+  const companyId = getSessionCompanyId();
+
   const { data, error } = await supabaseClient
     .from(DEPARTMENT_TABLE)
     .select("id, name")
-    .eq("company_id", DEFAULT_COMPANY_ID);
+    .eq("company_id", companyId);
   if (error) return null;
   const normalized = toCatalogItems(data);
   return sortJaCatalogItems(normalized);
@@ -28,9 +30,11 @@ export const addDepartmentToSupabase = async (
   if (!normalizedName) return { ok: false, message: ERROR_MESSAGES.CATALOG.DEPARTMENT_NAME_REQUIRED_DOT };
   if (!supabaseClient) return { ok: false, message: ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED_DOT };
 
+  const companyId = getSessionCompanyId();
+
   const { error } = await supabaseClient
     .from(DEPARTMENT_TABLE)
-    .insert({ company_id: DEFAULT_COMPANY_ID, name: normalizedName });
+    .insert({ company_id: companyId, name: normalizedName });
   if (!error) return { ok: true };
   return { ok: false, message: error.message || ERROR_MESSAGES.CATALOG.DEPARTMENT_CREATE_FAILED_DOT };
 };
@@ -49,11 +53,13 @@ export const updateDepartmentInSupabase = async ({
   if (!normalizedName) return { ok: false, message: ERROR_MESSAGES.CATALOG.DEPARTMENT_NAME_REQUIRED_DOT };
   if (!supabaseClient) return { ok: false, message: ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED_DOT };
 
+  const companyId = getSessionCompanyId();
+
   // データベースにて更新前の名称を検索するため、IDで更新対象を特定して名称を更新する
   const { error } = await supabaseClient
     .from(DEPARTMENT_TABLE)
     .update({ name: normalizedName })
-    .eq("company_id", DEFAULT_COMPANY_ID)
+    .eq("company_id", companyId)
     .eq("id", normalizedId);
 
   if (!error) return { ok: true };
@@ -68,10 +74,12 @@ export const deleteDepartmentFromSupabase = async (
   if (!normalizedId) return { ok: false, message: ERROR_MESSAGES.MASTER.DATA_NOT_FOUND };
   if (!supabaseClient) return { ok: false, message: ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED_DOT };
 
+  const companyId = getSessionCompanyId();
+
   const { error } = await supabaseClient
     .from(DEPARTMENT_TABLE)
     .delete()
-    .eq("company_id", DEFAULT_COMPANY_ID)
+    .eq("company_id", companyId)
     .eq("id", normalizedId);
 
   if (!error) return { ok: true };

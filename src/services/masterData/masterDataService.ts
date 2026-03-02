@@ -1,5 +1,5 @@
 import { supabaseClient } from "@/services/common/supabaseClient";
-import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
+import { getSessionCompanyId } from "@/services/common/sessionCompany";
 import { sortJa } from "@/services/common/catalogSorter";
 import { addDepartmentToSupabase, listDepartmentNames } from "@/services/department/departmentService";
 import { addClientToSupabase, listClientNames } from "@/services/client/clientService";
@@ -23,10 +23,12 @@ const listNamesFromTable = async (tableName: string): Promise<string[]> => {
 
 const listCompanyScopedNamesFromTable = async (tableName: string): Promise<string[]> => {
   if (!supabaseClient) return [];
+
+  const companyId = getSessionCompanyId();
   const { data, error } = await supabaseClient
     .from(tableName)
     .select("name")
-    .eq("company_id", DEFAULT_COMPANY_ID);
+    .eq("company_id", companyId);
   if (error) throw error;
   if (!Array.isArray(data)) return [];
   return sortJa(
@@ -109,6 +111,8 @@ export const renameCatalogOption = async ({
   if (!fromName || !toName) return { ok: false, message: ERROR_MESSAGES.MASTER.NAME_REQUIRED };
   if (!supabaseClient) return { ok: false, message: ERROR_MESSAGES.SYSTEM.DB_NOT_CONFIGURED };
 
+  const companyId = getSessionCompanyId();
+
   if (keyName === "workStatuses") {
     return { ok: false, message: ERROR_MESSAGES.MASTER.WORK_STATUS_IMMUTABLE };
   }
@@ -118,7 +122,7 @@ export const renameCatalogOption = async ({
       const { error } = await supabaseClient
         .from("departments")
         .update({ name: toName })
-        .eq("company_id", DEFAULT_COMPANY_ID)
+        .eq("company_id", companyId)
         .eq("name", fromName);
       if (error) return { ok: false, message: error.message };
       return { ok: true };
@@ -128,7 +132,7 @@ export const renameCatalogOption = async ({
       const { error } = await supabaseClient
         .from("clients")
         .update({ name: toName })
-        .eq("company_id", DEFAULT_COMPANY_ID)
+        .eq("company_id", companyId)
         .eq("name", fromName);
       if (error) return { ok: false, message: error.message };
       return { ok: true };
@@ -151,6 +155,8 @@ export const deleteCatalogOption = async ({
   if (!name) return [];
   if (!supabaseClient) return [];
 
+  const companyId = getSessionCompanyId();
+
   // 稼働状態は固定マスタのため削除不可
   if (keyName === "workStatuses") {
     console.warn("[deleteCatalogOption] workStatuses は固定データのため削除できません");
@@ -162,7 +168,7 @@ export const deleteCatalogOption = async ({
       await supabaseClient
         .from("departments")
         .delete()
-        .eq("company_id", DEFAULT_COMPANY_ID)
+        .eq("company_id", companyId)
         .eq("name", name);
       return await listCompanyScopedNamesFromTable("departments");
     }
@@ -171,7 +177,7 @@ export const deleteCatalogOption = async ({
       await supabaseClient
         .from("clients")
         .delete()
-        .eq("company_id", DEFAULT_COMPANY_ID)
+        .eq("company_id", companyId)
         .eq("name", name);
       return await listCompanyScopedNamesFromTable("clients");
     }

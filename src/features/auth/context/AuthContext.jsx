@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { supabaseClient } from "@/services/common/supabaseClient";
-import { DEFAULT_COMPANY_ID } from "@/services/common/defaultCompany";
 import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
 const AUTH_TOKEN_KEY = "bit_ween.auth.token";
@@ -37,11 +36,12 @@ const readLoggedOutFlag = () => {
 
 const toText = (value) => String(value ?? "").trim();
 
-const buildSessionUser = ({ id, email, displayName, role }) => ({
+const buildSessionUser = ({ id, email, displayName, role, companyId }) => ({
   id: toText(id || "session-user"),
   email: toText(email).toLowerCase(),
   displayName: toText(displayName || email || ""),
   role: toText(role || "general").toLowerCase(),
+  company_id: toText(companyId || ""),
 });
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -107,7 +107,6 @@ export const AuthProvider = ({ children }) => {
     const { data: userRows, error: userError } = await supabaseClient
       .from("users")
       .select("id, company_id, employee_id, email, password, role")
-      .eq("company_id", DEFAULT_COMPANY_ID)
       .eq("email", normalizedEmail)
       .limit(1);
 
@@ -147,6 +146,7 @@ export const AuthProvider = ({ children }) => {
       email: userRow.email,
       displayName,
       role: userRow.role,
+      companyId: userRow.company_id,
     });
 
     const nextToken = `token-${Date.now()}`;
@@ -197,7 +197,7 @@ export const AuthProvider = ({ children }) => {
         const { data: companyRow, error: companyError } = await supabaseClient
           .from("companies")
           .select("id, company_name")
-          .eq("id", DEFAULT_COMPANY_ID)
+          .limit(1)
           .maybeSingle();
 
         if (companyError) {
