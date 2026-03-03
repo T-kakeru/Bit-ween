@@ -19,7 +19,6 @@ const SystemUsersPage = () => {
     <section className="screen settings-screen">
       {mode === "list" ? (
         <SystemUsersManager
-          companyId="company-default"
           canWrite={canWrite}
           canStartRegister={canWrite}
           onStartRegister={() => {
@@ -30,7 +29,6 @@ const SystemUsersPage = () => {
       ) : (
         canWrite ? (
           <SystemUserRegistrationWizard
-            companyId="company-default"
             onCancel={() => setMode("list")}
             onCompleted={() => setMode("list")}
           />

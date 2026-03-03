@@ -21,7 +21,7 @@ const ManagerPage = () => {
     setRows,
     normalizeCell,
   });
-  const { createUser } = useSystemUsersCrud({ companyId: "company-default" });
+  const { createUser } = useSystemUsersCrud();
   const [pendingUserEmail, setPendingUserEmail] = useState("");
   const [pendingUserRole, setPendingUserRole] = useState("general");
   const [isIntegratedFlow, setIsIntegratedFlow] = useState(false);

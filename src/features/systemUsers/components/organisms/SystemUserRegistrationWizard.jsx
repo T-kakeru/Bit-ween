@@ -18,7 +18,7 @@ const buildInviteLink = (userId) => {
   return `${base}/invite/${encodeURIComponent(String(userId || "new-user"))}`;
 };
 
-const SystemUserRegistrationWizard = ({ companyId = "company-default", onCancel, onCompleted }) => {
+const SystemUserRegistrationWizard = ({ companyId, onCancel, onCompleted }) => {
   const { createUser } = useSystemUsersCrud({ companyId });
   const [step, setStep] = useState(1);
   const [basicInfo, setBasicInfo] = useState({ email: "", role: "general" });

@@ -29,7 +29,7 @@ const toSortableValue = (systemUser, key) => {
 };
 
 const SystemUsersManager = ({
-  companyId = "company-default",
+  companyId,
   canWrite = false,
   canStartRegister = true,
   onDone,
