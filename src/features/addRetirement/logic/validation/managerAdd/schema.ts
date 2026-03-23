@@ -97,7 +97,7 @@ export const managerAddSchema = z.object({
 
   const employmentStatus = String((values as any).employmentStatus ?? "").trim();
 
-  // 在籍状態と退職情報の矛盾（在籍なのに退職日/退職理由/備考が入っている等）
+  // 在籍状態と退職情報の矛盾（在籍なのに退職日/退職理由が入っている等）
   // ※ ここで返すエラーには params.appErrorCode を付け、呼び出し側で識別できるようにする
   const consistencyErrors = validateEmploymentStatusConsistency({
     employmentStatus,

@@ -37,16 +37,20 @@ const EditableEmployeeTableView = ({
   onAddClientOption,
   onEditStart,
   onSaveRequest,
+  onDeleteRequest,
   isSaveDisabled,
+  isDeleteDisabled,
   onCancel,
   selectedRowIds,
   onToggleRowSelection,
 
   // confirm
   isConfirmOpen,
+  confirmMode,
   pendingChanges,
+  pendingDeleteRows,
   onCloseConfirm,
-  onConfirmSave,
+  onConfirm,
   saveError,
 }) => {
   const getSortIcon = (key) => {
@@ -99,7 +103,9 @@ const EditableEmployeeTableView = ({
             isEditing={isEditing}
             onEditStart={onEditStart}
             onSaveRequest={onSaveRequest}
+            onDeleteRequest={onDeleteRequest}
             isSaveDisabled={Boolean(isSaveDisabled)}
+            isDeleteDisabled={Boolean(isDeleteDisabled)}
             onCancel={onCancel}
           />
         ) : null}
@@ -111,6 +117,11 @@ const EditableEmployeeTableView = ({
         <Table className={isEditing ? "manager-table is-editing" : "manager-table"}>
           <thead>
             <tr>
+              {isEditing ? (
+                <Th scope="col" className="manager-th">
+                  <span className="text-slate-400">選択</span>
+                </Th>
+              ) : null}
               {columns.map((c) => (
                 <Th
                   key={c.key}
@@ -141,16 +152,22 @@ const EditableEmployeeTableView = ({
                   </Button>
                 </Th>
               ))}
-              {isEditing ? (
-                <Th scope="col" className="manager-th">
-                  <span className="text-slate-400">選択</span>
-                </Th>
-              ) : null}
             </tr>
           </thead>
           <tbody>
             {visibleRows.map((row) => (
               <tr key={String(row.id)}>
+                {isEditing ? (
+                  <Td className="text-center">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-slate-300 align-middle"
+                      checked={Boolean(selectedRowIds?.[String(row.id)])}
+                      onChange={() => onToggleRowSelection?.(row.id)}
+                      aria-label="この行を操作対象にする"
+                    />
+                  </Td>
+                ) : null}
                 {columns.map((c) => {
                   const originalRow = originalRowMap?.get(String(row.id));
                   const changed = isCellChanged({ draftRow: row, originalRow, column: c, normalizeCell });
@@ -177,17 +194,6 @@ const EditableEmployeeTableView = ({
                     </Td>
                   );
                 })}
-                {isEditing ? (
-                  <Td className="text-center">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-slate-300 align-middle"
-                      checked={Boolean(selectedRowIds?.[String(row.id)])}
-                      onChange={() => onToggleRowSelection?.(row.id)}
-                      aria-label="この行を編集対象にする"
-                    />
-                  </Td>
-                ) : null}
               </tr>
             ))}
           </tbody>
@@ -196,9 +202,11 @@ const EditableEmployeeTableView = ({
 
       <ConfirmChangesModal
         isOpen={isConfirmOpen}
+        mode={confirmMode}
         changes={pendingChanges}
+        deleteTargets={pendingDeleteRows}
         onCancel={onCloseConfirm}
-        onConfirm={onConfirmSave}
+        onConfirm={onConfirm}
       />
     </div>
   );

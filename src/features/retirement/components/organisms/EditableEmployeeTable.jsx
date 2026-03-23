@@ -14,6 +14,7 @@ const EditableEmployeeTable = ({
   isFilterOpen,
   onToggleFilter,
   onSaveRows,
+  onDeleteRows,
   leadingContent,
   filterSummaryChips,
   trailingContent,
@@ -25,24 +26,29 @@ const EditableEmployeeTable = ({
     draftRows,
     originalRowMap,
     isConfirmOpen,
+    confirmMode,
     pendingChanges,
+    pendingDeleteRows,
     hasErrors,
     selectedRowIds,
+    selectedCount,
     saveError,
     startEditing,
     cancelEditing,
     changeCell,
     requestSave,
+    requestDelete,
     toggleRowSelection,
     closeConfirm,
     confirmSave,
+    confirmDelete,
     getCellError,
     clientOptions,
     departmentOptions,
     statusOptions,
     reasonOptions,
     addClientOption,
-  } = useEditableEmployeeTableSession({ rows, columns, normalizeCell, onSaveRows });
+  } = useEditableEmployeeTableSession({ rows, columns, normalizeCell, onSaveRows, onDeleteRows });
 
   const visibleRows = isEditing ? draftRows : rows;
 
@@ -77,14 +83,18 @@ const EditableEmployeeTable = ({
       onAddClientOption={addClientOption}
       onEditStart={canEdit ? startEditing : undefined}
       onSaveRequest={canEdit ? requestSave : undefined}
+      onDeleteRequest={canEdit ? requestDelete : undefined}
       isSaveDisabled={hasErrors}
+      isDeleteDisabled={selectedCount === 0}
       onCancel={canEdit ? cancelEditing : undefined}
       selectedRowIds={selectedRowIds}
       onToggleRowSelection={canEdit ? toggleRowSelection : undefined}
       isConfirmOpen={isConfirmOpen}
+      confirmMode={confirmMode}
       pendingChanges={pendingChanges}
+      pendingDeleteRows={pendingDeleteRows}
       onCloseConfirm={closeConfirm}
-      onConfirmSave={canEdit ? (() => void confirmSave()) : undefined}
+      onConfirm={canEdit ? (() => void (confirmMode === "delete" ? confirmDelete() : confirmSave())) : undefined}
       saveError={saveError}
     />
   );

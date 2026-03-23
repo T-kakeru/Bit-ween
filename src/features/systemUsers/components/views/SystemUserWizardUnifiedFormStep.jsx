@@ -65,6 +65,7 @@ const SystemUserWizardUnifiedFormStep = ({
     genderError,
     birthDateError,
     joinDateError,
+    remarkError,
     statusError,
     clientError,
     handleSubmit,
@@ -73,6 +74,7 @@ const SystemUserWizardUnifiedFormStep = ({
     setGender,
     setBirthDate,
     setJoinDate,
+    setRemark,
     setStatus,
     setClient,
   } = useManagerAddForm({
@@ -180,6 +182,16 @@ const SystemUserWizardUnifiedFormStep = ({
           placeholder="クライアント名"
           errorMessage={clientError}
         />
+
+        <FieldText
+          label="備考"
+          value={form["備考"]}
+          onChange={setRemark}
+          placeholder="備考を入力（200文字まで）"
+          maxLength={200}
+          errorMessage={remarkError}
+        />
+        
       </div>
 
       <div className="flex items-center justify-end gap-2 pt-1">

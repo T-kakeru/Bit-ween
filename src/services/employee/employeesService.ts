@@ -578,6 +578,37 @@ export const updateEmployee = async (
   return { ok: true, employee };
 };
 
+export const deleteEmployees = async (
+  employeeIds: string[]
+): Promise<{ ok: true; deletedIds: string[] } | { ok: false; message: string }> => {
+  const ids = Array.from(
+    new Set(
+      (employeeIds ?? [])
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean)
+    )
+  );
+
+  if (ids.length === 0) {
+    return { ok: false, message: ERROR_MESSAGES.EMPLOYEE.DELETE_TARGET_EMPLOYEE_ID_REQUIRED };
+  }
+
+  if (!supabaseClient) {
+    return { ok: true, deletedIds: ids };
+  }
+
+  const { error } = await supabaseClient
+    .from(EMPLOYEE_TABLE)
+    .delete()
+    .in("id", ids);
+
+  if (error) {
+    return { ok: false, message: error.message || ERROR_MESSAGES.EMPLOYEE.DELETE_FAILED };
+  }
+
+  return { ok: true, deletedIds: ids };
+};
+
 export type ImportManagerRowsResult =
   | { ok: true; count?: number }
   | { ok: false; message: string };

@@ -16,7 +16,7 @@ import {
 } from "@/services/masterData/masterDataService";
 
 // EditableEmployeeTable の編集セッションを管理（状態管理の責務）
-const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveRows }) => {
+const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveRows, onDeleteRows }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [draftRows, setDraftRows] = useState(() => (rows ?? []).map((row) => ({ ...row })));
   const [cellErrors, setCellErrors] = useState({});
@@ -71,13 +71,14 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
 
   // 確認モーダル
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmMode, setConfirmMode] = useState("save");
   const [pendingChanges, setPendingChanges] = useState([]);
+  const [pendingDeleteRows, setPendingDeleteRows] = useState([]);
   const [saveError, setSaveError] = useState("");
 
   const originalRowMap = useMemo(() => buildRowMapById(rows), [rows]);
-  
-  // 行のバリデーションをすべて実行して結果を state にセット
-  const validateAllDraftRows = (rowsToValidate = draftRows) => {
+
+  const buildRowErrors = (rowsToValidate = []) => {
     const nextErrors = {};
 
     for (const row of rowsToValidate ?? []) {
@@ -97,6 +98,20 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
       }
     }
 
+    return nextErrors;
+  };
+
+  // 行のバリデーションを実行して結果を state にセット
+  const validateAllDraftRows = (rowsToValidate = draftRows) => {
+    const nextErrors = buildRowErrors(rowsToValidate);
+
+    setCellErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const validateSelectedDraftRows = (selectedState = selectedRowIds, rowsToValidate = draftRows) => {
+    const selectedRows = (rowsToValidate ?? []).filter((row) => Boolean(selectedState?.[String(row?.id)]));
+    const nextErrors = buildRowErrors(selectedRows);
     setCellErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -128,9 +143,8 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
     setDraftRows(nextDraft);
     setSelectedRowIds({});
     setSaveError("");
+    setCellErrors({});
     setIsEditing(true);
-    // 既存値に想定外が混ざっていても、編集開始時点で表示できるようにする
-    validateAllDraftRows(nextDraft);
   };
 
   const cancelEditing = () => {
@@ -144,10 +158,21 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
   const toggleRowSelection = (rowId) => {
     const key = String(rowId ?? "");
     if (!key) return;
-    setSelectedRowIds((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setSelectedRowIds((prev) => {
+      const next = {
+        ...prev,
+        [key]: !prev[key],
+      };
+
+      if (!next[key]) {
+        const selectedRows = (draftRows ?? []).filter((row) => Boolean(next[String(row?.id)]));
+        setCellErrors(buildRowErrors(selectedRows));
+      } else {
+        validateSelectedDraftRows(next, draftRows);
+      }
+
+      return next;
+    });
   };
 
   // セル編集時のバリデーション更新
@@ -229,21 +254,25 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
 
     // 送信直前の最終チェック（UI入力制限のバイパス対策）
     // ここでエラーがあれば、確認モーダルは開かずにセル直下のエラー表示へ誘導する
-    if (!validateAllDraftRows()) {
+    if (!validateSelectedDraftRows()) {
       return;
     }
 
+    setConfirmMode("save");
+    setPendingDeleteRows([]);
     setPendingChanges(changes);
     setIsConfirmOpen(true);
   };
 
   const closeConfirm = () => {
+    setConfirmMode("save");
+    setPendingDeleteRows([]);
     setIsConfirmOpen(false);
   };
 
   const confirmSave = async () => {
     // 念のため確定直前も再チェック（モーダル表示中に値が変わったケース等）
-    if (!validateAllDraftRows()) {
+    if (!validateSelectedDraftRows()) {
       setIsConfirmOpen(false);
       return;
     }
@@ -261,6 +290,51 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
     }
 
     setSaveError("");
+    setPendingChanges([]);
+    setPendingDeleteRows([]);
+    setConfirmMode("save");
+    setIsConfirmOpen(false);
+    setIsEditing(false);
+    setSelectedRowIds({});
+  };
+
+  const requestDelete = () => {
+    const targets = (draftRows ?? []).filter((row) => Boolean(selectedRowIds?.[String(row?.id)]));
+    if (targets.length === 0) return;
+
+    setPendingDeleteRows(
+      targets.map((row) => ({
+        id: String(row?.id ?? ""),
+        employeeId: String(row?.["社員ID"] ?? "").trim(),
+        name: String(row?.["名前"] ?? "社員").trim() || "社員",
+      }))
+    );
+    setPendingChanges([]);
+    setConfirmMode("delete");
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    const targetIds = pendingDeleteRows.map((row) => row.id).filter(Boolean);
+    if (targetIds.length === 0) {
+      setIsConfirmOpen(false);
+      return;
+    }
+
+    if (onDeleteRows) {
+      const result = await onDeleteRows(targetIds);
+      if (result?.ok === false) {
+        setSaveError(String(result.message || "削除に失敗しました。"));
+        setIsConfirmOpen(false);
+        return;
+      }
+    }
+
+    setSaveError("");
+    setPendingChanges([]);
+    setPendingDeleteRows([]);
+    setConfirmMode("save");
+    setSelectedRowIds({});
     setIsConfirmOpen(false);
     setIsEditing(false);
   };
@@ -271,10 +345,13 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
     draftRows,
     originalRowMap,
     isConfirmOpen,
+    confirmMode,
     pendingChanges,
+    pendingDeleteRows,
     cellErrors,
     hasErrors: Object.keys(cellErrors ?? {}).length > 0,
     selectedRowIds,
+    selectedCount: Object.values(selectedRowIds ?? {}).filter(Boolean).length,
     saveError,
 
     // actions
@@ -282,9 +359,11 @@ const useEditableEmployeeTableSession = ({ rows, columns, normalizeCell, onSaveR
     cancelEditing,
     changeCell,
     requestSave,
+    requestDelete,
     toggleRowSelection,
     closeConfirm,
     confirmSave,
+    confirmDelete,
 
     getCellError: (rowId, key) => cellErrors?.[String(rowId)]?.[key],
 

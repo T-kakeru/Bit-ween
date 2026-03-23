@@ -273,6 +273,11 @@ const SystemUsersManager = ({
               <Table className="manager-table system-users-table">
                 <thead>
                   <tr>
+                    {isTableEditing ? (
+                      <Th scope="col" className="manager-th text-slate-400">
+                        選択
+                      </Th>
+                    ) : null}
                     <Th scope="col" className={getHeaderClass("display_name")} aria-sort={getAriaSort("display_name")}>
                       <Button
                         type="button"
@@ -377,11 +382,6 @@ const SystemUsersManager = ({
                         <span className="system-users-th-action-label">操作</span>
                       )}
                     </Th>
-                    {isTableEditing ? (
-                      <Th scope="col" className="manager-th text-slate-400">
-                        選択
-                      </Th>
-                    ) : null}
                   </tr>
                 </thead>
                 <tbody>
@@ -395,6 +395,17 @@ const SystemUsersManager = ({
 
                     return (
                       <tr key={systemUser.id}>
+                        {isTableEditing ? (
+                          <Td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-slate-300 align-middle"
+                              checked={isRowSelected}
+                              onChange={() => toggleRowSelection(rowId)}
+                              aria-label="この行を編集対象にする"
+                            />
+                          </Td>
+                        ) : null}
                         <Td>
                           {rowEditable ? (
                             <Input
@@ -500,17 +511,6 @@ const SystemUsersManager = ({
                             </div>
                           ) : <span className="system-users-action-placeholder">-</span>}
                         </Td>
-                        {isTableEditing ? (
-                          <Td className="text-center">
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 rounded border-slate-300 align-middle"
-                              checked={isRowSelected}
-                              onChange={() => toggleRowSelection(rowId)}
-                              aria-label="この行を編集対象にする"
-                            />
-                          </Td>
-                        ) : null}
                       </tr>
                     );
                   })}

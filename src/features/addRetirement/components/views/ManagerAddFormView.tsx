@@ -156,6 +156,7 @@ export const ManagerAddFormView = ({
               onChange={onChangeBirthDate}
               errorMessage={birthDateError}
             />
+
             </div>
 
             {/* 基本情報の下にグレーのライン（社員ID区切り） */}
@@ -219,15 +220,6 @@ export const ManagerAddFormView = ({
                 </>
               ) : null}
 
-              <FieldText
-                label="備考"
-                value={form["備考"]}
-                onChange={onChangeRemark}
-                placeholder="備考を入力（200文字まで）"
-                maxLength={200}
-                errorMessage={remarkError}
-              />
-
               <Divider className="border-slate-200" />
 
               <FieldSelect
@@ -246,6 +238,15 @@ export const ManagerAddFormView = ({
                 onChange={onChangeClient}
                 placeholder="クライアント名"
                 errorMessage={clientError}
+              />
+
+              <FieldText
+                label="備考"
+                value={form["備考"]}
+                onChange={onChangeRemark}
+                placeholder="備考を入力（200文字まで）"
+                maxLength={200}
+                errorMessage={remarkError}
               />
             </div>
 

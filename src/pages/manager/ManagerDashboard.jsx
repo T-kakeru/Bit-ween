@@ -105,7 +105,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
   const { sort, sortedRows, toggleSort } = useManagerSort(filteredRows, columns);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const { saveRows } = useManagerRowEditor({ columns, normalizeCell, setRows, canWrite });
+  const { saveRows, deleteRows } = useManagerRowEditor({ columns, normalizeCell, setRows, canWrite });
   const [quickStatusFilter, setQuickStatusFilter] = useState("all");
 
   const handleDisplaySegmentClick = (segment) => {
@@ -314,6 +314,7 @@ const ManagerDashboard = ({ columns, rows, setRows, metrics, normalizeCell, onAd
           isFilterOpen={isFilterOpen}
           onToggleFilter={() => setIsFilterOpen((prev) => !prev)}
           onSaveRows={saveRows}
+          onDeleteRows={deleteRows}
           filterSummaryChips={selectedFilterChips}
           readOnly={readOnly}
           trailingContent={

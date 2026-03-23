@@ -2457,6 +2457,14 @@ input:disabled,
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
+.manager-delete-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
 /* 絞り込みボタンと横幅/密度を揃える */
 .manager-edit-button {
   min-width: 120px;
@@ -2558,31 +2566,34 @@ input:disabled,
   transform: none;
 }
 
-.manager-edit-button.is-editing {
-  background: var(--color-accent-text);
-  color: var(--color-white);
-  border-color: var(--color-accent-text);
-  opacity: 1;
-}
-
-.manager-save-button {
-  background: var(--color-accent-text);
-  color: var(--color-white);
-  border-color: var(--color-accent-text);
-}
-
 .manager-cancel-button {
   color: #7f1d1d;
 }
 
+.manager-save-button {
+  color: #1e3a8a;
+}
+
 .manager-save-button:hover {
-  background: var(--color-info);
-  color: var(--color-white);
-  border-color: var(--color-info);
+  background: #eff6ff;
+  color: #1e3a8a;
+  border-color: #93c5fd;
 }
 
 .manager-cancel-button:hover {
+  background: #fef2f2;
   color: #7f1d1d;
+  border-color: #fca5a5;
+}
+
+.manager-delete-button {
+  color: #7f1d1d;
+}
+
+.manager-delete-button:hover {
+  background: #fef2f2;
+  color: #7f1d1d;
+  border-color: #fca5a5;
 }
 
 .manager-filter-button.is-open {
@@ -2605,7 +2616,8 @@ input:disabled,
 
 .manager-edit-actions .manager-edit-button,
 .manager-edit-actions .manager-save-button,
-.manager-edit-actions .manager-cancel-button {
+.manager-edit-actions .manager-cancel-button,
+.manager-edit-actions .manager-delete-button {
   min-height: 42px !important;
   height: 42px !important;
   padding: 0 16px !important;
@@ -2615,6 +2627,14 @@ input:disabled,
 
 .manager-save-button.manager-action-button:disabled,
 .manager-save-button.manager-action-button:disabled:hover {
+  background: #e5e7eb;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  box-shadow: none;
+}
+
+.manager-delete-button.manager-action-button:disabled,
+.manager-delete-button.manager-action-button:disabled:hover {
   background: #e5e7eb;
   color: #9ca3af;
   border-color: #e5e7eb;
@@ -2799,6 +2819,43 @@ input:disabled,
   border: 1px solid #eef2f7;
   background: var(--color-bg-subtle);
   padding: 12px;
+}
+
+.manager-delete-table-wrap {
+  overflow-x: auto;
+}
+
+.manager-delete-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.manager-delete-table th,
+.manager-delete-table td {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.manager-delete-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 800;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.manager-delete-table td {
+  color: var(--color-text-strong);
+  border-bottom: 1px solid #eef2f7;
+}
+
+.manager-delete-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .manager-change-list {

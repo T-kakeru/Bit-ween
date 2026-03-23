@@ -291,7 +291,7 @@ export const validateEmployeeCsvRow = ({
     });
   }
 
-  // 在籍状態と退職情報の整合性（在籍なのに退職日/退職理由/備考が入っている等）
+  // 在籍状態と退職情報の整合性（在籍なのに退職日/退職理由が入っている等）
   const consistencyErrors = validateEmploymentStatusConsistency({
     employmentStatus: employmentStatusRaw,
     retireDate: retirementDateRaw,
@@ -311,12 +311,6 @@ export const validateEmployeeCsvRow = ({
       errors.push({
         ...toFieldError(rowNumber, "retirementReason", e.message),
         code: "activeDisallowRetirementReason",
-      });
-    }
-    if (e.field === "remark") {
-      errors.push({
-        ...toFieldError(rowNumber, "remark", e.message),
-        code: "activeDisallowRemark",
       });
     }
   }

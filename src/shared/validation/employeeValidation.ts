@@ -27,8 +27,8 @@ const toEmploymentStatus = (raw: unknown): "在籍" | "退職" | null => {
 };
 
 /**
- * 在籍状態と退職関連入力（退職日/退職理由/備考）の矛盾チェック。
- * - 在籍の場合: 退職日/退職理由/備考 は入力禁止
+ * 在籍状態と退職関連入力（退職日/退職理由）の矛盾チェック。
+ * - 在籍の場合: 退職日/退職理由 は入力禁止
  * - 退職の場合: ここでは必須チェックは行わない（各機能の既存必須チェックに委譲）
  *
  * ※ employmentStatus が未指定の場合は、retireDate/retireReason の有無から在籍/退職を推定する。
@@ -81,13 +81,7 @@ export const validateEmploymentStatusConsistency = (args: {
 		});
 	}
 
-	if (!isBlank(remark)) {
-		errors.push({
-			field: "remark",
-			code: "EMPLOYMENT_STATUS_ACTIVE_DISALLOW_REMARK",
-			message: ERROR_MESSAGES.VALIDATION.EMPLOYMENT_STATUS_ACTIVE_DISALLOW_REMARK,
-		});
-	}
+	// 備考（remarks）は在籍/退職に関係なく利用できる汎用コメント欄のため、ここでは矛盾扱いにしない
 
 	return errors;
 };

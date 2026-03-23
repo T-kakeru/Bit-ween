@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { mergeEditedRows } from "@/features/retirement/logic/managerRowEditor.logic";
-import { updateEmployee } from "@/services/employee/employeesService";
+import { deleteEmployees, updateEmployee } from "@/services/employee/employeesService";
 import { isSupabaseConfigured } from "@/services/common/supabaseClient";
 import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
 
@@ -88,7 +88,40 @@ const useManagerRowEditor = ({ columns, normalizeCell, setRows, canWrite = true 
     [canWrite, columns, normalizeCell, setRows]
   );
 
-  return { saveRows };
+  const deleteRows = useCallback(
+    async (rowIds) => {
+      if (!setRows) return;
+
+      if (!canWrite) {
+        return { ok: false, message: ERROR_MESSAGES.AUTH.PERMISSION_DENIED_DOT };
+      }
+
+      const normalizedIds = Array.from(
+        new Set(
+          (rowIds ?? [])
+            .map((value) => String(value ?? "").trim())
+            .filter(Boolean)
+        )
+      );
+
+      if (normalizedIds.length === 0) {
+        return { ok: false, message: ERROR_MESSAGES.EMPLOYEE.DELETE_TARGET_EMPLOYEE_ID_REQUIRED };
+      }
+
+      if (isSupabaseConfigured()) {
+        const result = await deleteEmployees(normalizedIds);
+        if (!result.ok) {
+          return { ok: false, message: result.message };
+        }
+      }
+
+      setRows((prev) => (prev ?? []).filter((row) => !normalizedIds.includes(String(row?.id ?? "").trim())));
+      return { ok: true, deletedIds: normalizedIds };
+    },
+    [canWrite, setRows]
+  );
+
+  return { saveRows, deleteRows };
 };
 
 export default useManagerRowEditor;
