@@ -1,6 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { supabaseClient } from "@/services/common/supabaseClient";
 import { ERROR_MESSAGES } from "@/shared/constants/messages/appMessages";
+import {
+  getLoginProtection,
+  LOGIN_PROTECTION_STATUS,
+  registerLoginFailure,
+  resetLoginFailures,
+} from "@/features/auth/logic/loginProtection";
 
 const AUTH_TOKEN_KEY = "bit_ween.auth.token";
 const AUTH_USER_KEY = "bit_ween.auth.user";
@@ -45,6 +51,21 @@ const buildSessionUser = ({ id, email, displayName, role, companyId }) => ({
 });
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const toRemainingMinutes = (remainingMs) => Math.max(1, Math.ceil(Number(remainingMs || 0) / 60000));
+
+const buildLoginProtectionMessage = (protection) => {
+  switch (protection?.status) {
+    case LOGIN_PROTECTION_STATUS.LOCKED_SHORT:
+      return ERROR_MESSAGES.AUTH.LOGIN_LOCKED_5_MINUTES(toRemainingMinutes(protection.remainingMs));
+    case LOGIN_PROTECTION_STATUS.LOCKED_LONG:
+      return ERROR_MESSAGES.AUTH.LOGIN_LOCKED_15_MINUTES(toRemainingMinutes(protection.remainingMs));
+    case LOGIN_PROTECTION_STATUS.SUSPENDED:
+      return ERROR_MESSAGES.AUTH.LOGIN_SUSPENDED;
+    default:
+      return ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS;
+  }
+};
 
 const writeLoggedOutFlag = (value) => {
   if (typeof window === "undefined") return;
@@ -93,7 +114,21 @@ export const AuthProvider = ({ children }) => {
     const normalizedEmail = String(email || "").trim().toLowerCase();
     const rawPassword = String(password || "");
 
-    await wait(600);
+    const protection = getLoginProtection(normalizedEmail);
+
+    if (protection.status === LOGIN_PROTECTION_STATUS.LOCKED_SHORT) {
+      return { ok: false, message: buildLoginProtectionMessage(protection) };
+    }
+
+    if (protection.status === LOGIN_PROTECTION_STATUS.LOCKED_LONG) {
+      return { ok: false, message: buildLoginProtectionMessage(protection) };
+    }
+
+    if (protection.status === LOGIN_PROTECTION_STATUS.SUSPENDED) {
+      return { ok: false, message: buildLoginProtectionMessage(protection) };
+    }
+
+    await wait(Math.max(600, protection.delayMs || 0));
 
     if (!normalizedEmail || !rawPassword) {
       return { ok: false, message: ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS };
@@ -121,13 +156,17 @@ export const AuthProvider = ({ children }) => {
     const userRow = Array.isArray(userRows) ? userRows[0] : null;
 
     if (!userRow) {
-      return { ok: false, message: ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS };
+      const failedProtection = registerLoginFailure(normalizedEmail);
+      return { ok: false, message: buildLoginProtectionMessage(failedProtection) };
     }
 
     const expectedPassword = String(userRow.password ?? "");
     if (!expectedPassword || rawPassword !== expectedPassword) {
-      return { ok: false, message: ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS };
+      const failedProtection = registerLoginFailure(normalizedEmail);
+      return { ok: false, message: buildLoginProtectionMessage(failedProtection) };
     }
+
+    resetLoginFailures(normalizedEmail);
 
     let displayName = normalizedEmail;
     const employeeId = toText(userRow.employee_id);

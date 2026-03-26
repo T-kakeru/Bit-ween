@@ -13,6 +13,12 @@ export const ERROR_MESSAGES = {
 
   AUTH: {
     INVALID_CREDENTIALS: "メールアドレスまたはパスワードが間違っています",
+    LOGIN_LOCKED_5_MINUTES: (minutes: number) =>
+      `ログインに5回失敗したため、${minutes}分間ログインできません。時間をおいて再試行してください。`,
+    LOGIN_LOCKED_15_MINUTES: (minutes: number) =>
+      `ログインに10回失敗したため、${minutes}分間ログインできません。時間をおいて再試行してください。`,
+    LOGIN_SUSPENDED:
+      "ログイン失敗が15回に達したため、利用停止状態です。管理者に連絡してください。",
     USERS_FETCH_FAILED: "DBからユーザー情報を取得できませんでした（接続設定・RLSを確認）",
     EMAIL_REQUIRED: "メールアドレスを入力してください",
     EMAIL_REQUIRED_ZOD: "メールアドレスは必須です",
